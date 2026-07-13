@@ -55,11 +55,11 @@ docs/          -> documentação do projeto
 
 ## Membros
 
-Eduardo Gonçalves
-Gustavo Mendes
-Guilherme Hermano 
-Ihago Lamarcks
-João Vitor
-Juscileia Noleto
-Melissa Mel
-Matheus Carvalho
+Eduardo Gonçalves  
+Gustavo Mendes  
+Guilherme Hermano   
+Ihago Lamarcks  
+João Vitor  
+Juscileia Noleto  
+Melissa Mel  
+Matheus Carvalho  
