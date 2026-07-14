@@ -6,8 +6,6 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 
 ## Parte 1: Contratos do Front-end (Comunicação com o Spring Boot)
 
-Esta seção define como a interface vai enviar e buscar os dados na API Java.
-
 ### 1. Criação do Imóvel
 *   **Método:** `POST`
 *   **Rota:** `/api/imoveis`
@@ -41,12 +39,12 @@ Esta seção define como a interface vai enviar e buscar os dados na API Java.
   {
     "equipamento_id": 1,
     "quantidade": 1,
-    "consumo_diario_total_watts": 8250.0
+    "consumo_diario_total_watts": 1500.0
   },
   {
-    "equipamento_id": 2,
-    "quantidade": 2,
-    "consumo_diario_total_watts": 16800.0
+    "equipamento_id": 4,
+    "quantidade": 1,
+    "consumo_diario_total_watts": 7500.0
   }
 ]
 ```
@@ -68,7 +66,7 @@ Esta seção define como a interface vai enviar e buscar os dados na API Java.
   "uso_horario_pico": true,
   "quantidade_equipamentos": 10,
   "tipo_imovel": "CASA",
-  "horas_alto_consumo": 8
+  "horas_alto_consumo": 8.5
 }
 ```
 **Response (201 Created):**
@@ -77,6 +75,8 @@ Esta seção define como a interface vai enviar e buscar os dados na API Java.
   "id": 501,
   "imovel_id": 12,
   "consumo_kwh": 420.0,
+  "uso_horario_pico": true,
+  "horas_alto_consumo": 8.5,
   "custo_estimado_mensal": 315.00,
   "categoria": "ALTO",
   "probabilidade": 0.8125,
@@ -86,13 +86,13 @@ Esta seção define como a interface vai enviar e buscar os dados na API Java.
     "Trocar lâmpadas",
     "Evitar banhos em horario de pico"
   ],
-  "created_at": "2026-07-13T16:30:00"
+  "created_at": "2026-07-13T21:30:00"
 }
 ```
 
 ## Parte 2: Contrato para a Equipe de Ciência de Dados (Python / IA)
 
-Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição.
+Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição. O Java atua como agregador, agrupando o inventário do imóvel por categorias de consumo antes de enviar para o modelo preditivo.
 
 ### 1. Endpoint de Predição (Servidor Python)
 *   **Método:** `POST`
@@ -105,8 +105,13 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
   "uso_horario_pico": true,
   "quantidade_equipamentos": 10,
   "tipo_imovel": "CASA",
-  "horas_alto_consumo": 8,
-  "inventario_total_watts_dia": 25050.0
+  "horas_alto_consumo": 8.5,
+  "distribuicao_consumo_diario": {
+    "REFRIGERACAO_WATTS": 1500.0,
+    "AQUECIMENTO_WATTS": 7500.0,
+    "CLIMATIZACAO_WATTS": 4200.0,
+    "ILUMINACAO_WATTS": 800.0
+  }
 }
 ```
 **O que o Python DEVE devolver para o Java (Response 200 OK):**
