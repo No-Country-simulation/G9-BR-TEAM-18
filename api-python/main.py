@@ -18,7 +18,7 @@ class DistribuicaoConsumo(BaseModel):
     CLIMATIZACAO_WATTS: float
     ILUMINACAO_WATTS: float
 
-# Representa exatamente o JSON que o Java vai enviar para você
+# JSON que o Java vai enviar
 class PredictRequest(BaseModel):
     consumo_kwh: float
     uso_horario_pico: bool
@@ -27,7 +27,7 @@ class PredictRequest(BaseModel):
     horas_alto_consumo: float
     distribuicao_consumo_diario: DistribuicaoConsumo
 
-# Representa exatamente o JSON que você DEVE devolver para o Java
+# JSON deve devolver para o Java
 class PredictResponse(BaseModel):
     categoria: str
     probabilidade: float
@@ -45,7 +45,6 @@ def predict_consumo(data: PredictRequest):
     """
     
     # === ESPAÇO PARA O MODELO DE INTELIGÊNCIA ARTIFICIAL ===
-    # Exemplo de lógica para classificação enquanto você não treina o modelo final:
     
     categoria = "MODERADO"
     probabilidade = 0.75
