@@ -15,6 +15,7 @@ public class AnaliseEnergia {
     private Double probabilidade;
     private Double custoEstimadoMensal;
     private List<String> recomendacoes;
+    private String origem;
     private LocalDateTime createdAt;
 
     public AnaliseEnergia() {}
@@ -58,6 +59,9 @@ public class AnaliseEnergia {
 
     public List<String> getRecomendacoes() { return recomendacoes; }
     public void setRecomendacoes(List<String> recomendacoes) { this.recomendacoes = recomendacoes; }
+
+    public String getOrigem() { return origem; }
+    public void setOrigem(String origem) { this.origem = origem; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
