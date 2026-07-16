@@ -4,17 +4,17 @@ const FEATURES = [
   {
     icon: Brain,
     title: 'Classificador IA',
-    desc: 'Modelo Random Forest treinado com dados sintéticos que classifica seu perfil de eficiência energética em Eficiente, Moderado ou Ineficiente.',
+    desc: 'Modelo preditivo que classifica seu perfil de eficiência energética e estima o impacto do seu consumo.',
   },
   {
     icon: Lightbulb,
     title: 'Recomendações Inteligentes',
-    desc: 'Com base na sua classificação, o sistema gera recomendações personalizadas usando IA generativa (Groq LLM) para reduzir seu consumo.',
+    desc: 'Com base na sua classificação, o sistema gera recomendações personalizadas para reduzir seu consumo e economizar energia.',
   },
   {
     icon: Wallet,
     title: 'Custo e Impacto',
-    desc: 'Estime seu custo mensal com base na tarifa de R$ 0,75/kWh e veja o impacto das mudanças sugeridas na sua conta de luz.',
+    desc: 'Estime seu custo mensal com base na tarifa de referência e veja o impacto das mudanças sugeridas na sua conta de luz.',
   },
 ]
 

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import type { Usuario } from '../types'
 
-const STORAGE_KEY = 'gambia_usuario'
+const STORAGE_KEY = 'energiai_usuario'
 
 interface AuthContextValue {
   usuario: Usuario | null

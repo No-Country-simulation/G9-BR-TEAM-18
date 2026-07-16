@@ -11,14 +11,14 @@ const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', toggle: 
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('gambia-theme')
+    const saved = localStorage.getItem('energiai-theme')
     if (saved === 'light' || saved === 'dark') return saved
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('gambia-theme', theme)
+    localStorage.setItem('energiai-theme', theme)
   }, [theme])
 
   function toggle() {

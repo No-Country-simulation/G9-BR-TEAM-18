@@ -14,13 +14,25 @@ export interface AnaliseRequest {
 }
 
 export interface AnaliseResponse {
-  categoria: ClassificacaoEficiencia
+  categoria: ClassificacaoEficienciaApi
   probabilidade: number
   recomendacoes: string[]
   custo_estimado_mensal: number
 }
 
-export type ClassificacaoEficiencia = 'Eficiente' | 'Moderado' | 'Ineficiente'
+export type ClassificacaoEficienciaApi = 'EFICIENTE' | 'MODERADO' | 'ALTO'
+
+export const CATEGORIA_DISPLAY: Record<ClassificacaoEficienciaApi, string> = {
+  EFICIENTE: 'Eficiente',
+  MODERADO: 'Moderado',
+  ALTO: 'Ineficiente',
+}
+
+export const CATEGORIA_CORES: Record<ClassificacaoEficienciaApi, string> = {
+  EFICIENTE: '#10b981',
+  MODERADO: '#f59e0b',
+  ALTO: '#ef4444',
+}
 
 export type TipoImovel =
   | 'Casa'
@@ -50,14 +62,13 @@ export class ApiError extends Error {
 
 export interface AnaliseHistorico {
   id: string
-  categoria: ClassificacaoEficiencia
+  categoria: ClassificacaoEficienciaApi
   probabilidade: number
-  consumoKwh: number
-  custoEstimadoMensal: number
-  emissaoCo2Kg: number
-  usoHorarioPico: boolean
-  horasAltoConsumo: number
-  createdAt: string
+  consumo_kwh: number
+  custo_estimado_mensal: number
+  uso_horario_pico: boolean
+  horas_alto_consumo: number
+  created_at: string
   recomendacoes: string[]
 }
 

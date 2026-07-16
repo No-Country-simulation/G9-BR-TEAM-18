@@ -26,7 +26,7 @@ export default function Navbar() {
       <div className="navbar-inner">
         <Link to="/" className="navbar-logo">
           <Logo size={26} />
-          <span className="navbar-logo-text">GambIA</span>
+          <span className="navbar-logo-text">EnergIAI</span>
         </Link>
 
         <div className="navbar-right">

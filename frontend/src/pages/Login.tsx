@@ -38,7 +38,7 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-header">
           <LogIn size={40} className="auth-logo-icon" />
-          <h1>GambIA</h1>
+          <h1>EnergIAI</h1>
           <p>Entre na sua conta</p>
         </div>
 

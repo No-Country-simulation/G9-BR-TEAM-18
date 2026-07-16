@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { listarAnalises } from '../services/api'
 import type { AnaliseHistorico } from '../types'
+import { CATEGORIA_CORES, CATEGORIA_DISPLAY } from '../types'
 import { Clock, Zap, DollarSign, ArrowLeft } from 'lucide-react'
 
 export default function Historico() {
@@ -29,13 +30,7 @@ export default function Historico() {
     )
   }
 
-  const badgeColor = (cat: string) => {
-    switch (cat) {
-      case 'Eficiente': return 'var(--primary)'
-      case 'Moderado': return 'var(--accent)'
-      default: return '#ef4444'
-    }
-  }
+  const badgeColor = (cat: string) => CATEGORIA_CORES[cat as keyof typeof CATEGORIA_CORES] ?? '#ef4444'
 
   return (
     <div className="page-container" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1rem' }}>
@@ -112,20 +107,20 @@ export default function Historico() {
                     background: badgeColor(a.categoria),
                     color: '#fff',
                   }}>
-                    {a.categoria}
+                    {CATEGORIA_DISPLAY[a.categoria] ?? a.categoria}
                   </span>
                   <span style={{ fontSize: '0.85rem', opacity: 0.6 }}>
-                    {new Date(a.createdAt).toLocaleDateString('pt-BR', {
+                    {new Date(a.created_at).toLocaleDateString('pt-BR', {
                       day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
                     })}
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem' }}>
-                    <Zap size={16} /> {a.consumoKwh.toFixed(0)} kWh
+                    <Zap size={16} /> {a.consumo_kwh.toFixed(0)} kWh
                   </span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem' }}>
-                    <DollarSign size={16} /> R$ {a.custoEstimadoMensal.toFixed(2)}
+                    <DollarSign size={16} /> R$ {a.custo_estimado_mensal.toFixed(2)}
                   </span>
                 </div>
               </div>
