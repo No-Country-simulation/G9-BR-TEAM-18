@@ -41,7 +41,16 @@ public class MlServiceClient {
             boolean uso_horario_pico,
             int quantidade_equipamentos,
             String tipo_imovel,
-            double horas_alto_consumo
+            double horas_alto_consumo,
+            String categoria_maior_consumo,
+            DistribuicaoConsumoDiario distribuicao_consumo_diario
+    ) {}
+
+    public record DistribuicaoConsumoDiario(
+            @com.fasterxml.jackson.annotation.JsonProperty("REFRIGERACAO_WATTS") double REFRIGERACAO_WATTS,
+            @com.fasterxml.jackson.annotation.JsonProperty("AQUECIMENTO_WATTS") double AQUECIMENTO_WATTS,
+            @com.fasterxml.jackson.annotation.JsonProperty("CLIMATIZACAO_WATTS") double CLIMATIZACAO_WATTS,
+            @com.fasterxml.jackson.annotation.JsonProperty("ILUMINACAO_WATTS") double ILUMINACAO_WATTS
     ) {}
 
     public record MlPredictResponse(
