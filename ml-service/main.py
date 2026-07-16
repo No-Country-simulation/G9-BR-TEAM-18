@@ -34,13 +34,13 @@ except Exception as e:
 # GROQ (fallback quando confiança < 80%)
 # -------------------------------------------------------------
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 cliente_groq = None
-if GROQ_API_KEY:
+if GROQ_API_KEY and GROQ_API_KEY.startswith("gsk_"):
     cliente_groq = Groq(api_key=GROQ_API_KEY)
     print("[EnergiAI] Cliente Groq configurado (fallback para confiança < 80%)")
 else:
-    print("[EnergiAI] Aviso: GROQ_API_KEY não definida — fallback rule-based apenas")
+    print("[EnergiAI] Aviso: GROQ_API_KEY não definida ou inválida — fallback rule-based apenas")
 
 GROQ_MODELO = "llama-3.3-70b-versatile"
 TREINO_LOG = os.path.join(BASE_DIR, "treino_feedback.jsonl")
@@ -50,7 +50,7 @@ TREINO_LOG = os.path.join(BASE_DIR, "treino_feedback.jsonl")
 # -------------------------------------------------------------
 
 CONSUMO_BASE_POR_TIPO = {
-    "Casa": 250.0, "Apartamento": 150.0, "Comercio": 500.0,
+    "Casa": 250.0, "Apartamento": 150.0, "Comercial": 500.0,
     "Industria": 800.0, "Rural": 300.0, "Outro": 250.0,
 }
 
@@ -169,14 +169,14 @@ sem introdução e sem comentários adicionais."""
         temperature=0,
     )
 
-    texto = resposta.choices[0].message.content
+    texto = (resposta.choices[0].message.content or "").strip()
     import re
     recomendacoes = [
         re.sub(r"^\s*[\d]+[\.\)]?\s*", "", linha).strip("-•* ").strip()
-        for linha in texto.strip().split("\n")
+        for linha in texto.split("\n")
         if linha.strip()
     ]
-    return recomendacoes[:3]
+    return [r for r in recomendacoes[:3] if r]
 
 # -------------------------------------------------------------
 # ARMAZENAMENTO PARA RETREINAMENTO (feedback loop)
@@ -235,8 +235,10 @@ def predict_consumo(data: PredictRequest):
 
             if max_prob >= 0.80:
                 origem = "modelo"
-            else:
+            elif cliente_groq:
                 origem = f"modelo+groq (confiança {max_prob:.1%})"
+            else:
+                origem = f"modelo (confiança {max_prob:.1%})"
         except Exception as e:
             print(f"[EnergiAI] Erro na predição: {e}")
             categoria, probabilidade = _classificar_rule_based(data)
@@ -249,13 +251,16 @@ def predict_consumo(data: PredictRequest):
     if cliente_groq and "groq" in origem:
         try:
             recomendacoes = _gerar_recomendacoes_groq(data, categoria)
-            _armazenar_para_treino(data, categoria, probabilidade, recomendacoes, origem)
+            if not recomendacoes:
+                raise ValueError("Groq retornou recomendações vazias")
         except Exception as e:
             print(f"[EnergiAI] Erro ao chamar Groq: {e} — usando fallback rule-based")
             recomendacoes = _gerar_recomendacoes(data, categoria)
             origem = origem.replace("groq", "rule-based (groq falhou)")
     else:
         recomendacoes = _gerar_recomendacoes(data, categoria)
+
+    _armazenar_para_treino(data, categoria, probabilidade, recomendacoes, origem)
 
     return PredictResponse(
         categoria=categoria,
