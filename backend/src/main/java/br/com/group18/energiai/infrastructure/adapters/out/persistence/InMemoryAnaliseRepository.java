@@ -2,14 +2,11 @@ package br.com.group18.energiai.infrastructure.adapters.out.persistence;
 
 import br.com.group18.energiai.core.domain.model.AnaliseEnergia;
 import br.com.group18.energiai.core.ports.out.AnaliseRepositoryPort;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-@Repository
 public class InMemoryAnaliseRepository implements AnaliseRepositoryPort {
 
     private final ConcurrentHashMap<Long, AnaliseEnergia> store = new ConcurrentHashMap<>();
