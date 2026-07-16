@@ -34,6 +34,7 @@ public class AnaliseController {
         response.setProbabilidade(resultado.getProbabilidade());
         response.setRecomendacoes(resultado.getRecomendacoes());
         response.setCustoEstimadoMensal(resultado.getCustoEstimadoMensal());
+        response.setOrigem(resultado.getOrigem());
         response.setCreatedAt(resultado.getCreatedAt());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

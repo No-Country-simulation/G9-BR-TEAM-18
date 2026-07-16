@@ -10,6 +10,7 @@ public class AnaliseResponseDTO {
     private Double probabilidade;
     private List<String> recomendacoes;
     private Double custoEstimadoMensal;
+    private String origem;
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }
@@ -26,6 +27,9 @@ public class AnaliseResponseDTO {
 
     public Double getCustoEstimadoMensal() { return custoEstimadoMensal; }
     public void setCustoEstimadoMensal(Double custoEstimadoMensal) { this.custoEstimadoMensal = custoEstimadoMensal; }
+
+    public String getOrigem() { return origem; }
+    public void setOrigem(String origem) { this.origem = origem; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
