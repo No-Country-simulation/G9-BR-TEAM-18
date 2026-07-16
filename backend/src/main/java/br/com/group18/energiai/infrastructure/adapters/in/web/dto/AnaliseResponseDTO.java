@@ -12,6 +12,11 @@ public class AnaliseResponseDTO {
     private Double custoEstimadoMensal;
     private String origem;
     private LocalDateTime createdAt;
+    private String categoriaMaiorConsumo;
+    private Double refrigWatts;
+    private Double aquecimentoWatts;
+    private Double climatizacaoWatts;
+    private Double iluminacaoWatts;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -33,4 +38,19 @@ public class AnaliseResponseDTO {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getCategoriaMaiorConsumo() { return categoriaMaiorConsumo; }
+    public void setCategoriaMaiorConsumo(String categoriaMaiorConsumo) { this.categoriaMaiorConsumo = categoriaMaiorConsumo; }
+
+    public Double getRefrigWatts() { return refrigWatts; }
+    public void setRefrigWatts(Double refrigWatts) { this.refrigWatts = refrigWatts; }
+
+    public Double getAquecimentoWatts() { return aquecimentoWatts; }
+    public void setAquecimentoWatts(Double aquecimentoWatts) { this.aquecimentoWatts = aquecimentoWatts; }
+
+    public Double getClimatizacaoWatts() { return climatizacaoWatts; }
+    public void setClimatizacaoWatts(Double climatizacaoWatts) { this.climatizacaoWatts = climatizacaoWatts; }
+
+    public Double getIluminacaoWatts() { return iluminacaoWatts; }
+    public void setIluminacaoWatts(Double iluminacaoWatts) { this.iluminacaoWatts = iluminacaoWatts; }
 }
