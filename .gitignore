@@ -46,3 +46,4 @@ docker-data/
 
 # Keep .gitkeep if we use them
 !.gitkeep
+node_modules/
