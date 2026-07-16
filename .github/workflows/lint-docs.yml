@@ -1,0 +1,41 @@
+name: lint-docs
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.java"
+      - "**/*.py"
+    branches:
+      - homolog
+      - dev
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check markdown structure
+        run: npx markdownlint-cli2 "**/*.md" "#node_modules" "#target" "#dist" "#.git" "#ml-service/data"
+
+      - name: Check spelling (all text files)
+        run: npx cspell "**/*.{md,ts,tsx,java,py,json,yaml,yml}"
+
+      - name: Check forbidden characters
+        run: node scripts/check-forbidden-chars.mjs $(git ls-files "*.md" "*.ts" "*.tsx" "*.java" "*.py" "*.json" "*.yml" "*.yaml")
+
+      - name: Check all linters passed
+        if: failure()
+        run: |
+          echo "❌ Linting check failed. Fix the issues above before merging."
+          exit 1
