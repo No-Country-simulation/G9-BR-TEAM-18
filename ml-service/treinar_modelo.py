@@ -1,9 +1,11 @@
 """
 Script de treinamento do modelo de classificacao energetica.
 
-Gera dados sinteticos + carrega feedback real (treino_feedback.jsonl)
-para retreino ciclico. A cada execucao, o modelo incorpora os dados
-reais acumulados desde o ultimo treino.
+Gera dados sinteticos + carrega dados rotulados dos CSVs + feedback real
+para retreino ciclico. A cada execucao o modelo incorpora:
+  - base-energetica-rotulada.csv (1000 registros reais)
+  - treino_feedback.jsonl (predicoes reais acumuladas)
+  - dados sinteticos (para balanceamento)
 
 Uso:
     python3 treinar_modelo.py
@@ -27,15 +29,32 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, FunctionTransformer
 from sklearn.calibration import CalibratedClassifierCV
 
-from features import engenharia_features
+from features import engenharia_features, CATEGORIAS_MAIOR_CONSUMO, normalizar_categoria
+
+def normalizar_categoria_label(cat):
+    if not isinstance(cat, str):
+        return "Mediano"
+    cat_lower = cat.strip().lower()
+    mapping = {
+        "excelente": "Excelente",
+        "bom": "Bom",
+        "mediano": "Mediano",
+        "ruim": "Ruim",
+        "critico": "Critico",
+        "crítico": "Critico"
+    }
+    return mapping.get(cat_lower, "Mediano")
 
 SEED = 42
 random.seed(SEED)
 np.random.seed(SEED)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 FEEDBACK_PATH = os.path.join(BASE_DIR, "treino_feedback.jsonl")
 MODELO_PATH = os.path.join(BASE_DIR, "modelo-categorizacao.joblib")
+
+CSV_ROTULADO = os.path.join(DATA_DIR, "base-energetica-rotulada.csv")
 
 CATEGORIAS = ["Excelente", "Bom", "Mediano", "Ruim", "Critico"]
 MAP_CATEGORIA_UPPER = {c.upper(): c for c in CATEGORIAS}
@@ -47,8 +66,26 @@ CONSUMO_BASE_POR_TIPO = {
     "Industria": 800, "Rural": 300, "Outro": 250,
 }
 
-N_SINTETICOS = 5000
+N_SINTETICOS = 4000
 PESO_FEEDBACK = 5
+
+COLUNAS_NUMERICAS_BASE = [
+    "consumo_kwh", "quantidade_equipamentos", "horas_alto_consumo",
+    "refrig_watts", "aquecimento_watts", "climatizacao_watts", "iluminacao_watts",
+]
+COLUNAS_BOOLEANAS = ["uso_horario_pico"]
+COLUNAS_CATEGORICAS = ["tipo_imovel", "categoria_maior_consumo"]
+COLUNAS_ENGENHEIRADAS = [
+    "consumo_por_equipamento", "consumo_por_hora",
+    "consumo_relativo_normalizado", "carga_estimada",
+    "total_watts", "pct_refrig", "pct_aquecimento",
+    "pct_climatizacao", "pct_iluminacao",
+]
+COLUNAS_NUMERICAS_TOTAIS = COLUNAS_NUMERICAS_BASE + COLUNAS_BOOLEANAS + COLUNAS_ENGENHEIRADAS
+
+COLUNAS_FEATURES = (
+    COLUNAS_NUMERICAS_BASE + COLUNAS_CATEGORICAS + COLUNAS_BOOLEANAS
+)
 
 
 def gerar_registro(id_cliente):
@@ -68,12 +105,24 @@ def gerar_registro(id_cliente):
     )
     consumo_kwh = max(20, round(consumo_kwh, 1))
 
+    cat_maior = random.choice(CATEGORIAS_MAIOR_CONSUMO)
+
+    refrig = round(random.uniform(0, 3000), 1)
+    aqueci = round(random.uniform(0, 8000), 1)
+    climat = round(random.uniform(0, 5000), 1)
+    ilumin = round(random.uniform(0, 2000), 1)
+
     return {
         "consumo_kwh": consumo_kwh,
         "uso_horario_pico": uso_horario_pico,
         "quantidade_equipamentos": quantidade_equipamentos,
         "tipo_imovel": tipo_imovel,
         "horas_alto_consumo": horas_alto_consumo,
+        "categoria_maior_consumo": cat_maior,
+        "refrig_watts": refrig,
+        "aquecimento_watts": aqueci,
+        "climatizacao_watts": climat,
+        "iluminacao_watts": ilumin,
     }
 
 
@@ -84,6 +133,23 @@ def calcular_indice_ineficiencia(df):
     horas_norm = (df["horas_alto_consumo"] / df["horas_alto_consumo"].max()).clip(0, 1)
     pico_norm = df["uso_horario_pico"].astype(int)
     return 0.40 * consumo_norm + 0.25 * pico_norm + 0.20 * equip_norm + 0.15 * horas_norm
+
+
+def carregar_csv_rotulado(caminho):
+    if not os.path.exists(caminho):
+        print("  Arquivo nao encontrado.")
+        return pd.DataFrame()
+    df = pd.read_csv(caminho)
+    df["uso_horario_pico"] = df["uso_horario_pico"].astype(int)
+    if "categoria" in df.columns:
+        df["categoria"] = df["categoria"].apply(normalizar_categoria_label)
+    if "categoria_maior_consumo" in df.columns:
+        df["categoria_maior_consumo"] = df["categoria_maior_consumo"].apply(normalizar_categoria)
+    cols_extra = ["refrig_watts", "aquecimento_watts", "climatizacao_watts", "iluminacao_watts"]
+    for col in cols_extra:
+        if col not in df.columns:
+            df[col] = 0.0
+    return df[COLUNAS_FEATURES + ["categoria"]]
 
 
 def carregar_feedback(caminho):
@@ -107,41 +173,38 @@ def carregar_feedback(caminho):
                     "quantidade_equipamentos": feats.get("quantidade_equipamentos", 0),
                     "tipo_imovel": feats.get("tipo_imovel", "Casa"),
                     "horas_alto_consumo": feats.get("horas_alto_consumo", 0),
-                    "categoria": MAP_CATEGORIA_UPPER.get(cat_raw.upper(), cat_raw.title()),
+                    "categoria_maior_consumo": normalizar_categoria(feats.get("categoria_maior_consumo", "Outros")),
+                    "refrig_watts": feats.get("refrig_watts", 0.0),
+                    "aquecimento_watts": feats.get("aquecimento_watts", 0.0),
+                    "climatizacao_watts": feats.get("climatizacao_watts", 0.0),
+                    "iluminacao_watts": feats.get("iluminacao_watts", 0.0),
+                    "categoria": normalizar_categoria_label(cat_raw),
                 })
             except (json.JSONDecodeError, KeyError):
                 continue
 
-    df = pd.DataFrame(registros)
-    return df
+    return pd.DataFrame(registros)
 
 
 def gerar_sinteticos(n, seed_offset=0):
-    registros = [gerar_registro(i + seed_offset) for i in range(n)]
-    df = pd.DataFrame(registros)
+    regs = [gerar_registro(i + seed_offset) for i in range(n)]
+    df = pd.DataFrame(regs)
     df["uso_horario_pico"] = df["uso_horario_pico"].astype(int)
     indice = calcular_indice_ineficiencia(df)
     df["categoria"] = pd.qcut(indice, q=5, labels=CATEGORIAS)
-    return df
+    return df[COLUNAS_FEATURES + ["categoria"]]
 
-
-COLUNAS_NUMERICAS_BASE = ["consumo_kwh", "quantidade_equipamentos", "horas_alto_consumo"]
-COLUNAS_CATEGORICAS = ["tipo_imovel"]
-COLUNAS_BOOLEANAS = ["uso_horario_pico"]
-COLUNAS_ENGENHEIRADAS = [
-    "consumo_por_equipamento", "consumo_por_hora",
-    "consumo_relativo_normalizado", "carga_estimada",
-]
-COLUNAS_NUMERICAS_TOTAIS = COLUNAS_NUMERICAS_BASE + COLUNAS_BOOLEANAS + COLUNAS_ENGENHEIRADAS
-
-COLUNAS_FEATURES = COLUNAS_NUMERICAS_BASE + COLUNAS_CATEGORICAS + COLUNAS_BOOLEANAS
 
 feature_eng = FunctionTransformer(engenharia_features, validate=False)
+
+COLUNAS_CATEGORIA_MAIOR_CAT = [c.replace(" ", "").replace("ã", "a").replace("ç", "c")
+                                for c in CATEGORIAS_MAIOR_CONSUMO]
 pre_processador = ColumnTransformer(
     transformers=[
         ("num", StandardScaler(), COLUNAS_NUMERICAS_TOTAIS),
         ("cat", OneHotEncoder(
-            handle_unknown="ignore", categories=[TIPOS_IMOVEL],
+            handle_unknown="ignore",
+            categories=[TIPOS_IMOVEL, CATEGORIAS_MAIOR_CONSUMO],
         ), COLUNAS_CATEGORICAS),
     ],
     verbose_feature_names_out=False,
@@ -155,30 +218,42 @@ print("=" * 60)
 print("CARGA DE DADOS")
 print("=" * 60)
 
+print("Carregando dados rotulados dos CSVs...")
+df_csv = carregar_csv_rotulado(CSV_ROTULADO)
+if len(df_csv) > 0:
+    print(f"  {len(df_csv)} registros carregados de base-energetica-rotulada.csv")
+    print(f"  Distribuicao categorias (CSV):")
+    for cat, qtd in df_csv["categoria"].value_counts().items():
+        print(f"    {cat}: {qtd}")
+print()
+
 print("Gerando dados sinteticos...")
 df_sint = gerar_sinteticos(N_SINTETICOS)
 print(f"  {len(df_sint)} registros sinteticos gerados")
+print()
 
 print("Carregando feedback de predicoes reais...")
 df_fb = carregar_feedback(FEEDBACK_PATH)
+partes = [df_sint]
+
+if len(df_csv) > 0:
+    partes.append(df_csv)
+
 if len(df_fb) > 0:
     print(f"  {len(df_fb)} registros de feedback carregados")
-    print(f"  Distribuicao categorias (feedback):")
     for cat, qtd in df_fb["categoria"].value_counts().items():
         print(f"    {cat}: {qtd}")
-
     df_fb["uso_horario_pico"] = df_fb["uso_horario_pico"].astype(int)
     df_fb_repetido = pd.concat([df_fb] * PESO_FEEDBACK, ignore_index=True)
     print(f"  Apos repeticao (peso x{PESO_FEEDBACK}): {len(df_fb_repetido)} registros")
+    partes.append(df_fb_repetido)
 
-    df_full = pd.concat([df_sint, df_fb_repetido], ignore_index=True)
-    print(f"\nTotal combinado: {len(df_full)} registros")
-else:
-    df_full = df_sint
-    print(f"  Total: {len(df_full)} registros (apenas sinteticos)")
-
-print(f"\nDistribuicao por tipo de imovel:")
+df_full = pd.concat(partes, ignore_index=True)
+print(f"\nTotal combinado: {len(df_full)} registros")
+print(f"Distribuicao por tipo de imovel:")
 print(df_full["tipo_imovel"].value_counts().to_string())
+print(f"Distribuicao categoria maior consumo:")
+print(df_full["categoria_maior_consumo"].value_counts().to_string())
 print()
 
 # =========================================================================
@@ -267,26 +342,6 @@ pct_acima_90 = (confiancas >= 0.90).mean()
 print(f"  % acima de 80%: {pct_acima_80:.1%}")
 print(f"  % acima de 90%: {pct_acima_90:.1%}")
 
-print()
-print("=" * 60)
-print("AVALIACAO VS MODELO NAO CALIBRADO (baseline)")
-print("=" * 60)
-
-pipeline_baseline = Pipeline([
-    ("features", feature_eng),
-    ("pre", pre_processador),
-    ("modelo", RandomForestClassifier(n_estimators=200, random_state=SEED)),
-])
-pipeline_baseline.fit(X_treino, y_treino)
-y_pred_bl = pipeline_baseline.predict(X_teste)
-y_proba_bl = pipeline_baseline.predict_proba(X_teste)
-acuracia_bl = accuracy_score(y_teste, y_pred_bl)
-confiancas_bl = y_proba_bl.max(axis=1)
-pct_acima_80_bl = (confiancas_bl >= 0.80).mean()
-
-print(f"  Baseline (RF 200 default): acuracia={acuracia_bl:.4f}, %conf>80%={pct_acima_80_bl:.1%}")
-print(f"  Calibrado + Tuning:        acuracia={acuracia:.4f}, %conf>80%={pct_acima_80:.1%}")
-
 # =========================================================================
 # SALVAR
 # =========================================================================
@@ -303,13 +358,14 @@ for tipo in TIPOS_IMOVEL:
     teste = pd.DataFrame([{
         "consumo_kwh": 400.0, "uso_horario_pico": False,
         "quantidade_equipamentos": 10, "tipo_imovel": tipo,
-        "horas_alto_consumo": 5.0,
+        "horas_alto_consumo": 5.0, "categoria_maior_consumo": "Refrigeracao",
+        "refrig_watts": 1500.0, "aquecimento_watts": 0.0,
+        "climatizacao_watts": 0.0, "iluminacao_watts": 0.0,
     }])
     pred = pipeline_calibrado.predict(teste)[0]
     proba = pipeline_calibrado.predict_proba(teste).max()
     print(f"  {tipo:14s} -> {pred:10s} (confianca: {proba:.1%})")
 
 print()
-caminho_rel = os.path.relpath(FEEDBACK_PATH, BASE_DIR)
 print(f"Dica: para o proximo ciclo, execute este script novamente —")
-print(f"os dados em '{caminho_rel}' serao incorporados automaticamente.")
+print(f"os dados em 'data/' e 'treino_feedback.jsonl' serao incorporados automaticamente.")
