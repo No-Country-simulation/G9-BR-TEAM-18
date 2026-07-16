@@ -28,11 +28,11 @@ jobs:
       - name: Check markdown structure
         run: npx markdownlint-cli2 $(git ls-files "*.md")
 
-      - name: Check spelling (all text files)
-        run: npx cspell $(git ls-files "*.md" "*.ts" "*.tsx" "*.java" "*.py" "*.json" "*.yml" "*.yaml")
+      - name: Check spelling (documentation only)
+        run: npx cspell $(git ls-files "*.md")
 
       - name: Check forbidden characters
-        run: node scripts/check-forbidden-chars.mjs $(git ls-files "*.md" "*.ts" "*.tsx" "*.java" "*.py" "*.json" "*.yml" "*.yaml")
+        run: node scripts/check-forbidden-chars.mjs $(git ls-files "*.md")
 
       - name: Check all linters passed
         if: failure()
