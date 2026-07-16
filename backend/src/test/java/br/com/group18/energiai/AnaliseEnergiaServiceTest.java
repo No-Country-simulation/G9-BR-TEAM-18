@@ -34,13 +34,13 @@ class AnaliseEnergiaServiceTest {
 
     @Test
     void deveClassificarComoBom() {
-        AnaliseEnergia r = service.executar(150.0, false, 5, "Casa", 2.0);
+        AnaliseEnergia r = service.executar(250.0, false, 8, "Casa", 3.0);
         assertEquals("BOM", r.getCategoria());
     }
 
     @Test
     void deveClassificarComoMediano() {
-        AnaliseEnergia r = service.executar(300.0, false, 8, "Casa", 4.0);
+        AnaliseEnergia r = service.executar(500.0, false, 12, "Casa", 6.0);
         assertEquals("MEDIANO", r.getCategoria());
     }
 
@@ -70,7 +70,7 @@ class AnaliseEnergiaServiceTest {
 
     @Test
     void deveIncluirRecomendacaoParaRuimOuCritico() {
-        AnaliseEnergia r = service.executar(600.0, false, 8, "Casa", 6.0);
+        AnaliseEnergia r = service.executar(800.0, false, 15, "Casa", 8.0);
         assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("equipamentos antigos")));
     }
 
@@ -94,7 +94,7 @@ class AnaliseEnergiaServiceTest {
 
     @Test
     void recomendacaoPadraoQuandoNenhumaCondicaoAtendida() {
-        AnaliseEnergia r = service.executar(150.0, false, 4, "Casa", 2.0);
+        AnaliseEnergia r = service.executar(250.0, false, 8, "Casa", 3.0);
         assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("bom acompanhamento")));
     }
 }
