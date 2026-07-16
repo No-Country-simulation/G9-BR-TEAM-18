@@ -1,20 +1,27 @@
 import os
+import json
 import joblib
 import pandas as pd
+from datetime import datetime, timezone
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
+from groq import Groq
+
+load_dotenv()
 
 app = FastAPI(
     title="EnergiAI - API de Inteligência Artificial",
     description="API interna para análise e classificação de eficiência energética.",
-    version="2.0.0"
+    version="2.1.0"
 )
 
 # -------------------------------------------------------------
 # CARREGAMENTO DO MODELO
 # -------------------------------------------------------------
 
-MODELO_PATH = os.path.join(os.path.dirname(__file__), "modelo_categorizacao.joblib")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELO_PATH = os.path.join(BASE_DIR, "modelo_categorizacao.joblib")
 modelo = None
 
 try:
@@ -24,7 +31,22 @@ except Exception as e:
     print(f"[EnergiAI] Aviso: modelo não encontrado ({e}) — usando fallback rule-based")
 
 # -------------------------------------------------------------
-# DEFINIÇÃO DO CONTRATO (Modelos de Entrada e Saída)
+# GROQ (fallback quando confiança < 80%)
+# -------------------------------------------------------------
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+cliente_groq = None
+if GROQ_API_KEY:
+    cliente_groq = Groq(api_key=GROQ_API_KEY)
+    print("[EnergiAI] Cliente Groq configurado (fallback para confiança < 80%)")
+else:
+    print("[EnergiAI] Aviso: GROQ_API_KEY não definida — fallback rule-based apenas")
+
+GROQ_MODELO = "llama-3.3-70b-versatile"
+TREINO_LOG = os.path.join(BASE_DIR, "treino_feedback.jsonl")
+
+# -------------------------------------------------------------
+# DEFINIÇÃO DO CONTRATO
 # -------------------------------------------------------------
 
 CONSUMO_BASE_POR_TIPO = {
@@ -50,9 +72,10 @@ class PredictResponse(BaseModel):
     categoria: str
     probabilidade: float
     recomendacoes: list[str]
+    origem: str = ""
 
 # -------------------------------------------------------------
-# LÓGICA DE CLASSIFICAÇÃO
+# LÓGICA DE CLASSIFICAÇÃO (RULE-BASED)
 # -------------------------------------------------------------
 
 def _classificar_rule_based(data: PredictRequest) -> tuple[str, float]:
@@ -106,11 +129,95 @@ def _gerar_recomendacoes(data: PredictRequest, categoria: str) -> list[str]:
     return recs
 
 # -------------------------------------------------------------
+# GROQ — GERAÇÃO DE RECOMENDAÇÕES VIA LLM
+# -------------------------------------------------------------
+
+def _gerar_recomendacoes_groq(data: PredictRequest, categoria: str) -> list[str]:
+    prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas
+e realmente úteis para melhorar a eficiência energética do imóvel.
+
+REGRAS OBRIGATÓRIAS:
+- Envolva EXCLUSIVAMENTE: hábitos de uso de equipamentos elétricos, horários de consumo, ou
+  manutenção/substituição de aparelhos elétricos. Nada de água, gás ou outros recursos.
+- Baseie-se APENAS nos dados fornecidos. Não invente equipamentos ou hábitos não informados.
+- Se o tipo de imóvel for "Apartamento", não sugira painéis solares ou soluções que dependam
+  de telhado/espaço externo próprio.
+- Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
+- Não cite marcas, modelos ou preços. Não use termos técnicos sem explicação simples.
+- Máximo 20 palavras por recomendação. Sem emojis, markdown ou numeração.
+- Tom: {categoria} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
+  Se for Excelente ou Bom, reforce boas práticas já adotadas.
+
+Dados do imóvel:
+- Consumo mensal: {data.consumo_kwh} kWh
+- Uso em horário de pico: {"Sim" if data.uso_horario_pico else "Não"}
+- Quantidade de equipamentos: {data.quantidade_equipamentos}
+- Tipo de imóvel: {data.tipo_imovel}
+- Horas de alto consumo por dia: {data.horas_alto_consumo}
+- Categoria de eficiência: {categoria}
+
+Responda APENAS com as 3 recomendações, uma por linha, sem numeração,
+sem introdução e sem comentários adicionais."""
+
+    resposta = cliente_groq.chat.completions.create(
+        model=GROQ_MODELO,
+        messages=[
+            {"role": "system", "content": "Você é um assistente especializado em eficiência energética residencial e comercial. Responda sempre em português do Brasil, de forma objetiva e sem rodeios."},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=150,
+        temperature=0,
+    )
+
+    texto = resposta.choices[0].message.content
+    import re
+    recomendacoes = [
+        re.sub(r"^\s*[\d]+[\.\)]?\s*", "", linha).strip("-•* ").strip()
+        for linha in texto.strip().split("\n")
+        if linha.strip()
+    ]
+    return recomendacoes[:3]
+
+# -------------------------------------------------------------
+# ARMAZENAMENTO PARA RETREINAMENTO (feedback loop)
+# -------------------------------------------------------------
+
+def _armazenar_para_treino(data: PredictRequest, categoria: str, probabilidade: float,
+                           recomendacoes: list[str], origem: str):
+    registro = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "features": {
+            "consumo_kwh": data.consumo_kwh,
+            "uso_horario_pico": data.uso_horario_pico,
+            "quantidade_equipamentos": data.quantidade_equipamentos,
+            "tipo_imovel": data.tipo_imovel,
+            "horas_alto_consumo": data.horas_alto_consumo,
+        },
+        "predicao": {
+            "categoria": categoria,
+            "probabilidade": probabilidade,
+        },
+        "recomendacoes_geradas": recomendacoes,
+        "origem": origem,
+    }
+    try:
+        with open(TREINO_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+    except Exception as e:
+        print(f"[EnergiAI] Erro ao armazenar feedback: {e}")
+
+# -------------------------------------------------------------
 # ENDPOINT DE PREDIÇÃO
 # -------------------------------------------------------------
 
 @app.post("/predict", response_model=PredictResponse)
 def predict_consumo(data: PredictRequest):
+    categoria = ""
+    probabilidade = 0.0
+    origem = ""
+    recomendacoes = []
+
+    # --- Classificação ---
     if modelo is not None:
         try:
             df = pd.DataFrame([{
@@ -122,19 +229,37 @@ def predict_consumo(data: PredictRequest):
             }])
             pred = modelo.predict(df)[0]
             probs = modelo.predict_proba(df)[0]
-            idx = list(modelo.classes_).index(pred)
+            max_prob = float(max(probs))
             categoria = pred.upper()
-            probabilidade = round(float(probs[idx]), 4)
+            probabilidade = round(max_prob, 4)
+
+            if max_prob >= 0.80:
+                origem = "modelo"
+            else:
+                origem = f"modelo+groq (confiança {max_prob:.1%})"
         except Exception as e:
             print(f"[EnergiAI] Erro na predição: {e}")
             categoria, probabilidade = _classificar_rule_based(data)
+            origem = "rule-based (modelo com erro)"
     else:
         categoria, probabilidade = _classificar_rule_based(data)
+        origem = "rule-based (modelo não disponível)"
 
-    recomendacoes = _gerar_recomendacoes(data, categoria)
+    # --- Recomendações ---
+    if cliente_groq and "groq" in origem:
+        try:
+            recomendacoes = _gerar_recomendacoes_groq(data, categoria)
+            _armazenar_para_treino(data, categoria, probabilidade, recomendacoes, origem)
+        except Exception as e:
+            print(f"[EnergiAI] Erro ao chamar Groq: {e} — usando fallback rule-based")
+            recomendacoes = _gerar_recomendacoes(data, categoria)
+            origem = origem.replace("groq", "rule-based (groq falhou)")
+    else:
+        recomendacoes = _gerar_recomendacoes(data, categoria)
 
     return PredictResponse(
         categoria=categoria,
         probabilidade=probabilidade,
-        recomendacoes=recomendacoes
+        recomendacoes=recomendacoes,
+        origem=origem,
     )
