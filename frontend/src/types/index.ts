@@ -18,6 +18,7 @@ export interface AnaliseResponse {
   probabilidade: number
   recomendacoes: string[]
   custo_estimado_mensal: number
+  origem?: string
 }
 
 export type ClassificacaoEficienciaApi = 'EXCELENTE' | 'BOM' | 'MEDIANO' | 'RUIM' | 'CRITICO'
@@ -41,7 +42,7 @@ export const CATEGORIA_CORES: Record<ClassificacaoEficienciaApi, string> = {
 export type TipoImovel =
   | 'Casa'
   | 'Apartamento'
-  | 'Comercio'
+  | 'Comercial'
   | 'Industria'
   | 'Rural'
   | 'Outro'

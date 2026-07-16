@@ -5,7 +5,7 @@ import { ApiError, CATEGORIA_CORES, CATEGORIA_DISPLAY } from '../types'
 import { analisarDemo } from '../services/demo'
 
 const TIPOS_IMOVEL: TipoImovel[] = [
-  'Casa', 'Apartamento', 'Comercio', 'Industria', 'Rural', 'Outro',
+  'Casa', 'Apartamento', 'Comercial', 'Industria', 'Rural', 'Outro',
 ]
 
 const NOME_CAMPOS: Record<string, string> = {
@@ -98,6 +98,19 @@ export default function DemoTool() {
             </div>
 
             <div className="form-group">
+              <label htmlFor="horas">Horas de alto consumo por dia</label>
+              <input
+                id="horas"
+                type="number"
+                min="0"
+                max="24"
+                step="0.5"
+                value={form.horas_alto_consumo}
+                onChange={(e) => setForm({ ...form, horas_alto_consumo: +e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="pico">
                 <input
                   id="pico"
@@ -170,6 +183,11 @@ export default function DemoTool() {
                       <li key={i}>{r}</li>
                     ))}
                   </ul>
+                  {resultado.origem && (
+                    <p className="result-origem">
+                      Origem: {resultado.origem}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
