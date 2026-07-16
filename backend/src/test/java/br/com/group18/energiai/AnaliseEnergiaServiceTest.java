@@ -3,6 +3,7 @@ package br.com.group18.energiai;
 import br.com.group18.energiai.application.services.AnaliseEnergiaService;
 import br.com.group18.energiai.core.domain.model.AnaliseEnergia;
 import br.com.group18.energiai.core.ports.out.AnaliseRepositoryPort;
+import br.com.group18.energiai.infrastructure.client.MlServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,8 @@ class AnaliseEnergiaServiceTest {
             @Override
             public java.util.List<AnaliseEnergia> listarTodas() { return java.util.List.of(saved); }
         };
-        service = new AnaliseEnergiaService(repo);
+        MlServiceClient mlClient = new MlServiceClient("http://localhost:9999");
+        service = new AnaliseEnergiaService(repo, mlClient);
     }
 
     @Test
