@@ -1,0 +1,45 @@
+# --- OS ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# --- Java / Spring Boot ---
+backend/energiai-api/target/
+backend/energiai-api/HELP.md
+backend/energiai-api/.mvn/wrapper/maven-wrapper.jar
+backend/energiai-api/*.db
+backend/energiai-api/logs/
+
+# --- Python ---
+api-python/venv/
+api-python/__pycache__/
+api-python/*.pyc
+api-python/.env
+api-python/.venv/
+**/__pycache__/
+
+# --- Node / Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# --- Docker ---
+docker-data/
+
+# --- Misc ---
+*.log
+.env
+
+# Keep .gitkeep if we use them
+!.gitkeep
