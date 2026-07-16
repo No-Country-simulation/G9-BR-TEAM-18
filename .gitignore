@@ -14,18 +14,18 @@ Thumbs.db
 .factorypath
 
 # --- Java / Spring Boot ---
-backend/energiai-api/target/
-backend/energiai-api/HELP.md
-backend/energiai-api/.mvn/wrapper/maven-wrapper.jar
-backend/energiai-api/*.db
-backend/energiai-api/logs/
+backend/target/
+backend/HELP.md
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.db
+backend/logs/
 
-# --- Python ---
+# --- Python / ML ---
 .venv/
 venv/
-api-python/__pycache__/
-api-python/*.pyc
-api-python/.env
+ml-service/__pycache__/
+ml-service/*.pyc
+ml-service/.env
 **/__pycache__/
 
 # --- Node / Frontend ---

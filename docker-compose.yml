@@ -1,10 +1,10 @@
 services:
 
-  python-api:
+  ml-service:
     build:
       context: .
-      dockerfile: docker/python.Dockerfile
-    container_name: energiaia-python
+      dockerfile: docker/ml-service.Dockerfile
+    container_name: energiaia-ml
     ports:
       - "8000:8000"
     networks:
