@@ -7,10 +7,12 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 ## Parte 1: Contratos do Front-end (Comunicação com o Spring Boot)
 
 ### 1. Criação do Imóvel
-*   **Método:** `POST`
-*   **Rota:** `/api/imoveis`
+
+* **Método:** `POST`
+* **Rota:** `/api/imoveis`
 
 **Request Body:**
+
 ```json
 {
   "usuario_id": 1,
@@ -18,7 +20,9 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
   "tipo_imovel": "CASA"
 }
 ```
+
 **Response (201 Created):**
+
 ```json
 {
   "id": 12,
@@ -30,10 +34,12 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 ```
 
 ### 2. Atualização do Inventário de Equipamentos
-*   **Método:** `PUT`
-*   **Rota:** `/api/imoveis/{imovelId}/equipamentos`
+
+* **Método:** `PUT`
+* **Rota:** `/api/imoveis/{imovelId}/equipamentos`
 
 **Request Body:**
+
 ```json
 [
   {
@@ -48,7 +54,9 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
   }
 ]
 ```
+
 **Response (200 OK):**
+
 ```json
 {
   "mensagem": "Inventario atualizado com sucesso"
@@ -56,10 +64,12 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 ```
 
 ### 3. Geração da Análise Energética (Endpoint MVP)
-*   **Método:** `POST`
-*   **Rota:** `/analise-energetica?imovelId=12`
+
+* **Método:** `POST`
+* **Rota:** `/analise-energetica?imovelId=12`
 
 **Request Body:**
+
 ```json
 {
   "consumo_kwh": 420.0,
@@ -69,7 +79,9 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
   "horas_alto_consumo": 8.5
 }
 ```
+
 **Response (201 Created):**
+
 ```json
 {
   "id": 501,
@@ -95,10 +107,12 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição. O Java atua como agregador, agrupando o inventário do imóvel por categorias de consumo antes de enviar para o modelo preditivo.
 
 ### 1. Endpoint de Predição (Servidor Python)
-*   **Método:** `POST`
-*   **Rota sugerida:** `/predict`
+
+* **Método:** `POST`
+* **Rota sugerida:** `/predict`
 
 **O que o Java vai enviar (Request Body):**
+
 ```json
 {
   "consumo_kwh": 420.0,
@@ -114,7 +128,9 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
   }
 }
 ```
+
 **O que o Python DEVE devolver para o Java (Response 200 OK):**
+
 ```json
 {
   "categoria": "ALTO",
