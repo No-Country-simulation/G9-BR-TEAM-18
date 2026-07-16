@@ -2,15 +2,22 @@
 
 ## Inteligência Artificial para Análise de Consumo Energético
 
-O **EnergIAI** é um MVP desenvolvido pela equipe **G9-BR-TEAM-18** durante o Hackathon **ONE G9-BR (Alura + Oracle + NoCountry)**.
+O **EnergIAI** é um MVP desenvolvido pela equipe **G9-BR-TEAM-18** durante o
+Hackathon **ONE G9-BR (Alura + Oracle + NoCountry)**.
 
-O projeto **EnergIAI** tem como objetivo analisar padrões de consumo de energia elétrica, classificar o perfil energético de residências e pequenos estabelecimentos, estimar custos mensais e gerar recomendações para redução do consumo.
+O projeto **EnergIAI** tem como objetivo analisar padrões de consumo de energia
+elétrica, classificar o perfil energético de residências e pequenos
+estabelecimentos, estimar custos mensais e gerar recomendações para redução do
+consumo.
 
 ---
 
 ## Problema
 
-O consumo de energia representa um dos principais custos para residências e pequenos negócios. Entretanto, a maioria dos consumidores possui pouca visibilidade sobre quais hábitos e equipamentos têm maior impacto na conta de energia.
+O consumo de energia representa um dos principais custos para residências e
+pequenos negócios. Entretanto, a maioria dos consumidores possui pouca
+visibilidade sobre quais hábitos e equipamentos têm maior impacto na conta de
+energia.
 
 ---
 
@@ -56,10 +63,10 @@ docs/                   -> documentação do projeto
 
 ### Pré-requisitos
 
-- **Java 21** (recomendado: Eclipse Temurin)
-- **Node.js 20+**
-- **Python 3.12+**
-- **Maven** (ou use o wrapper `mvnw` incluso)
+* **Java 21** (recomendado: Eclipse Temurin)
+* **Node.js 20+**
+* **Python 3.12+**
+* **Maven** (ou use o wrapper `mvnw` incluso)
 
 ### 1. Backend (Spring Boot - porta 8080)
 
@@ -129,9 +136,10 @@ docker compose up -d
 ```
 
 Serviços:
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8080`
-- ML Service: `http://localhost:8000`
+
+* Frontend: `http://localhost:5173`
+* Backend: `http://localhost:8080`
+* ML Service: `http://localhost:8000`
 
 ---
 
