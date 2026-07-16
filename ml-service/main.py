@@ -1,8 +1,9 @@
 import os
 import json
+import time
 import joblib
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -45,6 +46,39 @@ else:
 GROQ_MODELO = "llama-3.3-70b-versatile"
 TREINO_LOG = os.path.join(BASE_DIR, "treino_feedback.jsonl")
 
+# Limites free tier Groq (llama-3.3-70b-versatile): 30 RPM / 1.000 RPD
+# Usamos margem de segurança: 25 RPM / 900 RPD
+GROQ_MAX_RPM = 25
+GROQ_MAX_RPD = 900
+_groq_call_times: list[float] = []
+_groq_calls_today: int = 0
+_groq_today: date = date.today()
+
+
+def _groq_pode_chamar() -> bool:
+    global _groq_calls_today, _groq_today
+    hoje = date.today()
+    if hoje != _groq_today:
+        _groq_today = hoje
+        _groq_calls_today = 0
+
+    if _groq_calls_today >= GROQ_MAX_RPD:
+        return False
+
+    agora = time.time()
+    global _groq_call_times
+    _groq_call_times = [t for t in _groq_call_times if agora - t < 60]
+    if len(_groq_call_times) >= GROQ_MAX_RPM:
+        return False
+
+    return True
+
+
+def _groq_registrar_chamada():
+    global _groq_calls_today
+    _groq_call_times.append(time.time())
+    _groq_calls_today += 1
+
 # -------------------------------------------------------------
 # DEFINIÇÃO DO CONTRATO
 # -------------------------------------------------------------
@@ -66,6 +100,7 @@ class PredictRequest(BaseModel):
     quantidade_equipamentos: int
     tipo_imovel: str
     horas_alto_consumo: float
+    categoria_maior_consumo: str | None = "Outros"
     distribuicao_consumo_diario: DistribuicaoConsumo | None = None
 
 class PredictResponse(BaseModel):
@@ -73,6 +108,14 @@ class PredictResponse(BaseModel):
     probabilidade: float
     recomendacoes: list[str]
     origem: str = ""
+
+class StatusResponse(BaseModel):
+    groq_disponivel: bool
+    groq_chamadas_hoje: int
+    groq_limite_diario: int
+    groq_chamadas_minuto: int
+    groq_limite_minuto: int
+    modelo_carregado: bool
 
 # -------------------------------------------------------------
 # LÓGICA DE CLASSIFICAÇÃO (RULE-BASED)
@@ -184,6 +227,7 @@ sem introdução e sem comentários adicionais."""
 
 def _armazenar_para_treino(data: PredictRequest, categoria: str, probabilidade: float,
                            recomendacoes: list[str], origem: str):
+    dc = data.distribuicao_consumo_diario or DistribuicaoConsumo()
     registro = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "features": {
@@ -192,6 +236,11 @@ def _armazenar_para_treino(data: PredictRequest, categoria: str, probabilidade: 
             "quantidade_equipamentos": data.quantidade_equipamentos,
             "tipo_imovel": data.tipo_imovel,
             "horas_alto_consumo": data.horas_alto_consumo,
+            "categoria_maior_consumo": data.categoria_maior_consumo or "Outros",
+            "refrig_watts": dc.REFRIGERACAO_WATTS,
+            "aquecimento_watts": dc.AQUECIMENTO_WATTS,
+            "climatizacao_watts": dc.CLIMATIZACAO_WATTS,
+            "iluminacao_watts": dc.ILUMINACAO_WATTS,
         },
         "predicao": {
             "categoria": categoria,
@@ -220,12 +269,18 @@ def predict_consumo(data: PredictRequest):
     # --- Classificação ---
     if modelo is not None:
         try:
+            dc = data.distribuicao_consumo_diario or DistribuicaoConsumo()
             df = pd.DataFrame([{
                 "consumo_kwh": data.consumo_kwh,
                 "uso_horario_pico": int(data.uso_horario_pico),
                 "quantidade_equipamentos": data.quantidade_equipamentos,
                 "tipo_imovel": data.tipo_imovel,
                 "horas_alto_consumo": data.horas_alto_consumo,
+                "categoria_maior_consumo": data.categoria_maior_consumo or "Outros",
+                "refrig_watts": dc.REFRIGERACAO_WATTS,
+                "aquecimento_watts": dc.AQUECIMENTO_WATTS,
+                "climatizacao_watts": dc.CLIMATIZACAO_WATTS,
+                "iluminacao_watts": dc.ILUMINACAO_WATTS,
             }])
             pred = modelo.predict(df)[0]
             probs = modelo.predict_proba(df)[0]
@@ -235,7 +290,7 @@ def predict_consumo(data: PredictRequest):
 
             if max_prob >= 0.80:
                 origem = "modelo"
-            elif cliente_groq:
+            elif cliente_groq and _groq_pode_chamar():
                 origem = f"modelo+groq (confiança {max_prob:.1%})"
             else:
                 origem = f"modelo (confiança {max_prob:.1%})"
@@ -249,6 +304,7 @@ def predict_consumo(data: PredictRequest):
 
     # --- Recomendações ---
     if cliente_groq and "groq" in origem:
+        _groq_registrar_chamada()
         try:
             recomendacoes = _gerar_recomendacoes_groq(data, categoria)
             if not recomendacoes:
@@ -267,4 +323,18 @@ def predict_consumo(data: PredictRequest):
         probabilidade=probabilidade,
         recomendacoes=recomendacoes,
         origem=origem,
+    )
+
+
+@app.get("/status")
+def status():
+    agora = time.time()
+    chamadas_minuto = sum(1 for t in _groq_call_times if agora - t < 60)
+    return StatusResponse(
+        groq_disponivel=cliente_groq is not None,
+        groq_chamadas_hoje=_groq_calls_today,
+        groq_limite_diario=GROQ_MAX_RPD,
+        groq_chamadas_minuto=chamadas_minuto,
+        groq_limite_minuto=GROQ_MAX_RPM,
+        modelo_carregado=modelo is not None,
     )
