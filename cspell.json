@@ -142,7 +142,18 @@
     "husky",
     "Spotless",
     "SpotBugs",
-    "Checkstyle"
+    "Checkstyle",
+    "Hackathon",
+    "microsserviço",
+    "Dockerfiles",
+    "Temurin",
+    "mvnw",
+    "energetica",
+    "horario",
+    "imovel",
+    "Ihago",
+    "Lamarcks",
+    "Juscileia"
   ],
   "ignorePaths": [
     "node_modules",
