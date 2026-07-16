@@ -14,8 +14,8 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: docker/backend.Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: energiaia-backend
     ports:
       - "8080:8080"
