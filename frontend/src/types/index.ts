@@ -11,6 +11,13 @@ export interface AnaliseRequest {
   quantidade_equipamentos: number
   tipo_imovel: TipoImovel
   horas_alto_consumo: number
+  categoria_maior_consumo?: string
+  distribuicao_consumo_diario?: {
+    REFRIGERACAO_WATTS: number
+    AQUECIMENTO_WATTS: number
+    CLIMATIZACAO_WATTS: number
+    ILUMINACAO_WATTS: number
+  }
 }
 
 export interface AnaliseResponse {
