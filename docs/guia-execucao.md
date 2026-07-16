@@ -296,6 +296,7 @@ docker compose logs backend
 ```
 
 Problemas comuns:
+
 - Porta 8080 já em uso no host
 - Falta de memória (veja seção sobre RAM acima)
 - Erro de compilação no Maven durante o build

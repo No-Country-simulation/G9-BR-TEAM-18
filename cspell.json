@@ -162,7 +162,11 @@
     "serialização",
     "springdoc",
     "springframework",
-    "webmvc"
+    "webmvc",
+    "usuario",
+    "diario",
+    "CONCLUIDA",
+    "distribuicao"
   ],
   "ignorePaths": [
     "node_modules",

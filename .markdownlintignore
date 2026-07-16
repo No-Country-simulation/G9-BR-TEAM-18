@@ -1,0 +1,10 @@
+node_modules
+target
+dist
+.git
+ml-service/data
+*.csv
+*.joblib
+*.{png,jpg,jpeg,gif,svg,ico}
+*.{jar,war,class}
+*.log
