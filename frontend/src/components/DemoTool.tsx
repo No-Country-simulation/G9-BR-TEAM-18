@@ -1,18 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { AnaliseRequest, AnaliseResponse, TipoImovel } from '../types'
-import { ApiError } from '../types'
+import { ApiError, CATEGORIA_CORES, CATEGORIA_DISPLAY } from '../types'
 import { analisarDemo } from '../services/demo'
 
 const TIPOS_IMOVEL: TipoImovel[] = [
   'Casa', 'Apartamento', 'Comercio', 'Industria', 'Rural', 'Outro',
 ]
-
-const CATEGORIA_CORES: Record<string, string> = {
-  Eficiente: '#10b981',
-  Moderado: '#f59e0b',
-  Ineficiente: '#ef4444',
-}
 
 const NOME_CAMPOS: Record<string, string> = {
   consumo_kwh: 'Consumo mensal (kWh)',
@@ -151,7 +145,7 @@ export default function DemoTool() {
                     backgroundColor: CATEGORIA_CORES[resultado.categoria] ?? '#6b7280',
                   }}
                 >
-                  {resultado.categoria}
+                  {CATEGORIA_DISPLAY[resultado.categoria] ?? resultado.categoria}
                 </div>
 
                 <div className="result-stats">

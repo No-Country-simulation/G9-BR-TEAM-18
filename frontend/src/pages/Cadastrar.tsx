@@ -48,7 +48,7 @@ export default function Cadastrar() {
       <div className="auth-card">
         <div className="auth-header">
           <UserPlus size={40} className="auth-logo-icon" />
-          <h1>GambIA</h1>
+          <h1>EnergIAI</h1>
           <p>Crie sua conta</p>
         </div>
 
