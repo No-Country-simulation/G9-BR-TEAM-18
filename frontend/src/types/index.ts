@@ -20,18 +20,22 @@ export interface AnaliseResponse {
   custo_estimado_mensal: number
 }
 
-export type ClassificacaoEficienciaApi = 'EFICIENTE' | 'MODERADO' | 'ALTO'
+export type ClassificacaoEficienciaApi = 'EXCELENTE' | 'BOM' | 'MEDIANO' | 'RUIM' | 'CRITICO'
 
 export const CATEGORIA_DISPLAY: Record<ClassificacaoEficienciaApi, string> = {
-  EFICIENTE: 'Eficiente',
-  MODERADO: 'Moderado',
-  ALTO: 'Ineficiente',
+  EXCELENTE: 'Excelente',
+  BOM: 'Bom',
+  MEDIANO: 'Mediano',
+  RUIM: 'Ruim',
+  CRITICO: 'Crítico',
 }
 
 export const CATEGORIA_CORES: Record<ClassificacaoEficienciaApi, string> = {
-  EFICIENTE: '#10b981',
-  MODERADO: '#f59e0b',
-  ALTO: '#ef4444',
+  EXCELENTE: '#059669',
+  BOM: '#10b981',
+  MEDIANO: '#f59e0b',
+  RUIM: '#f97316',
+  CRITICO: '#ef4444',
 }
 
 export type TipoImovel =

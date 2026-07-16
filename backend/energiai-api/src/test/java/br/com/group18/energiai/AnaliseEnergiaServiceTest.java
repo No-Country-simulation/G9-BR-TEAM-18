@@ -25,27 +25,33 @@ class AnaliseEnergiaServiceTest {
     }
 
     @Test
-    void deveClassificarComoEficiente() {
-        AnaliseEnergia r = service.executar(100.0, false, 5, "Casa", 2.0);
-        assertEquals("EFICIENTE", r.getCategoria());
+    void deveClassificarComoExcelente() {
+        AnaliseEnergia r = service.executar(60.0, false, 3, "Casa", 1.0);
+        assertEquals("EXCELENTE", r.getCategoria());
     }
 
     @Test
-    void deveClassificarComoModerado() {
-        AnaliseEnergia r = service.executar(200.0, false, 5, "Casa", 2.0);
-        assertEquals("MODERADO", r.getCategoria());
+    void deveClassificarComoBom() {
+        AnaliseEnergia r = service.executar(150.0, false, 5, "Casa", 2.0);
+        assertEquals("BOM", r.getCategoria());
     }
 
     @Test
-    void deveClassificarComoAlto() {
-        AnaliseEnergia r = service.executar(400.0, false, 5, "Casa", 2.0);
-        assertEquals("ALTO", r.getCategoria());
+    void deveClassificarComoMediano() {
+        AnaliseEnergia r = service.executar(300.0, false, 8, "Casa", 4.0);
+        assertEquals("MEDIANO", r.getCategoria());
     }
 
     @Test
-    void deveClassificarComoAltoQuandoHorasAltas() {
-        AnaliseEnergia r = service.executar(200.0, false, 5, "Casa", 8.0);
-        assertEquals("ALTO", r.getCategoria());
+    void deveClassificarComoRuim() {
+        AnaliseEnergia r = service.executar(500.0, true, 12, "Casa", 6.0);
+        assertEquals("RUIM", r.getCategoria());
+    }
+
+    @Test
+    void deveClassificarComoCritico() {
+        AnaliseEnergia r = service.executar(800.0, true, 20, "Casa", 10.0);
+        assertEquals("CRITICO", r.getCategoria());
     }
 
     @Test
@@ -61,8 +67,8 @@ class AnaliseEnergiaServiceTest {
     }
 
     @Test
-    void deveIncluirRecomendacaoConsumoAlto() {
-        AnaliseEnergia r = service.executar(350.0, false, 5, "Casa", 3.0);
+    void deveIncluirRecomendacaoParaRuimOuCritico() {
+        AnaliseEnergia r = service.executar(600.0, false, 8, "Casa", 6.0);
         assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("equipamentos antigos")));
     }
 
@@ -79,14 +85,14 @@ class AnaliseEnergiaServiceTest {
     }
 
     @Test
-    void recomendacaoPadraoQuandoNenhumaCondicaoAtendida() {
-        AnaliseEnergia r = service.executar(100.0, false, 3, "Casa", 2.0);
-        assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("bom acompanhamento")));
+    void recomendacaoEspecificaParaExcelente() {
+        AnaliseEnergia r = service.executar(60.0, false, 2, "Casa", 1.0);
+        assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("boas práticas")));
     }
 
     @Test
-    void deveRetornarProbabilidadeAltaParaConsumoAlto() {
-        AnaliseEnergia r = service.executar(400.0, false, 5, "Casa", 3.0);
-        assertEquals(0.85, r.getProbabilidade(), 0.01);
+    void recomendacaoPadraoQuandoNenhumaCondicaoAtendida() {
+        AnaliseEnergia r = service.executar(150.0, false, 4, "Casa", 2.0);
+        assertTrue(r.getRecomendacoes().stream().anyMatch(s -> s.contains("bom acompanhamento")));
     }
 }
