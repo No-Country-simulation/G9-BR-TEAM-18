@@ -11,6 +11,11 @@ public class AnaliseEnergia {
     private Integer quantidadeEquipamentos;
     private String tipoImovel;
     private Double horasAltoConsumo;
+    private String categoriaMaiorConsumo;
+    private Double refrigWatts;
+    private Double aquecimentoWatts;
+    private Double climatizacaoWatts;
+    private Double iluminacaoWatts;
     private String categoria;
     private Double probabilidade;
     private Double custoEstimadoMensal;
@@ -47,6 +52,21 @@ public class AnaliseEnergia {
 
     public Double getHorasAltoConsumo() { return horasAltoConsumo; }
     public void setHorasAltoConsumo(Double horasAltoConsumo) { this.horasAltoConsumo = horasAltoConsumo; }
+
+    public String getCategoriaMaiorConsumo() { return categoriaMaiorConsumo; }
+    public void setCategoriaMaiorConsumo(String categoriaMaiorConsumo) { this.categoriaMaiorConsumo = categoriaMaiorConsumo; }
+
+    public Double getRefrigWatts() { return refrigWatts; }
+    public void setRefrigWatts(Double refrigWatts) { this.refrigWatts = refrigWatts; }
+
+    public Double getAquecimentoWatts() { return aquecimentoWatts; }
+    public void setAquecimentoWatts(Double aquecimentoWatts) { this.aquecimentoWatts = aquecimentoWatts; }
+
+    public Double getClimatizacaoWatts() { return climatizacaoWatts; }
+    public void setClimatizacaoWatts(Double climatizacaoWatts) { this.climatizacaoWatts = climatizacaoWatts; }
+
+    public Double getIluminacaoWatts() { return iluminacaoWatts; }
+    public void setIluminacaoWatts(Double iluminacaoWatts) { this.iluminacaoWatts = iluminacaoWatts; }
 
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
