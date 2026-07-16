@@ -37,14 +37,30 @@ public class AnaliseEnergiaService implements GerarAnaliseUseCase {
     @Override
     public AnaliseEnergia executar(Double consumoKwh, Boolean usoHorarioPico,
                                    Integer quantidadeEquipamentos, String tipoImovel,
-                                   Double horasAltoConsumo) {
+                                   Double horasAltoConsumo,
+                                   String categoriaMaiorConsumo,
+                                   Double refrigWatts, Double aquecimentoWatts,
+                                   Double climatizacaoWatts, Double iluminacaoWatts) {
         AnaliseEnergia analise = new AnaliseEnergia(
                 consumoKwh, usoHorarioPico, quantidadeEquipamentos, tipoImovel, horasAltoConsumo
         );
+        analise.setCategoriaMaiorConsumo(categoriaMaiorConsumo);
+        analise.setRefrigWatts(refrigWatts);
+        analise.setAquecimentoWatts(aquecimentoWatts);
+        analise.setClimatizacaoWatts(climatizacaoWatts);
+        analise.setIluminacaoWatts(iluminacaoWatts);
 
-        var mlResponse = mlServiceClient.predict(new MlServiceClient.MlPredictRequest(
-                consumoKwh, usoHorarioPico, quantidadeEquipamentos, tipoImovel, horasAltoConsumo
-        ));
+        var mlRequest = new MlServiceClient.MlPredictRequest(
+                consumoKwh, usoHorarioPico, quantidadeEquipamentos, tipoImovel,
+                horasAltoConsumo, categoriaMaiorConsumo,
+                new MlServiceClient.DistribuicaoConsumoDiario(
+                        refrigWatts != null ? refrigWatts : 0.0,
+                        aquecimentoWatts != null ? aquecimentoWatts : 0.0,
+                        climatizacaoWatts != null ? climatizacaoWatts : 0.0,
+                        iluminacaoWatts != null ? iluminacaoWatts : 0.0
+                )
+        );
+        var mlResponse = mlServiceClient.predict(mlRequest);
 
         if (mlResponse != null) {
             log.info("Resposta do ML Service: {} (confiança: {}, origem: {})",
