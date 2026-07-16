@@ -482,6 +482,336 @@ a {
   width: 100%;
 }
 
+/* ─── Appliance Section ─── */
+
+.appliance-section {
+  margin-bottom: 1.5rem;
+}
+
+.appliance-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.appliance-count-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+.appliance-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.appliance-category {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+  transition: border-color 0.2s;
+}
+
+.appliance-category:hover {
+  border-color: color-mix(in srgb, var(--cat-color, var(--primary)) 50%, var(--border));
+}
+
+.appliance-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.2s;
+}
+
+.appliance-category-header:hover {
+  background: var(--primary-lighter);
+}
+
+.category-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.category-label {
+  flex: 1;
+  text-align: left;
+}
+
+.category-count {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.appliance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.appliance-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.65rem 0.4rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  font-family: inherit;
+}
+
+.appliance-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-lighter);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.appliance-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.appliance-card-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.appliance-card-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.appliance-card-watts {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.appliance-card-qty {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.4);
+}
+
+/* Selected Appliances List */
+
+.selected-appliances {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  background: var(--primary-lighter);
+}
+
+.selected-appliances h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary-dark);
+  margin-bottom: 0.65rem;
+}
+
+.selected-appliances-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.selected-appliance-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  background: var(--surface);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  animation: fadeInUp 0.2s ease;
+}
+
+.selected-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.selected-name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.selected-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--bg);
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-value {
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 1.2rem;
+  text-align: center;
+  color: var(--primary-dark);
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.remove-btn:hover {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+/* Summary estimate */
+
+.appliance-summary {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.summary-stat {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--surface);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.summary-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+
+.appliance-empty-hint {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 0.75rem;
+  font-style: italic;
+}
+
+/* Behavior Section */
+
+.behavior-section {
+  margin-bottom: 1.25rem;
+}
+
+.behavior-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
 /* ─── Demo Section ─── */
 
 .demo-section {
