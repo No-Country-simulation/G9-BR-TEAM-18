@@ -1,4 +1,4 @@
-import type { AnaliseRequest, AnaliseResponse, ErroResponse } from '../types'
+import type { AnaliseRequest, AnaliseResponse, ApparelhoType, ErroResponse } from '../types'
 import { ApiError } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
@@ -21,4 +21,15 @@ export async function analisarDemo(
   }
 
   return response.json()
+}
+
+/** Busca a lista de tipos de aparelho disponíveis */
+export async function listarTiposAparelho(): Promise<ApparelhoType[]> {
+  try {
+    const response = await fetch(`${API_URL}/aparelhos/tipos`)
+    if (!response.ok) return []
+    return response.json()
+  } catch {
+    return []
+  }
 }

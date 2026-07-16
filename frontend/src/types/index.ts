@@ -6,9 +6,9 @@ export interface Usuario {
 
 export interface AnaliseRequest {
   imovel_id?: string
-  consumo_kwh: number
+  consumo_kwh?: number
   uso_horario_pico: boolean
-  quantidade_equipamentos: number
+  quantidade_equipamentos?: number
   tipo_imovel: TipoImovel
   horas_alto_consumo: number
   categoria_maior_consumo?: string
@@ -18,6 +18,25 @@ export interface AnaliseRequest {
     CLIMATIZACAO_WATTS: number
     ILUMINACAO_WATTS: number
   }
+  /** Lista de aparelhos específicos (nova abordagem) */
+  aparelhos?: ApparelhoItem[]
+}
+
+/** Tipo de aparelho disponível (vindo do backend) */
+export interface ApparelhoType {
+  id: string
+  nome: string
+  categoriaML: string
+  campoDistribuicao: string
+  potenciaWatts: number
+  horasUsoDia: number
+  icone: string
+}
+
+/** Aparelho selecionado pelo usuário com quantidade */
+export interface ApparelhoItem {
+  tipo: string  // id do ApparelhoType (ex: "GELADEIRA")
+  quantidade: number
 }
 
 export interface AnaliseResponse {
