@@ -760,6 +760,14 @@ a {
   line-height: 1.5;
 }
 
+.result-origem {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  text-align: right;
+  font-style: italic;
+}
+
 /* ─── Spinner ─── */
 
 .spinner {
