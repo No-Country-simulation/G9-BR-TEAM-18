@@ -7,7 +7,10 @@ import java.time.format.TextStyle;
 import java.time.YearMonth;
 import java.util.stream.Collectors;
 
+import br.com.group18.energiai.application.services.ApplianceAggregationService;
 import br.com.group18.energiai.core.domain.model.AnaliseEnergia;
+import br.com.group18.energiai.core.domain.model.ApplianceItem;
+import br.com.group18.energiai.core.domain.model.ApplianceType;
 import br.com.group18.energiai.core.ports.in.GerarAnaliseUseCase;
 import br.com.group18.energiai.core.ports.out.AnaliseRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnaliseRequestDTO;
@@ -17,16 +20,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 public class AnaliseController {
 
     private final GerarAnaliseUseCase gerarAnaliseUseCase;
     private final AnaliseRepositoryPort analiseRepository;
+    private final ApplianceAggregationService aggregationService;
 
     public AnaliseController(GerarAnaliseUseCase gerarAnaliseUseCase,
-                             AnaliseRepositoryPort analiseRepository) {
+                             AnaliseRepositoryPort analiseRepository,
+                             ApplianceAggregationService aggregationService) {
         this.gerarAnaliseUseCase = gerarAnaliseUseCase;
         this.analiseRepository = analiseRepository;
+        this.aggregationService = aggregationService;
     }
 
     private AnaliseResponseDTO toResponse(AnaliseEnergia r) {
@@ -43,31 +53,57 @@ public class AnaliseController {
         dto.setAquecimentoWatts(r.getAquecimentoWatts());
         dto.setClimatizacaoWatts(r.getClimatizacaoWatts());
         dto.setIluminacaoWatts(r.getIluminacaoWatts());
+        dto.setConsumoKwhCalculado(r.getConsumoKwh());
+        dto.setTotalEquipamentos(r.getQuantidadeEquipamentos());
         return dto;
     }
 
     @PostMapping("/analise-energetica")
     public ResponseEntity<AnaliseResponseDTO> analisar(@Valid @RequestBody AnaliseRequestDTO request) {
+        Double consumoKwh = request.getConsumoKwh();
+        Integer quantidadeEquipamentos = request.getQuantidadeEquipamentos();
+        String categoriaMaiorConsumo = request.getCategoriaMaiorConsumo();
         Double refrig = request.getRefrigWatts();
         Double aquecimento = request.getAquecimentoWatts();
         Double climatizacao = request.getClimatizacaoWatts();
         Double iluminacao = request.getIluminacaoWatts();
 
-        if (request.getDistribuicaoConsumoDiario() != null) {
-            var dist = request.getDistribuicaoConsumoDiario();
-            if (dist.getRefrigWatts() != null) refrig = dist.getRefrigWatts();
-            if (dist.getAquecimentoWatts() != null) aquecimento = dist.getAquecimentoWatts();
-            if (dist.getClimatizacaoWatts() != null) climatizacao = dist.getClimatizacaoWatts();
-            if (dist.getIluminacaoWatts() != null) iluminacao = dist.getIluminacaoWatts();
+        // Se o usuário informou aparelhos específicos, calcular automaticamente
+        if (request.getAparelhos() != null && !request.getAparelhos().isEmpty()) {
+            List<ApplianceItem> itens = request.getAparelhos().stream()
+                    .map(a -> {
+                        ApplianceType tipo = ApplianceType.valueOf(a.getTipo());
+                        return new ApplianceItem(tipo, a.getQuantidade());
+                    })
+                    .collect(Collectors.toList());
+
+            var agg = aggregationService.agregar(itens);
+
+            consumoKwh = agg.consumoKwhEstimado();
+            quantidadeEquipamentos = agg.totalEquipamentos();
+            categoriaMaiorConsumo = agg.categoriaMaiorConsumo();
+            refrig = agg.distribuicaoConsumo().getOrDefault("REFRIGERACAO_WATTS", 0.0);
+            aquecimento = agg.distribuicaoConsumo().getOrDefault("AQUECIMENTO_WATTS", 0.0);
+            climatizacao = agg.distribuicaoConsumo().getOrDefault("CLIMATIZACAO_WATTS", 0.0);
+            iluminacao = agg.distribuicaoConsumo().getOrDefault("ILUMINACAO_WATTS", 0.0);
+        } else {
+            // Fallback: usar campos manuais
+            if (request.getDistribuicaoConsumoDiario() != null) {
+                var dist = request.getDistribuicaoConsumoDiario();
+                if (dist.getRefrigWatts() != null) refrig = dist.getRefrigWatts();
+                if (dist.getAquecimentoWatts() != null) aquecimento = dist.getAquecimentoWatts();
+                if (dist.getClimatizacaoWatts() != null) climatizacao = dist.getClimatizacaoWatts();
+                if (dist.getIluminacaoWatts() != null) iluminacao = dist.getIluminacaoWatts();
+            }
         }
 
         AnaliseEnergia resultado = gerarAnaliseUseCase.executar(
-                request.getConsumoKwh(),
+                consumoKwh,
                 request.getUsoHorarioPico(),
-                request.getQuantidadeEquipamentos(),
+                quantidadeEquipamentos,
                 request.getTipoImovel(),
                 request.getHorasAltoConsumo(),
-                request.getCategoriaMaiorConsumo(),
+                categoriaMaiorConsumo,
                 refrig,
                 aquecimento,
                 climatizacao,
@@ -76,6 +112,36 @@ public class AnaliseController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(resultado));
     }
+
+    /** Retorna a lista de tipos de aparelho disponíveis para o frontend */
+    @GetMapping("/aparelhos/tipos")
+    public ResponseEntity<List<ApplianceTypeDTO>> listarTiposAparelho() {
+        List<ApplianceTypeDTO> tipos = Arrays.stream(ApplianceType.values())
+                .map(t -> new ApplianceTypeDTO(
+                        t.name(),
+                        t.getNomeExibicao(),
+                        t.getCategoriaML(),
+                        t.getCampoDistribuicao(),
+                        t.getPotenciaWatts(),
+                        t.getHorasUsoDia(),
+                        t.getIcone()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(tipos);
+    }
+
+    /** DTO público para expor os tipos de aparelho */
+    public record ApplianceTypeDTO(
+            String id,
+            String nome,
+            String categoriaML,
+            String campoDistribuicao,
+            double potenciaWatts,
+            double horasUsoDia,
+            String icone
+    ) {}
+
+    // ========== Dashboard / Listagem (inalterados) ==========
 
     @GetMapping("/analises")
     public ResponseEntity<List<AnaliseResponseDTO>> listar() {

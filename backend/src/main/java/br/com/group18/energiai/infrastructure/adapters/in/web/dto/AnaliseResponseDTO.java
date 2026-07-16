@@ -17,6 +17,8 @@ public class AnaliseResponseDTO {
     private Double aquecimentoWatts;
     private Double climatizacaoWatts;
     private Double iluminacaoWatts;
+    private Double consumoKwhCalculado;
+    private Integer totalEquipamentos;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -53,4 +55,10 @@ public class AnaliseResponseDTO {
 
     public Double getIluminacaoWatts() { return iluminacaoWatts; }
     public void setIluminacaoWatts(Double iluminacaoWatts) { this.iluminacaoWatts = iluminacaoWatts; }
+
+    public Double getConsumoKwhCalculado() { return consumoKwhCalculado; }
+    public void setConsumoKwhCalculado(Double consumoKwhCalculado) { this.consumoKwhCalculado = consumoKwhCalculado; }
+
+    public Integer getTotalEquipamentos() { return totalEquipamentos; }
+    public void setTotalEquipamentos(Integer totalEquipamentos) { this.totalEquipamentos = totalEquipamentos; }
 }
