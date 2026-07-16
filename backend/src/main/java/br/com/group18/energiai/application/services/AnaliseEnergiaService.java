@@ -20,7 +20,7 @@ public class AnaliseEnergiaService implements GerarAnaliseUseCase {
     private static final Map<String, Double> CONSUMO_BASE_POR_TIPO = Map.of(
             "Casa", 250.0,
             "Apartamento", 150.0,
-            "Comercio", 500.0,
+            "Comercial", 500.0,
             "Industria", 800.0,
             "Rural", 300.0,
             "Outro", 250.0
