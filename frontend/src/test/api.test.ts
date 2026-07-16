@@ -13,7 +13,7 @@ describe('analisarEnergia', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('envia POST autenticado e retorna resposta', async () => {
-    const data = { categoria: 'EFICIENTE', probabilidade: 0.9, recomendacoes: [], custo_estimado_mensal: 75 }
+    const data = { categoria: 'BOM', probabilidade: 0.85, recomendacoes: [], custo_estimado_mensal: 75 }
     mockFetch.mockResolvedValueOnce(mockResponse(true, data))
 
     const result = await analisarEnergia({

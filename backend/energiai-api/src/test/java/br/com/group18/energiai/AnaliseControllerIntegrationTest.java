@@ -24,11 +24,11 @@ class AnaliseControllerIntegrationTest {
     void deveRetornar201ComAnaliseValida() throws Exception {
         String body = """
             {
-                "consumoKwh": 200,
-                "usoHorarioPico": false,
-                "quantidadeEquipamentos": 8,
-                "tipoImovel": "Casa",
-                "horasAltoConsumo": 4
+                "consumo_kwh": 200,
+                "uso_horario_pico": false,
+                "quantidade_equipamentos": 8,
+                "tipo_imovel": "Casa",
+                "horas_alto_consumo": 4
             }
             """;
 
@@ -36,12 +36,12 @@ class AnaliseControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.categoria").value("MODERADO"))
+                .andExpect(jsonPath("$.categoria").value("BOM"))
                 .andExpect(jsonPath("$.probabilidade").isNumber())
                 .andExpect(jsonPath("$.recomendacoes").isArray())
-                .andExpect(jsonPath("$.custoEstimadoMensal").value(150.0))
+                .andExpect(jsonPath("$.custo_estimado_mensal").value(150.0))
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.createdAt").exists());
+                .andExpect(jsonPath("$.created_at").exists());
     }
 
     @Test

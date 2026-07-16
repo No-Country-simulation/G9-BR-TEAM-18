@@ -21,8 +21,8 @@ describe('analisarDemo', () => {
 
   it('retorna AnaliseResponse em caso de sucesso', async () => {
     const responseData = {
-      categoria: 'MODERADO',
-      probabilidade: 0.75,
+      categoria: 'BOM',
+      probabilidade: 0.85,
       recomendacoes: ['Mantenha o bom acompanhamento'],
       custo_estimado_mensal: 150,
     }

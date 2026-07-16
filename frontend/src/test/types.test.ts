@@ -6,30 +6,46 @@ import {
 } from '../types'
 
 describe('CATEGORIA_DISPLAY', () => {
-  it('retorna label para EFICIENTE', () => {
-    expect(CATEGORIA_DISPLAY.EFICIENTE).toBe('Eficiente')
+  it('retorna label para EXCELENTE', () => {
+    expect(CATEGORIA_DISPLAY.EXCELENTE).toBe('Excelente')
   })
 
-  it('retorna label para MODERADO', () => {
-    expect(CATEGORIA_DISPLAY.MODERADO).toBe('Moderado')
+  it('retorna label para BOM', () => {
+    expect(CATEGORIA_DISPLAY.BOM).toBe('Bom')
   })
 
-  it('retorna label para ALTO', () => {
-    expect(CATEGORIA_DISPLAY.ALTO).toBe('Ineficiente')
+  it('retorna label para MEDIANO', () => {
+    expect(CATEGORIA_DISPLAY.MEDIANO).toBe('Mediano')
+  })
+
+  it('retorna label para RUIM', () => {
+    expect(CATEGORIA_DISPLAY.RUIM).toBe('Ruim')
+  })
+
+  it('retorna label para CRITICO', () => {
+    expect(CATEGORIA_DISPLAY.CRITICO).toBe('Crítico')
   })
 })
 
 describe('CATEGORIA_CORES', () => {
-  it('retorna cor verde para EFICIENTE', () => {
-    expect(CATEGORIA_CORES.EFICIENTE).toBe('#10b981')
+  it('retorna cor verde escuro para EXCELENTE', () => {
+    expect(CATEGORIA_CORES.EXCELENTE).toBe('#059669')
   })
 
-  it('retorna cor amarela para MODERADO', () => {
-    expect(CATEGORIA_CORES.MODERADO).toBe('#f59e0b')
+  it('retorna cor verde para BOM', () => {
+    expect(CATEGORIA_CORES.BOM).toBe('#10b981')
   })
 
-  it('retorna cor vermelha para ALTO', () => {
-    expect(CATEGORIA_CORES.ALTO).toBe('#ef4444')
+  it('retorna cor amarela para MEDIANO', () => {
+    expect(CATEGORIA_CORES.MEDIANO).toBe('#f59e0b')
+  })
+
+  it('retorna cor laranja para RUIM', () => {
+    expect(CATEGORIA_CORES.RUIM).toBe('#f97316')
+  })
+
+  it('retorna cor vermelha para CRITICO', () => {
+    expect(CATEGORIA_CORES.CRITICO).toBe('#ef4444')
   })
 })
 
