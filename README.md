@@ -1,4 +1,4 @@
-# G9-BR-TEAM-18 — EnergIAI
+# G9-BR-TEAM-18 - EnergIAI
 
 ## Inteligência Artificial para Análise de Consumo Energético
 
@@ -30,9 +30,9 @@ Desenvolver uma solução capaz de:
 ## Estrutura do Repositório
 
 ```text
-backend/                -> API Java (Spring Boot) — regras de negócio, persistência
+backend/                -> API Java (Spring Boot) - regras de negócio, persistência
 frontend/               -> interface web (React + Vite)
-ml-service/             -> microsserviço de ML (FastAPI) — predição, modelo, inferência
+ml-service/             -> microsserviço de ML (FastAPI) - predição, modelo, inferência
   data/                 -> datasets sintéticos para treino
 docker/                 -> Dockerfiles
 docs/                   -> documentação do projeto
@@ -61,7 +61,7 @@ docs/                   -> documentação do projeto
 - **Python 3.12+**
 - **Maven** (ou use o wrapper `mvnw` incluso)
 
-### 1. Backend (Spring Boot — porta 8080)
+### 1. Backend (Spring Boot - porta 8080)
 
 ```bash
 cd backend
@@ -72,7 +72,7 @@ A API ficará disponível em `http://localhost:8080`.
 Swagger UI: `http://localhost:8080/swagger-ui.html`
 H2 Console: `http://localhost:8080/h2-console`
 
-### 2. Frontend (React + Vite — porta 5173)
+### 2. Frontend (React + Vite - porta 5173)
 
 ```bash
 cd frontend
@@ -82,7 +82,7 @@ npm run dev
 
 Acessar em `http://localhost:5173`.
 
-### 3. ML Service (FastAPI — porta 8000)
+### 3. ML Service (FastAPI - porta 8000)
 
 ```bash
 cd ml-service
