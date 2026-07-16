@@ -41,5 +41,8 @@ docker-data/
 *.log
 .env
 
+# Keep .env.example tracked
+!.env.example
+
 # Keep .gitkeep if we use them
 !.gitkeep
