@@ -3,12 +3,17 @@ package br.com.group18.energiai.application.services;
 import br.com.group18.energiai.core.domain.model.AnaliseEnergia;
 import br.com.group18.energiai.core.ports.in.GerarAnaliseUseCase;
 import br.com.group18.energiai.core.ports.out.AnaliseRepositoryPort;
+import br.com.group18.energiai.infrastructure.client.MlServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AnaliseEnergiaService implements GerarAnaliseUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(AnaliseEnergiaService.class);
 
     private static final double TARIFA_KWH = 0.75;
 
@@ -22,9 +27,11 @@ public class AnaliseEnergiaService implements GerarAnaliseUseCase {
     );
 
     private final AnaliseRepositoryPort repository;
+    private final MlServiceClient mlServiceClient;
 
-    public AnaliseEnergiaService(AnaliseRepositoryPort repository) {
+    public AnaliseEnergiaService(AnaliseRepositoryPort repository, MlServiceClient mlServiceClient) {
         this.repository = repository;
+        this.mlServiceClient = mlServiceClient;
     }
 
     @Override
@@ -35,8 +42,37 @@ public class AnaliseEnergiaService implements GerarAnaliseUseCase {
                 consumoKwh, usoHorarioPico, quantidadeEquipamentos, tipoImovel, horasAltoConsumo
         );
 
-        double indice = calcularIndiceIneficiencia(consumoKwh, usoHorarioPico,
-                quantidadeEquipamentos, tipoImovel, horasAltoConsumo);
+        var mlResponse = mlServiceClient.predict(new MlServiceClient.MlPredictRequest(
+                consumoKwh, usoHorarioPico, quantidadeEquipamentos, tipoImovel, horasAltoConsumo
+        ));
+
+        if (mlResponse != null) {
+            log.info("Resposta do ML Service: {} (confiança: {}, origem: {})",
+                    mlResponse.categoria(), mlResponse.probabilidade(), mlResponse.origem());
+
+            if (mlResponse.origem().contains("groq")) {
+                log.info("Confiança abaixo de 80% — Groq seria acionado se configurado");
+            }
+
+            analise.setCategoria(mlResponse.categoria());
+            analise.setProbabilidade(mlResponse.probabilidade());
+            analise.setRecomendacoes(mlResponse.recomendacoes());
+            analise.setOrigem(mlResponse.origem());
+            analise.setCustoEstimadoMensal(consumoKwh * TARIFA_KWH);
+
+            return repository.salvar(analise);
+        }
+
+        log.info("ML Service indisponível — usando fallback rule-based");
+        return executarRuleBased(analise);
+    }
+
+    private AnaliseEnergia executarRuleBased(AnaliseEnergia analise) {
+        double indice = calcularIndiceIneficiencia(
+                analise.getConsumoKwh(), analise.getUsoHorarioPico(),
+                analise.getQuantidadeEquipamentos(), analise.getTipoImovel(),
+                analise.getHorasAltoConsumo()
+        );
 
         String categoria;
         double probabilidade;
@@ -59,19 +95,20 @@ public class AnaliseEnergiaService implements GerarAnaliseUseCase {
 
         analise.setCategoria(categoria);
         analise.setProbabilidade(probabilidade);
-        analise.setCustoEstimadoMensal(consumoKwh * TARIFA_KWH);
+        analise.setOrigem("rule-based (backend)");
+        analise.setCustoEstimadoMensal(analise.getConsumoKwh() * TARIFA_KWH);
 
         List<String> recomendacoes = new ArrayList<>();
-        if (Boolean.TRUE.equals(usoHorarioPico)) {
+        if (Boolean.TRUE.equals(analise.getUsoHorarioPico())) {
             recomendacoes.add("Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h).");
         }
         if ("RUIM".equals(categoria) || "CRITICO".equals(categoria)) {
             recomendacoes.add("Considere substituir equipamentos antigos por modelos mais eficientes.");
         }
-        if (quantidadeEquipamentos > 10) {
+        if (analise.getQuantidadeEquipamentos() > 10) {
             recomendacoes.add("Avalie a real necessidade de todos os equipamentos ligados simultaneamente.");
         }
-        if (horasAltoConsumo > 5) {
+        if (analise.getHorasAltoConsumo() > 5) {
             recomendacoes.add("Distribua o uso de equipamentos ao longo do dia para reduzir o horário de alto consumo.");
         }
         if ("EXCELENTE".equals(categoria)) {
