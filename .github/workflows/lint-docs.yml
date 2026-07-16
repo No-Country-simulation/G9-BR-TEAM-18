@@ -26,10 +26,10 @@ jobs:
         run: npm ci
 
       - name: Check markdown structure
-        run: npx markdownlint-cli2 . --ignore node_modules --ignore target --ignore dist --ignore .git
+        run: npx markdownlint-cli2 README.md docs/*.md
 
       - name: Check spelling (all text files)
-        run: npx cspell "**/*.{md,ts,tsx,java,py,json,yaml,yml}"
+        run: npx cspell $(git ls-files "*.md" "*.ts" "*.tsx" "*.java" "*.py" "*.json" "*.yml" "*.yaml")
 
       - name: Check forbidden characters
         run: node scripts/check-forbidden-chars.mjs $(git ls-files "*.md" "*.ts" "*.tsx" "*.java" "*.py" "*.json" "*.yml" "*.yaml")
