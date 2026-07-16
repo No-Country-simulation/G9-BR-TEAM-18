@@ -21,7 +21,7 @@ app = FastAPI(
 # -------------------------------------------------------------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODELO_PATH = os.path.join(BASE_DIR, "modelo_categorizacao.joblib")
+MODELO_PATH = os.path.join(BASE_DIR, "modelo-categorizacao.joblib")
 modelo = None
 
 try:

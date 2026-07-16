@@ -30,11 +30,12 @@ Desenvolver uma solução capaz de:
 ## Estrutura do Repositório
 
 ```text
-backend/        -> API Java (Spring Boot) — regras de negócio, persistência
-frontend/       -> interface web (React + Vite)
-ml-service/     -> microsserviço de ML (FastAPI) — predição, modelo, inferência
-docker/         -> Dockerfiles
-docs/           -> documentação do projeto
+backend/                -> API Java (Spring Boot) — regras de negócio, persistência
+frontend/               -> interface web (React + Vite)
+ml-service/             -> microsserviço de ML (FastAPI) — predição, modelo, inferência
+  data/                 -> datasets sintéticos para treino
+docker/                 -> Dockerfiles
+docs/                   -> documentação do projeto
 ```
 
 ---
@@ -165,11 +166,14 @@ Resposta:
 
 ## Membros
 
-Eduardo Gonçalves  
-Gustavo Mendes  
-Guilherme Hermano  
-Ihago Lamarcks  
-João Vitor  
-Juscileia Noleto  
-Melissa Mel  
-Matheus Carvalho
+| Nome | Função | LinkedIn | GitHub |
+|---|---|---|---|
+| Eduardo Gonçalves | Backend Developer | [LinkedIn](https://www.linkedin.com/in/eduardogoncalvesmesquita/) | [GitHub](https://github.com/eduuardo1st) |
+| Guilherme Hermano | Data Engineer | [LinkedIn](https://www.linkedin.com/in/guilherme-ferreira17/) | [GitHub](https://github.com/guilherme-hermano) |
+| Gustavo Mendes | Data Scientist | [LinkedIn](https://www.linkedin.com/in/gustavo-silveira-mendes/) | [GitHub](https://github.com/mendesgustavo) |
+| Ihago Lamarcks | Data Scientist | [LinkedIn](https://www.linkedin.com/in/ihago-lamarcks1/) | [GitHub](https://github.com/Lamarcks) |
+| João Vitor | Software Engineer | [LinkedIn](https://www.linkedin.com/in/joaovitordevv/) | [GitHub](https://github.com/uuhjuao) |
+| José Anderson | Backend Developer | [LinkedIn](https://www.linkedin.com/in/dessima/) | [GitHub](https://github.com/DessimA) |
+| Juscileia Noleto | Frontend Developer | [LinkedIn](https://www.linkedin.com/in/juscileia-noleto-15j/) | [GitHub](https://github.com/juscileianoleto1) |
+| Matheus Carvalho | Backend Developer | [LinkedIn](https://www.linkedin.com/in/matheuscarvalho-/) | [GitHub](https://github.com/matheus-carvalh0) |
+| Melissa Mel | Data Engineer | [LinkedIn](https://www.linkedin.com/in/melissa-mel-freitas-vanni) | [GitHub](https://github.com/Mel-Vanni) |
