@@ -23,7 +23,15 @@ export default function DemoTool() {
     quantidade_equipamentos: 8,
     tipo_imovel: 'Casa',
     horas_alto_consumo: 6,
+    categoria_maior_consumo: 'Outros',
+    distribuicao_consumo_diario: {
+      REFRIGERACAO_WATTS: 0,
+      AQUECIMENTO_WATTS: 0,
+      CLIMATIZACAO_WATTS: 0,
+      ILUMINACAO_WATTS: 0,
+    }
   })
+  const [showAvancado, setShowAvancado] = useState(false)
   const [resultado, setResultado] = useState<AnaliseResponse | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [errosCampo, setErrosCampo] = useState<Record<string, string> | null>(null)
@@ -120,6 +128,124 @@ export default function DemoTool() {
                 />
                 Uso em horário de pico
               </label>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowAvancado(!showAvancado)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                {showAvancado ? '▼ Ocultar Dados Avançados' : '▶ Mostrar Dados Avançados'}
+              </button>
+
+              {showAvancado && (
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '1rem',
+                  border: '1px solid var(--border, rgba(128,128,128,0.2))',
+                  borderRadius: 8,
+                  background: 'rgba(128,128,128,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label htmlFor="categoriaMaior">Categoria de maior consumo</label>
+                    <select
+                      id="categoriaMaior"
+                      value={form.categoria_maior_consumo}
+                      onChange={(e) => setForm({ ...form, categoria_maior_consumo: e.target.value })}
+                    >
+                      <option value="Refrigeração">Refrigeração</option>
+                      <option value="Climatização">Climatização</option>
+                      <option value="Tecnologia">Tecnologia</option>
+                      <option value="Iluminação">Iluminação</option>
+                      <option value="Eletrodomésticos">Eletrodomésticos</option>
+                      <option value="Serviços">Serviços</option>
+                      <option value="Outros">Outros</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label htmlFor="refrigWatts">Potência Refrigeração (Watts)</label>
+                    <input
+                      id="refrigWatts"
+                      type="number"
+                      min="0"
+                      value={form.distribuicao_consumo_diario?.REFRIGERACAO_WATTS || 0}
+                      onChange={(e) => setForm({
+                        ...form,
+                        distribuicao_consumo_diario: {
+                          ...form.distribuicao_consumo_diario!,
+                          REFRIGERACAO_WATTS: +e.target.value
+                        }
+                      })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label htmlFor="aquecimentoWatts">Potência Aquecimento (Watts)</label>
+                    <input
+                      id="aquecimentoWatts"
+                      type="number"
+                      min="0"
+                      value={form.distribuicao_consumo_diario?.AQUECIMENTO_WATTS || 0}
+                      onChange={(e) => setForm({
+                        ...form,
+                        distribuicao_consumo_diario: {
+                          ...form.distribuicao_consumo_diario!,
+                          AQUECIMENTO_WATTS: +e.target.value
+                        }
+                      })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label htmlFor="climatizacaoWatts">Potência Climatização (Watts)</label>
+                    <input
+                      id="climatizacaoWatts"
+                      type="number"
+                      min="0"
+                      value={form.distribuicao_consumo_diario?.CLIMATIZACAO_WATTS || 0}
+                      onChange={(e) => setForm({
+                        ...form,
+                        distribuicao_consumo_diario: {
+                          ...form.distribuicao_consumo_diario!,
+                          CLIMATIZACAO_WATTS: +e.target.value
+                        }
+                      })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label htmlFor="iluminacaoWatts">Potência Iluminação (Watts)</label>
+                    <input
+                      id="iluminacaoWatts"
+                      type="number"
+                      min="0"
+                      value={form.distribuicao_consumo_diario?.ILUMINACAO_WATTS || 0}
+                      onChange={(e) => setForm({
+                        ...form,
+                        distribuicao_consumo_diario: {
+                          ...form.distribuicao_consumo_diario!,
+                          ILUMINACAO_WATTS: +e.target.value
+                        }
+                      })}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
