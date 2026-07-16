@@ -21,11 +21,11 @@ backend/energiai-api/*.db
 backend/energiai-api/logs/
 
 # --- Python ---
-api-python/venv/
+.venv/
+venv/
 api-python/__pycache__/
 api-python/*.pyc
 api-python/.env
-api-python/.venv/
 **/__pycache__/
 
 # --- Node / Frontend ---
