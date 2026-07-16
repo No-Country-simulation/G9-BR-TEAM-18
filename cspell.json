@@ -153,7 +153,16 @@
     "imovel",
     "Ihago",
     "Lamarcks",
-    "Juscileia"
+    "Juscileia",
+    "bcprov",
+    "mapstruct",
+    "ojdbc",
+    "openfeign",
+    "Serialização",
+    "serialização",
+    "springdoc",
+    "springframework",
+    "webmvc"
   ],
   "ignorePaths": [
     "node_modules",
