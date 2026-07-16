@@ -30,9 +30,9 @@ Desenvolver uma solução capaz de:
 ## Estrutura do Repositório
 
 ```text
-backend/        -> API Java (Spring Boot)
+backend/        -> API Java (Spring Boot) — regras de negócio, persistência
 frontend/       -> interface web (React + Vite)
-api-python/     -> notebook, dataset, modelo e API Python (FastAPI)
+ml-service/     -> microsserviço de ML (FastAPI) — predição, modelo, inferência
 docker/         -> Dockerfiles
 docs/           -> documentação do projeto
 ```
@@ -41,15 +41,13 @@ docs/           -> documentação do projeto
 
 ## Funcionalidades
 
-* Classificação do perfil energético:
-  * Eficiente
-  * Moderado
-  * Ineficiente
+* Classificação do perfil energético em 5 categorias:
+  * Excelente / Bom / Mediano / Ruim / Crítico
 * Estimativa do custo mensal de energia;
-* Geração de recomendações personalizadas;
+* Geração de recomendações personalizadas (via regras ou LLM Groq);
 * API REST para análise energética;
-* Integração entre Backend e modelo de Machine Learning;
-* Integração com Oracle Cloud Infrastructure (OCI).
+* Fallback inteligente: modelo ML → Groq → regras;
+* Auto-aprimoramento: logs de baixa confiança salvos para retreino.
 
 ---
 
@@ -65,7 +63,7 @@ docs/           -> documentação do projeto
 ### 1. Backend (Spring Boot — porta 8080)
 
 ```bash
-cd backend/energiai-api
+cd backend
 ./mvnw spring-boot:run
 ```
 
@@ -83,10 +81,10 @@ npm run dev
 
 Acessar em `http://localhost:5173`.
 
-### 3. API Python (FastAPI — porta 8000)
+### 3. ML Service (FastAPI — porta 8000)
 
 ```bash
-cd api-python
+cd ml-service
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -96,11 +94,11 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### Script auxiliar `run.sh`
 
 ```bash
-./run.sh backend      # inicia o backend
-./run.sh frontend     # inicia o frontend
-./run.sh python-api   # inicia a API Python
-./run.sh test         # executa todos os testes
-./run.sh build        # compila tudo
+./run.sh backend       # inicia o backend
+./run.sh frontend      # inicia o frontend
+./run.sh ml-service    # inicia o ML Service
+./run.sh test          # executa todos os testes
+./run.sh build         # compila tudo
 ```
 
 ---
@@ -110,7 +108,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### Backend (JUnit 5)
 
 ```bash
-cd backend/energiai-api
+cd backend
 ./mvnw test
 ```
 
@@ -132,7 +130,7 @@ docker compose up -d
 Serviços:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8080`
-- Python API: `http://localhost:8000`
+- ML Service: `http://localhost:8000`
 
 ---
 
@@ -142,11 +140,11 @@ Serviços:
 
 ```json
 {
-  "consumoKwh": 250,
-  "usoHorarioPico": true,
-  "quantidadeEquipamentos": 12,
-  "tipoImovel": "Casa",
-  "horasAltoConsumo": 6
+  "consumo_kwh": 250,
+  "uso_horario_pico": true,
+  "quantidade_equipamentos": 12,
+  "tipo_imovel": "Casa",
+  "horas_alto_consumo": 6
 }
 ```
 
@@ -155,11 +153,11 @@ Resposta:
 ```json
 {
   "id": 1,
-  "categoria": "ALTO",
-  "probabilidade": 0.85,
+  "categoria": "MEDIANO",
+  "probabilidade": 0.78,
   "recomendacoes": ["Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."],
-  "custoEstimadoMensal": 187.5,
-  "createdAt": "2026-07-15T12:00:00"
+  "custo_estimado_mensal": 187.5,
+  "created_at": "2026-07-15T12:00:00"
 }
 ```
 

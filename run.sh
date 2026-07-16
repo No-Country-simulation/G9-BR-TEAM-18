@@ -10,7 +10,7 @@ Uso: ./run.sh <comando>
 Comandos:
   backend          Inicia o backend Spring Boot (porta 8080)
   frontend         Inicia o frontend React/Vite (porta 5173)
-  python-api       Inicia a API Python FastAPI (porta 8000)
+  ml-service       Inicia o ML Service FastAPI (porta 8000)
   test             Executa todos os testes (frontend + backend)
   test:backend     Executa apenas os testes do backend
   test:frontend    Executa apenas os testes do frontend
@@ -21,7 +21,7 @@ EOF
 
 cmd_backend() {
   echo ">>> Iniciando backend (Spring Boot) na porta 8080..."
-  cd "$ROOT_DIR/backend/energiai-api"
+  cd "$ROOT_DIR/backend"
   if [ ! -f "mvnw" ]; then
     echo "Aviso: mvnw não encontrado. Use 'mvn spring-boot:run' se tiver Maven instalado."
   fi
@@ -35,9 +35,9 @@ cmd_frontend() {
   npm run dev
 }
 
-cmd_python_api() {
-  echo ">>> Iniciando Python FastAPI na porta 8000..."
-  cd "$ROOT_DIR/api-python"
+cmd_ml_service() {
+  echo ">>> Iniciando ML Service (FastAPI) na porta 8000..."
+  cd "$ROOT_DIR/ml-service"
   if [ ! -d "venv" ]; then
     echo "Criando virtual environment..."
     python3 -m venv venv
@@ -54,7 +54,7 @@ cmd_test() {
 
 cmd_test_backend() {
   echo ">>> Executando testes do backend..."
-  cd "$ROOT_DIR/backend/energiai-api"
+  cd "$ROOT_DIR/backend"
   if [ ! -f "mvnw" ]; then
     echo "mvnw não encontrado. Execute com 'mvn test'."
     return 1
@@ -70,7 +70,7 @@ cmd_test_frontend() {
 
 cmd_build() {
   echo ">>> Compilando backend..."
-  cd "$ROOT_DIR/backend/energiai-api"
+  cd "$ROOT_DIR/backend"
   ./mvnw package -DskipTests -q
 
   echo ">>> Compilando frontend..."
@@ -81,7 +81,7 @@ cmd_build() {
 case "${1:-}" in
   backend)       cmd_backend ;;
   frontend)      cmd_frontend ;;
-  python-api)    cmd_python_api ;;
+  ml-service)    cmd_ml_service ;;
   test)          cmd_test ;;
   test:backend)  cmd_test_backend ;;
   test:frontend) cmd_test_frontend ;;
@@ -89,7 +89,7 @@ case "${1:-}" in
   all)
     echo "Serviços serão iniciados em terminais separados."
     echo "Use: ./run.sh backend   (em um terminal)"
-    echo "     ./run.sh python-api (em outro terminal)"
+    echo "     ./run.sh ml-service (em outro terminal)"
     echo "     ./run.sh frontend   (em outro terminal)"
     ;;
   *)
