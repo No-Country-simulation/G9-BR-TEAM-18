@@ -1,6 +1,11 @@
-# Design System : Caos Controlado
+# Módulo design system
 
-Este documento descreve a linguagem visual do projeto, inspirada no universo estético de colagem urbana, ilustração estilo quadrinho de traço grosso, texturas de rua e paletas neon sobre fundo escuro. A ideia central é **caos controlado**: o visual é ousado nos pontos de impacto (hero, CTAs, divisores) e limpo nos pontos de leitura (corpo de texto, formulários), mantendo o site profissional e legível.
+## Propósito
+
+Este documento descreve a linguagem visual do projeto, inspirada no universo estético de colagem urbana,
+ilustração estilo quadrinho de traço grosso, texturas de rua e paletas neon sobre fundo escuro. A ideia
+central é **caos controlado**: visual ousado nos pontos de impacto (hero, CTAs, divisores) e limpo nos
+pontos de leitura (corpo de texto, formulários).
 
 ## Direção estética
 
@@ -40,8 +45,8 @@ Sempre use texto `--ink` (escuro) sobre fundo `--accent-green` ou `--accent-must
 | Papel | Fonte | Peso | Uso |
 |---|---|---|---|
 | Display | Anton | 400 | H1, H2, títulos em caixa alta |
-| Acento | Bangers | Regular | Badges, selos (máx 3 palavras) |
-| Corpo | Inter | 400-700 | Parágrafos, formulários, nav |
+| Acento | Bangers | Regular | Badges, selos (máximo 3 palavras) |
+| Corpo | Inter | 400 a 700 | Parágrafos, formulários, nav |
 | Dados | Space Mono | 400 | Números, tags, timestamps |
 
 ### Escala
@@ -59,7 +64,7 @@ Sempre use texto `--ink` (escuro) sobre fundo `--accent-green` ou `--accent-must
 | Elemento | Implementação |
 |---|---|
 | Contorno grosso | `border: 2px solid var(--ink)` em cards, botões, inputs |
-| Sombra dura | `box-shadow: 4px 4px 0 var(--ink)` (s/ blur) |
+| Sombra dura | `box-shadow: 4px 4px 0 var(--ink)` sem blur |
 | Halftone | `repeating-conic-gradient` em divisores; `.halftone-bg` com `radial-gradient` |
 | Ruído | `body::after` com SVG `feTurbulence`, opacidade 3.5% |
 | Glitch | Classe `.glitch` com pseudo-elementos em ciano/magenta |
@@ -67,7 +72,7 @@ Sempre use texto `--ink` (escuro) sobre fundo `--accent-green` ou `--accent-must
 
 ### Regra de contenção
 
-Ruído e glitch são globais e discretos. Não replicar o efeito em cada componente individual. Respeitar `prefers-reduced-motion`.
+Ruído e glitch são globais e discretos. Não replique o efeito em cada componente individual. Respeite `prefers-reduced-motion`.
 
 ## Componentes
 
@@ -76,7 +81,7 @@ Ruído e glitch são globais e discretos. Não replicar o efeito em cada compone
 | Botão primário | `accent-green` bg, `ink` text, 2px `ink` border, hard shadow |
 | Botão secundário | Transparente, 2px `accent-cyan` border/text |
 | Card | `bg-surface` bg, 2px `ink` border, hard shadow |
-| Badge | `ink` bg, accent color text/texto, 1px accent border |
+| Badge | `ink` bg, accent color text, 1px accent border |
 | Input | 2px `ink` border, focus `accent-cyan` |
 | Seção divisor | 4px halftone pattern (`repeating-conic-gradient`) |
 
@@ -91,20 +96,24 @@ Ruído e glitch são globais e discretos. Não replicar o efeito em cada compone
 | Auth (login/register) | Baixa | green |
 | Dashboard | Baixa | green |
 
-A lógica de intensidade segue o princípio de caos controlado: máximo impacto no hero (primeira impressão), intensidade decrescente conforme o usuário avança para seções de utilidade (FAQ, formulários), onde a legibilidade é prioridade.
+A lógica de intensidade segue o princípio de caos controlado: máximo impacto no hero (primeira impressão), intensidade decrescente conforme o usuário avança para seções de utilidade, onde a legibilidade é prioridade.
 
 ## Temas
 
-O sistema suporta dois temas via atributo `data-theme` no `<html>`:
+O sistema suporta dois temas via atributo `data-theme` no `<html>`.
 
-- **Dark** (padrão): a experiência completa do design system, fundo escuro com neons
-- **Light**: adaptação para ambientes claros, com cores mais sóbrias mantendo a identidade
+| Tema | Descrição |
+|---|---|
+| Dark (padrão) | Experiência completa do design system: fundo escuro com neons |
+| Light | Adaptação para ambientes claros, com cores mais sóbrias mantendo a identidade |
 
 A alternância é gerenciada pelo `ThemeContext` e persistida em `localStorage`.
 
 ### Contraste
 
-- `accent-green` e `accent-mustard` têm luminância alta : usar texto `ink` escuro sobre elas
-- `accent-magenta` e `accent-cyan` têm contraste moderado : reservar para elementos grandes
-- Nunca usar duas accent adjacentes como texto sobre texto
+- `accent-green` e `accent-mustard` têm luminância alta: use texto `ink` escuro sobre elas
+- `accent-magenta` e `accent-cyan` têm contraste moderado: reserve para elementos grandes
+- Nunca use duas accent adjacentes como texto sobre texto
 - `prefers-reduced-motion` desativa animações globalmente
+
+> **Nota:** Consulte os [componentes do frontend](../README.md) para exemplos de uso, o [guia de execução](../docs/guia-execucao.md) para instruções de desenvolvimento e o [glossário do projeto](../docs/glossario.md) para definição dos termos de domínio.
