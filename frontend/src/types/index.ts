@@ -1,55 +1,68 @@
-export interface Usuario {
+export interface User {
   id: string
-  nome: string
+  name: string
   email: string
 }
 
-export interface AnaliseRequest {
-  imovel_id?: string
-  consumo_kwh?: number
-  uso_horario_pico: boolean
-  quantidade_equipamentos?: number
-  tipo_imovel: TipoImovel
-  horas_alto_consumo: number
-  categoria_maior_consumo?: string
-  distribuicao_consumo_diario?: {
-    REFRIGERACAO_WATTS: number
-    AQUECIMENTO_WATTS: number
-    CLIMATIZACAO_WATTS: number
-    ILUMINACAO_WATTS: number
+/** Categorias de maior consumo (ML Service) */
+export const HIGHEST_CONSUMPTION_CATEGORIES = [
+  'Refrigeração', 'Climatização', 'Tecnologia',
+  'Iluminação', 'Eletrodomésticos', 'Serviços', 'Outros',
+] as const
+
+export type HighestConsumptionCategory = typeof HIGHEST_CONSUMPTION_CATEGORIES[number]
+
+export interface AnalysisRequest {
+  property_id?: string
+  /** Consumo mensal em kWh (auto-calculado dos aparelhos, ou manual) */
+  consumption_kwh?: number
+  peak_hour_usage: boolean
+  /** Total de equipamentos (auto-calculado dos aparelhos, ou manual) */
+  equipment_quantity?: number
+  property_type: PropertyType
+  high_consumption_hours: number
+  /** Categoria com maior consumo (auto-calculado dos aparelhos, ou manual) */
+  highest_consumption_category?: string
+  /** Distribuição de potência por categoria (4 campos do ML) */
+  daily_consumption_distribution?: {
+    REFRIGERATION_WATTS: number
+    HEATING_WATTS: number
+    AIR_CONDITIONING_WATTS: number
+    LIGHTING_WATTS: number
   }
-  /** Lista de aparelhos específicos (nova abordagem) */
-  aparelhos?: ApparelhoItem[]
+  /** Aparelhos específicos selecionados pelo usuário (precisão quantitativa) */
+  appliances?: ApplianceItem[]
 }
 
-/** Tipo de aparelho disponível (vindo do backend) */
-export interface ApparelhoType {
+/** Tipo de aparelho disponível (vindo do backend ou fallback local) */
+export interface ApplianceType {
   id: string
-  nome: string
-  categoriaML: string
-  campoDistribuicao: string
-  potenciaWatts: number
-  horasUsoDia: number
-  icone: string
+  name: string
+  mlCategory: string
+  distributionField: string
+  powerWatts: number
+  dailyUsageHours: number
+  /** Nome do ícone Lucide (PascalCase) para exibição */
+  icon: string
 }
 
 /** Aparelho selecionado pelo usuário com quantidade */
-export interface ApparelhoItem {
-  tipo: string  // id do ApparelhoType (ex: "GELADEIRA")
-  quantidade: number
+export interface ApplianceItem {
+  type: string  // id do ApplianceType (ex: "GELADEIRA")
+  quantity: number
 }
 
-export interface AnaliseResponse {
-  categoria: ClassificacaoEficienciaApi
-  probabilidade: number
-  recomendacoes: string[]
-  custo_estimado_mensal: number
-  origem?: string
+export interface AnalysisResponse {
+  category: EfficiencyClassification
+  probability: number
+  recommendations: string[]
+  estimated_monthly_cost: number
+  source?: string
 }
 
-export type ClassificacaoEficienciaApi = 'EXCELENTE' | 'BOM' | 'MEDIANO' | 'RUIM' | 'CRITICO'
+export type EfficiencyClassification = 'EXCELENTE' | 'BOM' | 'MEDIANO' | 'RUIM' | 'CRITICO'
 
-export const CATEGORIA_DISPLAY: Record<ClassificacaoEficienciaApi, string> = {
+export const CATEGORY_DISPLAY: Record<EfficiencyClassification, string> = {
   EXCELENTE: 'Excelente',
   BOM: 'Bom',
   MEDIANO: 'Mediano',
@@ -57,7 +70,7 @@ export const CATEGORIA_DISPLAY: Record<ClassificacaoEficienciaApi, string> = {
   CRITICO: 'Crítico',
 }
 
-export const CATEGORIA_CORES: Record<ClassificacaoEficienciaApi, string> = {
+export const CATEGORY_COLORS: Record<EfficiencyClassification, string> = {
   EXCELENTE: '#059669',
   BOM: '#10b981',
   MEDIANO: '#f59e0b',
@@ -65,7 +78,7 @@ export const CATEGORIA_CORES: Record<ClassificacaoEficienciaApi, string> = {
   CRITICO: '#ef4444',
 }
 
-export type TipoImovel =
+export type PropertyType =
   | 'Casa'
   | 'Apartamento'
   | 'Comercial'
@@ -73,45 +86,45 @@ export type TipoImovel =
   | 'Rural'
   | 'Outro'
 
-export interface ErroResponse {
+export interface ErrorResponse {
   timestamp: string
   status: number
-  erro: string
-  mensagem: string
-  campos: Record<string, string>
+  error: string
+  message: string
+  fields: Record<string, string>
 }
 
 export class ApiError extends Error {
-  campos: Record<string, string>
+  fields: Record<string, string>
 
-  constructor(mensagem: string, campos: Record<string, string>) {
-    super(mensagem)
+  constructor(message: string, fields: Record<string, string>) {
+    super(message)
     this.name = 'ApiError'
-    this.campos = campos
+    this.fields = fields
   }
 }
 
-export interface AnaliseHistorico {
+export interface AnalysisHistory {
   id: string
-  categoria: ClassificacaoEficienciaApi
-  probabilidade: number
-  consumo_kwh: number
-  custo_estimado_mensal: number
-  uso_horario_pico: boolean
-  horas_alto_consumo: number
+  category: EfficiencyClassification
+  probability: number
+  consumption_kwh: number
+  estimated_monthly_cost: number
+  peak_hour_usage: boolean
+  high_consumption_hours: number
   created_at: string
-  recomendacoes: string[]
+  recommendations: string[]
 }
 
-export interface ConsumoMensal {
-  mes: string
-  consumoKwh: number
+export interface MonthlyConsumption {
+  month: string
+  consumptionKwh: number
 }
 
 export interface DashboardData {
-  totalAnalises: number
-  mediaConsumoKwh: number
-  totalCustoEstimado: number
-  totalEmissaoCo2Kg: number
-  consumoPorMes: ConsumoMensal[]
+  totalAnalyses: number
+  averageConsumptionKwh: number
+  totalEstimatedCost: number
+  totalCo2EmissionKg: number
+  monthlyConsumption: MonthlyConsumption[]
 }

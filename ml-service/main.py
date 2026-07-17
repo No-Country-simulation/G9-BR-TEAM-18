@@ -18,44 +18,45 @@ app = FastAPI(
 )
 
 # -------------------------------------------------------------
-# CARREGAMENTO DO MODELO
+# MODEL LOADING
 # -------------------------------------------------------------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODELO_PATH = os.path.join(BASE_DIR, "modelo-categorizacao.joblib")
-modelo = None
+MODEL_PATH = os.path.join(BASE_DIR, "categorization-model.joblib")
+model = None
 
 try:
-    modelo = joblib.load(MODELO_PATH)
-    print(f"[EnergiAI] Modelo carregado de {MODELO_PATH}")
+    model = joblib.load(MODEL_PATH)
+    print(f"[EnergiAI] Model loaded from {MODEL_PATH}")
 except Exception as e:
-    print(f"[EnergiAI] Aviso: modelo não encontrado ({e}) — usando fallback rule-based")
+    print(f"[EnergiAI] Warning: model not found ({e}) — using fallback rule-based")
 
 # -------------------------------------------------------------
-# GROQ (fallback quando confiança < 80%)
+# GROQ (fallback when confidence < 80%)
 # -------------------------------------------------------------
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
-cliente_groq = None
+groq_client = None
 if GROQ_API_KEY and GROQ_API_KEY.startswith("gsk_"):
-    cliente_groq = Groq(api_key=GROQ_API_KEY)
-    print("[EnergiAI] Cliente Groq configurado (fallback para confiança < 80%)")
+    groq_client = Groq(api_key=GROQ_API_KEY)
+    print("[EnergiAI] Groq client configured (fallback for confidence < 80%)")
 else:
-    print("[EnergiAI] Aviso: GROQ_API_KEY não definida ou inválida — fallback rule-based apenas")
+    print("[EnergiAI] Warning: GROQ_API_KEY not set or invalid — fallback rule-based only")
 
-GROQ_MODELO = "llama-3.3-70b-versatile"
-TREINO_LOG = os.path.join(BASE_DIR, "treino_feedback.jsonl")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+training_log_path = os.getenv("TRAINING_LOG_PATH", "treino_feedback.jsonl")
+TRAINING_LOG = os.path.join(BASE_DIR, training_log_path)
 
-# Limites free tier Groq (llama-3.3-70b-versatile): 30 RPM / 1.000 RPD
-# Usamos margem de segurança: 25 RPM / 900 RPD
-GROQ_MAX_RPM = 25
-GROQ_MAX_RPD = 900
+# Groq free tier limits (llama-3.3-70b-versatile): 30 RPM / 1,000 RPD
+# We use a safety margin: 25 RPM / 900 RPD
+GROQ_MAX_RPM = int(os.getenv("GROQ_MAX_RPM", "25"))
+GROQ_MAX_RPD = int(os.getenv("GROQ_MAX_RPD", "900"))
 _groq_call_times: list[float] = []
 _groq_calls_today: int = 0
 _groq_today: date = date.today()
 
 
-def _groq_pode_chamar() -> bool:
+def _groq_can_call() -> bool:
     global _groq_calls_today, _groq_today
     hoje = date.today()
     if hoje != _groq_today:
@@ -74,62 +75,62 @@ def _groq_pode_chamar() -> bool:
     return True
 
 
-def _groq_registrar_chamada():
+def _groq_register_call():
     global _groq_calls_today
     _groq_call_times.append(time.time())
     _groq_calls_today += 1
 
 # -------------------------------------------------------------
-# DEFINIÇÃO DO CONTRATO
+# CONTRACT DEFINITION
 # -------------------------------------------------------------
 
-CONSUMO_BASE_POR_TIPO = {
+BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250.0, "Apartamento": 150.0, "Comercial": 500.0,
     "Industria": 800.0, "Rural": 300.0, "Outro": 250.0,
 }
 
-class DistribuicaoConsumo(BaseModel):
-    REFRIGERACAO_WATTS: float = 0.0
-    AQUECIMENTO_WATTS: float = 0.0
-    CLIMATIZACAO_WATTS: float = 0.0
-    ILUMINACAO_WATTS: float = 0.0
+class ConsumptionDistribution(BaseModel):
+    REFRIGERATION_WATTS: float = 0.0
+    HEATING_WATTS: float = 0.0
+    AIR_CONDITIONING_WATTS: float = 0.0
+    LIGHTING_WATTS: float = 0.0
 
 class PredictRequest(BaseModel):
-    consumo_kwh: float
-    uso_horario_pico: bool
-    quantidade_equipamentos: int
-    tipo_imovel: str
-    horas_alto_consumo: float
-    categoria_maior_consumo: str | None = "Outros"
-    distribuicao_consumo_diario: DistribuicaoConsumo | None = None
+    consumption_kwh: float
+    peak_hour_usage: bool
+    equipment_quantity: int
+    property_type: str
+    high_consumption_hours: float
+    highest_consumption_category: str | None = "Outros"
+    daily_consumption_distribution: ConsumptionDistribution | None = None
 
 class PredictResponse(BaseModel):
-    categoria: str
-    probabilidade: float
-    recomendacoes: list[str]
-    origem: str = ""
+    category: str
+    probability: float
+    recommendations: list[str]
+    source: str = ""
 
 class StatusResponse(BaseModel):
-    groq_disponivel: bool
-    groq_chamadas_hoje: int
-    groq_limite_diario: int
-    groq_chamadas_minuto: int
-    groq_limite_minuto: int
-    modelo_carregado: bool
+    groq_available: bool
+    groq_calls_today: int
+    groq_daily_limit: int
+    groq_calls_per_minute: int
+    groq_minute_limit: int
+    model_loaded: bool
 
 # -------------------------------------------------------------
-# LÓGICA DE CLASSIFICAÇÃO (RULE-BASED)
+# CLASSIFICATION LOGIC (RULE-BASED)
 # -------------------------------------------------------------
 
-def _classificar_rule_based(data: PredictRequest) -> tuple[str, float]:
-    base = CONSUMO_BASE_POR_TIPO.get(data.tipo_imovel, 250.0)
-    consumo_relativo = data.consumo_kwh / base
-    consumo_norm = min(consumo_relativo / 3.0, 1.0)
-    equip_norm = min(data.quantidade_equipamentos / 25.0, 1.0)
-    horas_norm = min(data.horas_alto_consumo / 12.0, 1.0)
-    pico_norm = 1.0 if data.uso_horario_pico else 0.0
+def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
+    base = BASE_CONSUMPTION_BY_TYPE.get(data.property_type, 250.0)
+    consumption_relative = data.consumption_kwh / base
+    consumption_norm = min(consumption_relative / 3.0, 1.0)
+    equip_norm = min(data.equipment_quantity / 25.0, 1.0)
+    hours_norm = min(data.high_consumption_hours / 12.0, 1.0)
+    pico_norm = 1.0 if data.peak_hour_usage else 0.0
 
-    indice = 0.40 * consumo_norm + 0.25 * pico_norm + 0.20 * equip_norm + 0.15 * horas_norm
+    indice = 0.40 * consumption_norm + 0.25 * pico_norm + 0.20 * equip_norm + 0.15 * hours_norm
 
     if indice < 0.2:
         return "EXCELENTE", 0.92
@@ -141,30 +142,30 @@ def _classificar_rule_based(data: PredictRequest) -> tuple[str, float]:
         return "RUIM", 0.82
     return "CRITICO", 0.90
 
-def _gerar_recomendacoes(data: PredictRequest, categoria: str) -> list[str]:
+def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
-    if data.uso_horario_pico:
+    if data.peak_hour_usage:
         recs.append("Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h).")
 
-    if categoria in ("RUIM", "CRITICO"):
+    if category in ("RUIM", "CRITICO"):
         recs.append("Considere substituir equipamentos antigos por modelos mais eficientes.")
 
-    if data.quantidade_equipamentos > 10:
+    if data.equipment_quantity > 10:
         recs.append("Avalie a real necessidade de todos os equipamentos ligados simultaneamente.")
 
-    if data.horas_alto_consumo > 5:
+    if data.high_consumption_hours > 5:
         recs.append("Distribua o uso de equipamentos ao longo do dia para reduzir o horário de alto consumo.")
 
-    if data.distribuicao_consumo_diario:
-        dc = data.distribuicao_consumo_diario
-        if dc.CLIMATIZACAO_WATTS > 3000:
+    if data.daily_consumption_distribution:
+        dc = data.daily_consumption_distribution
+        if dc.AIR_CONDITIONING_WATTS > 3000:
             recs.append("Reduzir o uso de ar-condicionado ou ajustar a temperatura para 23°C.")
-        if dc.AQUECIMENTO_WATTS > 5000:
+        if dc.HEATING_WATTS > 5000:
             recs.append("Evitar banhos longos ou com o chuveiro elétrico na potência máxima.")
-        if dc.ILUMINACAO_WATTS > 1000:
+        if dc.LIGHTING_WATTS > 1000:
             recs.append("Substituir lâmpadas antigas por tecnologia LED de baixo consumo.")
 
-    if categoria == "EXCELENTE":
+    if category == "EXCELENTE":
         recs.append("Continue mantendo as boas práticas de eficiência energética!")
     elif not recs:
         recs.append("Mantenha o bom acompanhamento dos seus hábitos de consumo!")
@@ -172,10 +173,10 @@ def _gerar_recomendacoes(data: PredictRequest, categoria: str) -> list[str]:
     return recs
 
 # -------------------------------------------------------------
-# GROQ — GERAÇÃO DE RECOMENDAÇÕES VIA LLM
+# GROQ — RECOMMENDATION GENERATION VIA LLM
 # -------------------------------------------------------------
 
-def _gerar_recomendacoes_groq(data: PredictRequest, categoria: str) -> list[str]:
+def _generate_recommendations_groq(data: PredictRequest, category: str) -> list[str]:
     prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas
 e realmente úteis para melhorar a eficiência energética do imóvel.
 
@@ -188,22 +189,22 @@ REGRAS OBRIGATÓRIAS:
 - Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
 - Não cite marcas, modelos ou preços. Não use termos técnicos sem explicação simples.
 - Máximo 20 palavras por recomendação. Sem emojis, markdown ou numeração.
-- Tom: {categoria} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
+- Tom: {category} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
   Se for Excelente ou Bom, reforce boas práticas já adotadas.
 
 Dados do imóvel:
-- Consumo mensal: {data.consumo_kwh} kWh
-- Uso em horário de pico: {"Sim" if data.uso_horario_pico else "Não"}
-- Quantidade de equipamentos: {data.quantidade_equipamentos}
-- Tipo de imóvel: {data.tipo_imovel}
-- Horas de alto consumo por dia: {data.horas_alto_consumo}
-- Categoria de eficiência: {categoria}
+- Consumo mensal: {data.consumption_kwh} kWh
+- Uso em horário de pico: {"Sim" if data.peak_hour_usage else "Não"}
+- Quantidade de equipamentos: {data.equipment_quantity}
+- Tipo de imóvel: {data.property_type}
+- Horas de alto consumo por dia: {data.high_consumption_hours}
+- Categoria de eficiência: {category}
 
 Responda APENAS com as 3 recomendações, uma por linha, sem numeração,
 sem introdução e sem comentários adicionais."""
 
-    resposta = cliente_groq.chat.completions.create(
-        model=GROQ_MODELO,
+    response = groq_client.chat.completions.create(
+        model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": "Você é um assistente especializado em eficiência energética residencial e comercial. Responda sempre em português do Brasil, de forma objetiva e sem rodeios."},
             {"role": "user", "content": prompt},
@@ -212,129 +213,129 @@ sem introdução e sem comentários adicionais."""
         temperature=0,
     )
 
-    texto = (resposta.choices[0].message.content or "").strip()
+    text = (response.choices[0].message.content or "").strip()
     import re
-    recomendacoes = [
-        re.sub(r"^\s*[\d]+[\.\)]?\s*", "", linha).strip("-•* ").strip()
-        for linha in texto.split("\n")
+    recommendations = [
+        re.sub(r"^\s*[\d]+[\.\)]?\s*", "", linha.strip("-•* ").strip())
+        for linha in text.split("\n")
         if linha.strip()
     ]
-    return [r for r in recomendacoes[:3] if r]
+    return [r for r in recommendations[:3] if r]
 
 # -------------------------------------------------------------
-# ARMAZENAMENTO PARA RETREINAMENTO (feedback loop)
+# STORAGE FOR RETRAINING (feedback loop)
 # -------------------------------------------------------------
 
-def _armazenar_para_treino(data: PredictRequest, categoria: str, probabilidade: float,
-                           recomendacoes: list[str], origem: str):
-    dc = data.distribuicao_consumo_diario or DistribuicaoConsumo()
-    registro = {
+def _store_for_training(data: PredictRequest, category: str, probability: float,
+                        recommendations: list[str], source: str):
+    dc = data.daily_consumption_distribution or ConsumptionDistribution()
+    record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "features": {
-            "consumo_kwh": data.consumo_kwh,
-            "uso_horario_pico": data.uso_horario_pico,
-            "quantidade_equipamentos": data.quantidade_equipamentos,
-            "tipo_imovel": data.tipo_imovel,
-            "horas_alto_consumo": data.horas_alto_consumo,
-            "categoria_maior_consumo": data.categoria_maior_consumo or "Outros",
-            "refrig_watts": dc.REFRIGERACAO_WATTS,
-            "aquecimento_watts": dc.AQUECIMENTO_WATTS,
-            "climatizacao_watts": dc.CLIMATIZACAO_WATTS,
-            "iluminacao_watts": dc.ILUMINACAO_WATTS,
+            "consumption_kwh": data.consumption_kwh,
+            "peak_hour_usage": data.peak_hour_usage,
+            "equipment_quantity": data.equipment_quantity,
+            "property_type": data.property_type,
+            "high_consumption_hours": data.high_consumption_hours,
+            "highest_consumption_category": data.highest_consumption_category or "Outros",
+            "refrigeration_watts": dc.REFRIGERATION_WATTS,
+            "heating_watts": dc.HEATING_WATTS,
+            "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
+            "lighting_watts": dc.LIGHTING_WATTS,
         },
-        "predicao": {
-            "categoria": categoria,
-            "probabilidade": probabilidade,
+        "prediction": {
+            "category": category,
+            "probability": probability,
         },
-        "recomendacoes_geradas": recomendacoes,
-        "origem": origem,
+        "generated_recommendations": recommendations,
+        "source": source,
     }
     try:
-        with open(TREINO_LOG, "a", encoding="utf-8") as f:
-            f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+        with open(TRAINING_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception as e:
-        print(f"[EnergiAI] Erro ao armazenar feedback: {e}")
+        print(f"[EnergiAI] Error storing feedback: {e}")
 
 # -------------------------------------------------------------
-# ENDPOINT DE PREDIÇÃO
+# PREDICTION ENDPOINT
 # -------------------------------------------------------------
 
 @app.post("/predict", response_model=PredictResponse)
-def predict_consumo(data: PredictRequest):
-    categoria = ""
-    probabilidade = 0.0
-    origem = ""
-    recomendacoes = []
+def predict_consumption(data: PredictRequest):
+    category = ""
+    probability = 0.0
+    source = ""
+    recommendations = []
 
-    # --- Classificação ---
-    if modelo is not None:
+    # --- Classification ---
+    if model is not None:
         try:
-            dc = data.distribuicao_consumo_diario or DistribuicaoConsumo()
+            dc = data.daily_consumption_distribution or ConsumptionDistribution()
             df = pd.DataFrame([{
-                "consumo_kwh": data.consumo_kwh,
-                "uso_horario_pico": int(data.uso_horario_pico),
-                "quantidade_equipamentos": data.quantidade_equipamentos,
-                "tipo_imovel": data.tipo_imovel,
-                "horas_alto_consumo": data.horas_alto_consumo,
-                "categoria_maior_consumo": data.categoria_maior_consumo or "Outros",
-                "refrig_watts": dc.REFRIGERACAO_WATTS,
-                "aquecimento_watts": dc.AQUECIMENTO_WATTS,
-                "climatizacao_watts": dc.CLIMATIZACAO_WATTS,
-                "iluminacao_watts": dc.ILUMINACAO_WATTS,
+                "consumption_kwh": data.consumption_kwh,
+                "peak_hour_usage": int(data.peak_hour_usage),
+                "equipment_quantity": data.equipment_quantity,
+                "property_type": data.property_type,
+                "high_consumption_hours": data.high_consumption_hours,
+                "highest_consumption_category": data.highest_consumption_category or "Outros",
+                "refrigeration_watts": dc.REFRIGERATION_WATTS,
+                "heating_watts": dc.HEATING_WATTS,
+                "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
+                "lighting_watts": dc.LIGHTING_WATTS,
             }])
-            pred = modelo.predict(df)[0]
-            probs = modelo.predict_proba(df)[0]
+            pred = model.predict(df)[0]
+            probs = model.predict_proba(df)[0]
             max_prob = float(max(probs))
-            categoria = pred.upper()
-            probabilidade = round(max_prob, 4)
+            category = pred.upper()
+            probability = round(max_prob, 4)
 
             if max_prob >= 0.80:
-                origem = "modelo"
-            elif cliente_groq and _groq_pode_chamar():
-                origem = f"modelo+groq (confiança {max_prob:.1%})"
+                source = "model"
+            elif groq_client and _groq_can_call():
+                source = f"model+groq (confidence {max_prob:.1%})"
             else:
-                origem = f"modelo (confiança {max_prob:.1%})"
+                source = f"model (confidence {max_prob:.1%})"
         except Exception as e:
-            print(f"[EnergiAI] Erro na predição: {e}")
-            categoria, probabilidade = _classificar_rule_based(data)
-            origem = "rule-based (modelo com erro)"
+            print(f"[EnergiAI] Prediction error: {e}")
+            category, probability = _classify_rule_based(data)
+            source = "rule-based (model error)"
     else:
-        categoria, probabilidade = _classificar_rule_based(data)
-        origem = "rule-based (modelo não disponível)"
+        category, probability = _classify_rule_based(data)
+        source = "rule-based (model unavailable)"
 
-    # --- Recomendações ---
-    if cliente_groq and "groq" in origem:
-        _groq_registrar_chamada()
+    # --- Recommendations ---
+    if groq_client and "groq" in source:
+        _groq_register_call()
         try:
-            recomendacoes = _gerar_recomendacoes_groq(data, categoria)
-            if not recomendacoes:
-                raise ValueError("Groq retornou recomendações vazias")
+            recommendations = _generate_recommendations_groq(data, category)
+            if not recommendations:
+                raise ValueError("Groq returned empty recommendations")
         except Exception as e:
-            print(f"[EnergiAI] Erro ao chamar Groq: {e} — usando fallback rule-based")
-            recomendacoes = _gerar_recomendacoes(data, categoria)
-            origem = origem.replace("groq", "rule-based (groq falhou)")
+            print(f"[EnergiAI] Error calling Groq: {e} — using rule-based fallback")
+            recommendations = _generate_recommendations(data, category)
+            source = source.replace("groq", "rule-based (groq failed)")
     else:
-        recomendacoes = _gerar_recomendacoes(data, categoria)
+        recommendations = _generate_recommendations(data, category)
 
-    _armazenar_para_treino(data, categoria, probabilidade, recomendacoes, origem)
+    _store_for_training(data, category, probability, recommendations, source)
 
     return PredictResponse(
-        categoria=categoria,
-        probabilidade=probabilidade,
-        recomendacoes=recomendacoes,
-        origem=origem,
+        category=category,
+        probability=probability,
+        recommendations=recommendations,
+        source=source,
     )
 
 
 @app.get("/status")
 def status():
     agora = time.time()
-    chamadas_minuto = sum(1 for t in _groq_call_times if agora - t < 60)
+    calls_per_minute = sum(1 for t in _groq_call_times if agora - t < 60)
     return StatusResponse(
-        groq_disponivel=cliente_groq is not None,
-        groq_chamadas_hoje=_groq_calls_today,
-        groq_limite_diario=GROQ_MAX_RPD,
-        groq_chamadas_minuto=chamadas_minuto,
-        groq_limite_minuto=GROQ_MAX_RPM,
-        modelo_carregado=modelo is not None,
+        groq_available=groq_client is not None,
+        groq_calls_today=_groq_calls_today,
+        groq_daily_limit=GROQ_MAX_RPD,
+        groq_calls_per_minute=calls_per_minute,
+        groq_minute_limit=GROQ_MAX_RPM,
+        model_loaded=model is not None,
     )

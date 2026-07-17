@@ -1,62 +1,44 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { buscarDashboard } from '../services/api'
+import { fetchDashboard } from '../services/api'
 import type { DashboardData } from '../types'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { BarChart3, Zap, DollarSign, Leaf, TrendingUp, History } from 'lucide-react'
 
 export default function Dashboard() {
-  const { usuario } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!usuario) {
+    if (!user) {
       navigate('/login')
       return
     }
-    buscarDashboard()
+    fetchDashboard()
       .then(setData)
       .finally(() => setLoading(false))
-  }, [usuario, navigate])
+  }, [user, navigate])
 
   if (loading) {
     return (
-      <div className="page-container" style={{ display: 'flex', justifyContent: 'center', padding: '4rem 1rem' }}>
+      <div className="dash-page" style={{ display: 'flex', justifyContent: 'center' }}>
         <p>Carregando dashboard...</p>
       </div>
     )
   }
 
-  if (!data || data.totalAnalises === 0) {
+  if (!data || data.totalAnalyses === 0) {
     return (
-      <div className="page-container" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1rem', textAlign: 'center' }}>
+      <div className="dash-page" style={{ textAlign: 'center' }}>
         <h1 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
           <BarChart3 size={28} /> Dashboard
         </h1>
-        <div style={{
-          padding: '4rem 1rem',
-          borderRadius: 12,
-          background: 'var(--surface)',
-          marginTop: '2rem',
-        }}>
-          <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
-            Nenhuma an\u00e1lise encontrada. Fa\u00e7a sua primeira an\u00e1lise para come\u00e7ar!
-          </p>
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              padding: '0.75rem 2rem',
-              borderRadius: 8,
-              border: 'none',
-              background: 'var(--primary)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: '1rem',
-            }}
-          >
+        <div className="history-empty">
+          <p>Nenhuma an\u00e1lise encontrada. Fa\u00e7a sua primeira an\u00e1lise para come\u00e7ar!</p>
+          <button onClick={() => navigate('/')} className="dash-btn dash-btn--primary">
             Fazer an\u00e1lise
           </button>
         </div>
@@ -64,126 +46,85 @@ export default function Dashboard() {
     )
   }
 
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--surface)',
-    borderRadius: 12,
-    padding: '1.5rem',
-    border: '1px solid var(--border, rgba(128,128,128,0.2))',
-  }
-
   return (
-    <div className="page-container" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
-          <BarChart3 size={28} /> Dashboard
-        </h1>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button
-            onClick={() => navigate('/historico')}
-            style={{
-              padding: '0.6rem 1.25rem',
-              borderRadius: 8,
-              border: '1px solid var(--primary)',
-              background: 'transparent',
-              color: 'var(--primary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.9rem',
-            }}
-          >
+    <div className="dash-page">
+      <div className="dash-header">
+        <h1><BarChart3 size={28} /> Dashboard</h1>
+        <div className="dash-actions">
+          <button onClick={() => navigate('/history')} className="dash-btn dash-btn--secondary">
             <History size={18} /> Hist\u00f3rico
           </button>
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              padding: '0.6rem 1.25rem',
-              borderRadius: 8,
-              border: 'none',
-              background: 'var(--primary)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-            }}
-          >
+          <button onClick={() => navigate('/')} className="dash-btn dash-btn--primary">
             Nova an\u00e1lise
           </button>
         </div>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '1rem',
-        marginBottom: '2rem',
-      }}>
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <TrendingUp size={20} style={{ color: 'var(--primary)' }} />
-            <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>Total de An\u00e1lises</span>
+      <div className="dash-grid">
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <TrendingUp size={20} className="dash-card-icon" />
+            <span className="dash-card-label">Total de An\u00e1lises</span>
           </div>
-          <p style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>{data.totalAnalises}</p>
+          <p className="dash-card-value">{data.totalAnalyses}</p>
         </div>
 
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <Zap size={20} style={{ color: 'var(--accent)' }} />
-            <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>M\u00e9dia de Consumo</span>
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <Zap size={20} className="dash-card-icon" />
+            <span className="dash-card-label">M\u00e9dia de Consumo</span>
           </div>
-          <p style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>
-            {data.mediaConsumoKwh.toFixed(0)} <span style={{ fontSize: '0.9rem', fontWeight: 400, opacity: 0.6 }}>kWh</span>
+          <p className="dash-card-value">
+            {data.averageConsumptionKwh.toFixed(0)} <span className="dash-card-unit">kWh</span>
           </p>
         </div>
 
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <DollarSign size={20} style={{ color: '#22c55e' }} />
-            <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>Custo Total</span>
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <DollarSign size={20} className="dash-card-icon" />
+            <span className="dash-card-label">Custo Total</span>
           </div>
-          <p style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>
-            R$ {data.totalCustoEstimado.toFixed(2)}
+          <p className="dash-card-value">
+            R$ {data.totalEstimatedCost.toFixed(2)}
           </p>
         </div>
 
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <Leaf size={20} style={{ color: '#22c55e' }} />
-            <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>CO\u2082 Total</span>
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <Leaf size={20} className="dash-card-icon" />
+            <span className="dash-card-label">CO\u2082 Total</span>
           </div>
-          <p style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>
-            {data.totalEmissaoCo2Kg.toFixed(2)} <span style={{ fontSize: '0.9rem', fontWeight: 400, opacity: 0.6 }}>kg</span>
+          <p className="dash-card-value">
+            {data.totalCo2EmissionKg.toFixed(2)} <span className="dash-card-unit">kg</span>
           </p>
         </div>
       </div>
 
-      {data.consumoPorMes.length > 0 && (
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <TrendingUp size={20} /> Consumo por M\u00eas (kWh)
-          </h3>
+      {data.monthlyConsumption.length > 0 && (
+        <div className="dash-chart">
+          <h3><TrendingUp size={20} /> Consumo por M\u00eas (kWh)</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.consumoPorMes}>
+            <BarChart data={data.monthlyConsumption}>
               <XAxis
-                dataKey="mes"
-                tick={{ fill: 'var(--text)', fontSize: 12, opacity: 0.7 }}
+                dataKey="month"
+                tick={{ fill: 'var(--text-primary)', fontSize: 12, opacity: 0.7 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: 'var(--text)', fontSize: 12, opacity: 0.7 }}
+                tick={{ fill: 'var(--text-primary)', fontSize: 12, opacity: 0.7 }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={{
-                  background: 'var(--surface)',
-                  border: '1px solid rgba(128,128,128,0.3)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--ink)',
                   borderRadius: 8,
-                  color: 'var(--text)',
+                  color: 'var(--text-primary)',
                 }}
               />
-              <Bar dataKey="consumoKwh" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="consumptionKwh" fill="var(--accent-green)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

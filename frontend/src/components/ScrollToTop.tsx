@@ -2,26 +2,26 @@ import { useState, useEffect } from 'react'
 import { ArrowUp } from 'lucide-react'
 
 export default function ScrollToTop() {
-  const [visivel, setVisivel] = useState(false)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    function aoRolar() {
-      setVisivel(window.scrollY > 400)
+    function onScroll() {
+      setVisible(window.scrollY > 400)
     }
-    window.addEventListener('scroll', aoRolar, { passive: true })
-    return () => window.removeEventListener('scroll', aoRolar)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  function rolarAoTopo() {
+  function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (!visivel) return null
+  if (!visible) return null
 
   return (
     <button
       className="scroll-to-top"
-      onClick={rolarAoTopo}
+      onClick={scrollToTop}
       aria-label="Voltar ao topo"
       title="Voltar ao topo"
     >

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { analisarEnergia, login, cadastrar, listarAnalises, buscarDashboard } from '../services/api'
+import { analyzeEnergy, login, register, listAnalyses, fetchDashboard } from '../services/api'
 
 const API_URL = 'http://localhost:8080'
 const mockFetch = vi.fn()
@@ -9,15 +9,15 @@ function mockResponse(ok: boolean, data: unknown) {
   return { ok, json: () => Promise.resolve(data), headers: new Headers() } as Response
 }
 
-describe('analisarEnergia', () => {
+describe('analyzeEnergy', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('envia POST autenticado e retorna resposta', async () => {
-    const data = { categoria: 'BOM', probabilidade: 0.85, recomendacoes: [], custo_estimado_mensal: 75 }
+  it('sends authenticated POST and returns response', async () => {
+    const data = { category: 'BOM', probability: 0.85, recommendations: [], estimated_monthly_cost: 75 }
     mockFetch.mockResolvedValueOnce(mockResponse(true, data))
 
-    const result = await analisarEnergia({
-      consumo_kwh: 100, uso_horario_pico: false, quantidade_equipamentos: 3, tipo_imovel: 'Casa', horas_alto_consumo: 2,
+    const result = await analyzeEnergy({
+      consumption_kwh: 100, peak_hour_usage: false, equipment_quantity: 3, property_type: 'Casa', high_consumption_hours: 2,
     })
 
     expect(result).toEqual(data)
@@ -27,8 +27,8 @@ describe('analisarEnergia', () => {
 describe('login', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('envia POST para /auth/login', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, { id: '1', nome: 'Teste', email: 'test@test.com' }))
+  it('sends POST to /auth/login', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, { id: '1', name: 'Teste', email: 'test@test.com' }))
 
     await login('test@test.com', '123456')
 
@@ -36,57 +36,57 @@ describe('login', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email: 'test@test.com', senha: '123456' }),
+      body: JSON.stringify({ email: 'test@test.com', password: '123456' }),
     })
   })
 
-  it('lança erro quando login falha', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { mensagem: 'Credenciais inválidas' }))
+  it('throws error when login fails', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'Credenciais inválidas' }))
 
     await expect(login('x@x.com', 'wrong')).rejects.toThrow('Credenciais inválidas')
   })
 
-  it('usa mensagem padrão quando servidor não retorna mensagem', async () => {
+  it('uses default message when server does not return message', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse(false, {}))
 
     await expect(login('x@x.com', 'wrong')).rejects.toThrow('Erro ao fazer login')
   })
 })
 
-describe('cadastrar', () => {
+describe('register', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('lança erro quando cadastro falha', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { mensagem: 'Email já existe' }))
+  it('throws error when registration fails', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'Email já existe' }))
 
-    await expect(cadastrar('A', 'a@a.com', '123')).rejects.toThrow('Email já existe')
+    await expect(register('A', 'a@a.com', '123')).rejects.toThrow('Email já existe')
   })
 })
 
-describe('listarAnalises', () => {
+describe('listAnalyses', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('retorna lista vazia quando resposta não é ok', async () => {
+  it('returns empty array when response is not ok', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse(false, []))
 
-    const result = await listarAnalises()
+    const result = await listAnalyses()
     expect(result).toEqual([])
   })
 })
 
-describe('buscarDashboard', () => {
+describe('fetchDashboard', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('retorna dados zerados quando resposta não é ok', async () => {
+  it('returns zeroed data when response is not ok', async () => {
     mockFetch.mockResolvedValueOnce(mockResponse(false, {}))
 
-    const result = await buscarDashboard()
+    const result = await fetchDashboard()
     expect(result).toEqual({
-      totalAnalises: 0,
-      mediaConsumoKwh: 0,
-      totalCustoEstimado: 0,
-      totalEmissaoCo2Kg: 0,
-      consumoPorMes: [],
+      totalAnalyses: 0,
+      averageConsumptionKwh: 0,
+      totalEstimatedCost: 0,
+      totalCo2EmissionKg: 0,
+      monthlyConsumption: [],
     })
   })
 })

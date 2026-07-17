@@ -6,9 +6,9 @@ import { ApiError } from '../types'
 
 export default function Login() {
   const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [erro, setErro] = useState<string | null>(null)
-  const [errosCampo, setErrosCampo] = useState<Record<string, string> | null>(null)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -16,17 +16,17 @@ export default function Login() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setErro(null)
-    setErrosCampo(null)
+    setError(null)
+    setFieldErrors(null)
     try {
-      await login(email, senha)
+      await login(email, password)
       navigate('/')
     } catch (err) {
       if (err instanceof ApiError) {
-        setErro(err.message)
-        setErrosCampo(err.campos)
+        setError(err.message)
+        setFieldErrors(err.fields)
       } else {
-        setErro(err instanceof Error ? err.message : 'Erro ao fazer login')
+        setError(err instanceof Error ? err.message : 'Erro ao fazer login')
       }
     } finally {
       setLoading(false)
@@ -38,17 +38,17 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-header">
           <LogIn size={40} className="auth-logo-icon" />
-          <h1>EnergIAI</h1>
+          <h1>EnergiIA</h1>
           <p>Entre na sua conta</p>
         </div>
 
-        {erro && (
+        {error && (
           <div className="result-error" style={{ marginBottom: '1rem' }}>
-            <p className="error-title">{erro}</p>
-            {errosCampo && Object.keys(errosCampo).length > 0 && (
+            <p className="error-title">{error}</p>
+            {fieldErrors && Object.keys(fieldErrors).length > 0 && (
               <ul className="error-fields">
-                {Object.entries(errosCampo).map(([campo, msg]) => (
-                  <li key={campo}><strong>{campo}:</strong> {msg}</li>
+                {Object.entries(fieldErrors).map(([field, msg]) => (
+                  <li key={field}><strong>{field}:</strong> {msg}</li>
                 ))}
               </ul>
             )}
@@ -73,8 +73,8 @@ export default function Login() {
               id="senha"
               type="password"
               placeholder=".........."
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
             />
@@ -86,7 +86,7 @@ export default function Login() {
 
         <p className="auth-footer-text">
           Não tem conta?{' '}
-          <Link to="/cadastrar" className="auth-link">Cadastre-se</Link>
+          <Link to="/register" className="auth-link">Cadastre-se</Link>
         </p>
 
         <Link to="/" className="auth-back">Voltar ao início</Link>

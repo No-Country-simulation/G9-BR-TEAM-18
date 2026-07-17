@@ -5,9 +5,9 @@ import ScrollToTop from './components/ScrollToTop'
 import PrivateRoute from './components/PrivateRoute'
 import Home from './pages/Home'
 import Login from './pages/Login'
-import Cadastrar from './pages/Cadastrar'
+import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import Historico from './pages/Historico'
+import History from './pages/History'
 import './App.css'
 
 export default function App() {
@@ -18,9 +18,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/cadastrar" element={<Cadastrar />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/historico" element={<PrivateRoute><Historico /></PrivateRoute>} />
+        <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
       </Routes>
     </AuthProvider>
   )

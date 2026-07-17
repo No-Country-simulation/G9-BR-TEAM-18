@@ -241,14 +241,14 @@ docker compose build backend && docker compose up -d backend
 
 **Solução:** Remova qualquer configuração manual de servlet do H2 (`H2Configuration.java`) e use apenas a auto-configuração do Spring Boot com as propriedades corretas no `application.properties`.
 
-### ML Service não encontra o modelo (modelo-categorizacao.joblib)
+### ML Service não encontra o modelo (categorization-model.joblib)
 
-**Erro:** `FileNotFoundError: [Errno 2] No such file or directory: 'modelo-categorizacao.joblib'`
+**Erro:** `FileNotFoundError: [Errno 2] No such file or directory: 'categorization-model.joblib'`
 
-**Solução:** Certifique-se de que o arquivo `modelo-categorizacao.joblib` existe dentro do diretório `ml-service/`. Se estiver usando Docker, o arquivo é copiado durante o build. Para execução local, verifique se você está na raiz do projeto ao executar o script.
+**Solução:** Certifique-se de que o arquivo `categorization-model.joblib` existe dentro do diretório `ml-service/`. Se estiver usando Docker, o arquivo é copiado durante o build. Para execução local, verifique se você está na raiz do projeto ao executar o script.
 
 ```bash
-ls -la ml-service/modelo-categorizacao.joblib
+ls -la ml-service/categorization-model.joblib
 ```
 
 ### ML Service não inicia ou erro no Groq
@@ -307,4 +307,4 @@ Problemas comuns:
 
 - A chave de API do Groq é opcional e deve ser configurada no arquivo `.env` do diretório `ml-service/`. Sem ela, o serviço funciona apenas com o modelo de machine learning e as regras de negócio, sem o fallback para o LLM.
 - O banco de dados utilizado é o H2 em memória, o que significa que os dados são perdidos ao reiniciar o backend. Para um ambiente de produção, recomenda-se configurar um banco persistente.
-- O modelo de machine learning (`modelo-categorizacao.joblib`) e os datasets sintéticos estão incluídos no repositório para facilitar a reprodução do ambiente de desenvolvimento.
+- O modelo de machine learning (`categorization-model.joblib`) e os datasets sintéticos estão incluídos no repositório para facilitar a reprodução do ambiente de desenvolvimento.

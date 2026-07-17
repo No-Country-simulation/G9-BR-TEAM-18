@@ -8,7 +8,9 @@ export default function Home() {
     <>
       <Hero />
       <DemoTool />
+      <div className="section-divider section-divider--flip" />
       <FeatureCards />
+      <div className="section-divider" />
       <Footer />
     </>
   )

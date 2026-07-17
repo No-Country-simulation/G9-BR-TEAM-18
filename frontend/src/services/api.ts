@@ -1,4 +1,4 @@
-import type { AnaliseHistorico, AnaliseRequest, AnaliseResponse, DashboardData } from '../types'
+import type { AnalysisHistory, AnalysisRequest, AnalysisResponse, DashboardData } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
@@ -21,60 +21,60 @@ async function authFetch(path: string, options?: RequestInit): Promise<Response>
   return response
 }
 
-export async function analisarEnergia(
-  data: AnaliseRequest
-): Promise<AnaliseResponse> {
-  const response = await authFetch('/analise-energetica', {
+export async function analyzeEnergy(
+  data: AnalysisRequest
+): Promise<AnalysisResponse> {
+  const response = await authFetch('/energy-analysis', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 
   if (!response.ok) {
     const err = await response.json()
-    throw new Error(err.mensagem ?? 'Erro ao analisar consumo')
+    throw new Error(err.message ?? 'Erro ao analisar consumo')
   }
 
   return response.json()
 }
 
-export async function login(email: string, senha: string): Promise<void> {
+export async function login(email: string, password: string): Promise<void> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ email, senha }),
+    body: JSON.stringify({ email, password }),
   })
 
   if (!response.ok) {
     const err = await response.json()
-    throw new Error(err.mensagem ?? 'Erro ao fazer login')
+    throw new Error(err.message ?? 'Erro ao fazer login')
   }
 }
 
-export async function cadastrar(nome: string, email: string, senha: string): Promise<void> {
-  const response = await fetch(`${API_URL}/auth/cadastrar`, {
+export async function register(name: string, email: string, password: string): Promise<void> {
+  const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ nome, email, senha }),
+    body: JSON.stringify({ name, email, password }),
   })
 
   if (!response.ok) {
     const err = await response.json()
-    throw new Error(err.mensagem ?? 'Erro ao cadastrar')
+    throw new Error(err.message ?? 'Erro ao cadastrar')
   }
 }
 
-export async function listarAnalises(): Promise<AnaliseHistorico[]> {
-  const response = await authFetch('/analises')
+export async function listAnalyses(): Promise<AnalysisHistory[]> {
+  const response = await authFetch('/analyses')
   if (!response.ok) return []
   return response.json()
 }
 
-export async function buscarDashboard(): Promise<DashboardData> {
+export async function fetchDashboard(): Promise<DashboardData> {
   const response = await authFetch('/dashboard')
   if (!response.ok) {
-    return { totalAnalises: 0, mediaConsumoKwh: 0, totalCustoEstimado: 0, totalEmissaoCo2Kg: 0, consumoPorMes: [] }
+    return { totalAnalyses: 0, averageConsumptionKwh: 0, totalEstimatedCost: 0, totalCo2EmissionKg: 0, monthlyConsumption: [] }
   }
   return response.json()
 }

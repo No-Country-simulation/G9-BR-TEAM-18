@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Or>
+      <Class name="~.*\.entity\..*"/>
+      <Class name="~.*\.dto\..*"/>
+      <Class name="~.*\.domain\.model\..*"/>
+      <Class name="~.*\.client\.MlServiceClient\$.*"/>
+      <Class name="~.*\.controllers\.AnalysisController\$.*"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Or>
+      <Class name="~.*\.entity\..*"/>
+      <Class name="~.*\.dto\..*"/>
+      <Class name="~.*\.domain\.model\..*"/>
+      <Class name="~.*\.client\.MlServiceClient\$.*"/>
+      <Class name="~.*\.controllers\.AnalysisController\$.*"/>
+    </Or>
+  </Match>
+</FindBugsFilter>

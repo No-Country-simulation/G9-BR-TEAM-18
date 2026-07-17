@@ -1,30 +1,30 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import type { Usuario } from '../types'
+import type { User } from '../types'
 
-const STORAGE_KEY = 'energiai_usuario'
+const STORAGE_KEY = 'energiai_user'
 
 interface AuthContextValue {
-  usuario: Usuario | null
+  user: User | null
   loading: boolean
-  login: (email: string, senha: string) => Promise<void>
-  cadastrar: (nome: string, email: string, senha: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue>({
-  usuario: null,
+  user: null,
   loading: true,
   login: async () => {},
-  cadastrar: async () => {},
+  register: async () => {},
   logout: () => {},
 })
 
-function restaurarSessao(): Usuario | null {
+function restoreSession(): User | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const u: Usuario = JSON.parse(raw)
-      if (u.id && u.nome && document.cookie.includes('SESSION_TOKEN=')) {
+      const u: User = JSON.parse(raw)
+      if (u.id && u.name && document.cookie.includes('SESSION_TOKEN=')) {
         return u
       }
     }
@@ -33,54 +33,54 @@ function restaurarSessao(): Usuario | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(restaurarSessao)
+  const [user, setUser] = useState<User | null>(restoreSession)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(false)
   }, [])
 
-  const login = useCallback(async (email: string, senha: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
     const response = await fetch(`${url}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ email, password }),
     })
     if (!response.ok) {
       const err = await response.json()
-      throw new Error(err.mensagem ?? 'Erro ao fazer login')
+      throw new Error(err.message ?? 'Erro ao fazer login')
     }
     const data = await response.json()
-    const u: Usuario = { id: data.id, nome: data.nome, email: data.email }
+    const u: User = { id: data.id, name: data.name, email: data.email }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
-    setUsuario(u)
+    setUser(u)
   }, [])
 
-  const cadastrar = useCallback(async (nome: string, email: string, senha: string) => {
+  const register = useCallback(async (name: string, email: string, password: string) => {
     const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
-    const response = await fetch(`${url}/auth/cadastrar`, {
+    const response = await fetch(`${url}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ nome, email, senha }),
+      body: JSON.stringify({ name, email, password }),
     })
     if (!response.ok) {
       const err = await response.json()
-      throw new Error(err.mensagem ?? 'Erro ao cadastrar')
+      throw new Error(err.message ?? 'Erro ao cadastrar')
     }
-    await login(email, senha)
+    await login(email, password)
   }, [login])
 
   const logout = useCallback(() => {
     document.cookie = 'SESSION_TOKEN=; Path=/; Max-Age=0'
     localStorage.removeItem(STORAGE_KEY)
-    setUsuario(null)
+    setUser(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ usuario, loading, login, cadastrar, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

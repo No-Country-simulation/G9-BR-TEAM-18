@@ -1,24 +1,24 @@
 import pandas as pd
 
-CONSUMO_BASE_POR_TIPO = {
+BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250, "Apartamento": 150, "Comercial": 500,
     "Industria": 800, "Rural": 300, "Outro": 250,
 }
 
-CATEGORIAS_MAIOR_CONSUMO = [
+HIGHEST_CONSUMPTION_CATEGORIES = [
     "Refrigeracao", "Climatizacao", "Tecnologia", "Iluminacao",
     "Eletrodomesticos", "Servicos", "Outros",
 ]
 
 
-def _fill_distribuicao(df: pd.DataFrame) -> pd.DataFrame:
-    for col in ["refrig_watts", "aquecimento_watts", "climatizacao_watts", "iluminacao_watts"]:
+def _fill_distribution(df: pd.DataFrame) -> pd.DataFrame:
+    for col in ["refrigeration_watts", "heating_watts", "air_conditioning_watts", "lighting_watts"]:
         if col not in df.columns:
             df[col] = 0.0
     return df
 
 
-def normalizar_categoria(cat):
+def normalize_category(cat):
     if not isinstance(cat, str):
         return "Outros"
     cat_lower = cat.strip().lower()
@@ -39,67 +39,58 @@ def normalizar_categoria(cat):
     return mapping.get(cat_lower, "Outros")
 
 
-def engenharia_features(df: pd.DataFrame) -> pd.DataFrame:
+def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df = _fill_distribuicao(df)
+    df = _fill_distribution(df)
 
     epsilon = 1e-6
 
-    # Normalize categoria_maior_consumo if present
-    if "categoria_maior_consumo" in df.columns:
-        df["categoria_maior_consumo"] = df["categoria_maior_consumo"].apply(normalizar_categoria)
+    if "highest_consumption_category" in df.columns:
+        df["highest_consumption_category"] = df["highest_consumption_category"].apply(normalize_category)
 
-    df["consumo_por_equipamento"] = df["consumo_kwh"] / (df["quantidade_equipamentos"] + epsilon)
-    df["consumo_por_hora"] = df["consumo_kwh"] / (df["horas_alto_consumo"] + epsilon)
-    df["consumo_relativo_normalizado"] = df["consumo_kwh"] / 500.0
-    df["carga_estimada"] = df["quantidade_equipamentos"] * df["horas_alto_consumo"]
-    df["consumo_por_equipamento"] = df["consumo_por_equipamento"].clip(0, 500)
-    df["consumo_por_hora"] = df["consumo_por_hora"].clip(0, 500)
+    df["consumption_per_equipment"] = df["consumption_kwh"] / (df["equipment_quantity"] + epsilon)
+    df["consumption_per_hour"] = df["consumption_kwh"] / (df["high_consumption_hours"] + epsilon)
+    df["normalized_relative_consumption"] = df["consumption_kwh"] / 500.0
+    df["estimated_load"] = df["equipment_quantity"] * df["high_consumption_hours"]
+    df["consumption_per_equipment"] = df["consumption_per_equipment"].clip(0, 500)
+    df["consumption_per_hour"] = df["consumption_per_hour"].clip(0, 500)
 
     total = (
-        df["refrig_watts"] + df["aquecimento_watts"]
-        + df["climatizacao_watts"] + df["iluminacao_watts"]
+        df["refrigeration_watts"] + df["heating_watts"]
+        + df["air_conditioning_watts"] + df["lighting_watts"]
     )
     df["total_watts"] = total
-    df["pct_refrig"] = (df["refrig_watts"] / (total + epsilon)).clip(0, 1)
-    df["pct_aquecimento"] = (df["aquecimento_watts"] / (total + epsilon)).clip(0, 1)
-    df["pct_climatizacao"] = (df["climatizacao_watts"] / (total + epsilon)).clip(0, 1)
-    df["pct_iluminacao"] = (df["iluminacao_watts"] / (total + epsilon)).clip(0, 1)
+    df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)
+    df["pct_heating"] = (df["heating_watts"] / (total + epsilon)).clip(0, 1)
+    df["pct_air_conditioning"] = (df["air_conditioning_watts"] / (total + epsilon)).clip(0, 1)
+    df["pct_lighting"] = (df["lighting_watts"] / (total + epsilon)).clip(0, 1)
 
-    # Add engineering for categoria_maior_consumo
-    if "categoria_maior_consumo" in df.columns:
-        # Convert to lowercase for consistency
-        df["categoria_maior_consumo_lower"] = df["categoria_maior_consumo"].str.lower()
-        # Create one-hot encoding for the category
-        for cat in CATEGORIAS_MAIOR_CONSUMO:
-            df[f"cat_maior_{cat.lower()}"] = (df["categoria_maior_consumo_lower"] == cat.lower()).astype(int)
+    if "highest_consumption_category" in df.columns:
+        df["highest_consumption_category_lower"] = df["highest_consumption_category"].str.lower()
+        for cat in HIGHEST_CONSUMPTION_CATEGORIES:
+            df[f"cat_highest_{cat.lower()}"] = (df["highest_consumption_category_lower"] == cat.lower()).astype(int)
 
-    # Add engineering for distribuicao_consumo_diario
-    # Extract features from the 4 power distribution columns
-    if "distribuicao_consumo_diario" in df.columns:
-        # distribuicao_consumo_diario is a dict/object with the 4 power fields
-        # We'll extract them and add as separate columns
-        df["refrig_watts"] = df["distribuicao_consumo_diario"].apply(
-            lambda x: x.get("REFRIGERACAO_WATTS", 0.0) if isinstance(x, dict) else 0.0
+    if "daily_consumption_distribution" in df.columns:
+        df["refrigeration_watts"] = df["daily_consumption_distribution"].apply(
+            lambda x: x.get("REFRIGERATION_WATTS", 0.0) if isinstance(x, dict) else 0.0
         )
-        df["aquecimento_watts"] = df["distribuicao_consumo_diario"].apply(
-            lambda x: x.get("AQUECIMENTO_WATTS", 0.0) if isinstance(x, dict) else 0.0
+        df["heating_watts"] = df["daily_consumption_distribution"].apply(
+            lambda x: x.get("HEATING_WATTS", 0.0) if isinstance(x, dict) else 0.0
         )
-        df["climatizacao_watts"] = df["distribuicao_consumo_diario"].apply(
-            lambda x: x.get("CLIMATIZACAO_WATTS", 0.0) if isinstance(x, dict) else 0.0
+        df["air_conditioning_watts"] = df["daily_consumption_distribution"].apply(
+            lambda x: x.get("AIR_CONDITIONING_WATTS", 0.0) if isinstance(x, dict) else 0.0
         )
-        df["iluminacao_watts"] = df["distribuicao_consumo_diario"].apply(
-            lambda x: x.get("ILUMINACAO_WATTS", 0.0) if isinstance(x, dict) else 0.0
+        df["lighting_watts"] = df["daily_consumption_distribution"].apply(
+            lambda x: x.get("LIGHTING_WATTS", 0.0) if isinstance(x, dict) else 0.0
         )
-        # Recalculate total and percentages after extraction
         total = (
-            df["refrig_watts"] + df["aquecimento_watts"]
-            + df["climatizacao_watts"] + df["iluminacao_watts"]
+            df["refrigeration_watts"] + df["heating_watts"]
+            + df["air_conditioning_watts"] + df["lighting_watts"]
         )
         df["total_watts"] = total
-        df["pct_refrig"] = (df["refrig_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_aquecimento"] = (df["aquecimento_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_climatizacao"] = (df["climatizacao_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_iluminacao"] = (df["iluminacao_watts"] / (total + epsilon)).clip(0, 1)
+        df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)
+        df["pct_heating"] = (df["heating_watts"] / (total + epsilon)).clip(0, 1)
+        df["pct_air_conditioning"] = (df["air_conditioning_watts"] / (total + epsilon)).clip(0, 1)
+        df["pct_lighting"] = (df["lighting_watts"] / (total + epsilon)).clip(0, 1)
 
     return df

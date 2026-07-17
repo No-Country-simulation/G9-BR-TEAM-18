@@ -6,18 +6,18 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 
 ## Parte 1: Contratos do Front-end (Comunicação com o Spring Boot)
 
-### 1. Criação do Imóvel
+### 1. Registro do Usuário
 
 * **Método:** `POST`
-* **Rota:** `/api/imoveis`
+* **Rota:** `/auth/register`
 
 **Request Body:**
 
 ```json
 {
-  "usuario_id": 1,
-  "apelido": "Casa Principal",
-  "tipo_imovel": "CASA"
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "senha123"
 }
 ```
 
@@ -26,57 +26,49 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 ```json
 {
   "id": 12,
-  "usuario_id": 1,
-  "apelido": "Casa Principal",
-  "tipo_imovel": "CASA",
-  "ativo": 1
+  "name": "João Silva",
+  "email": "joao@email.com"
 }
 ```
 
-### 2. Atualização do Inventário de Equipamentos
+### 2. Login do Usuário
 
-* **Método:** `PUT`
-* **Rota:** `/api/imoveis/{imovelId}/equipamentos`
+* **Método:** `POST`
+* **Rota:** `/auth/login`
 
 **Request Body:**
 
 ```json
-[
-  {
-    "equipamento_id": 1,
-    "quantidade": 1,
-    "consumo_diario_total_watts": 1500.0
-  },
-  {
-    "equipamento_id": 4,
-    "quantidade": 1,
-    "consumo_diario_total_watts": 7500.0
-  }
-]
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
 ```
 
 **Response (200 OK):**
 
 ```json
 {
-  "mensagem": "Inventario atualizado com sucesso"
+  "id": 12,
+  "name": "João Silva",
+  "email": "joao@email.com"
 }
 ```
 
 ### 3. Geração da Análise Energética (Endpoint MVP)
 
 * **Método:** `POST`
-* **Rota:** `/analise-energetica?imovelId=12`
+* **Rota:** `/energy-analysis`
 
 **Request Body:**
 
 ```json
 {
-  "consumo_kwh": 420.0,
-  "uso_horario_pico": true,
-  "quantidade_equipamentos": 10,
-  "tipo_imovel": "CASA",
-  "horas_alto_consumo": 8.5
+  "consumption_kwh": 420.0,
+  "peak_hour_usage": true,
+  "equipment_quantity": 10,
+  "property_type": "CASA",
+  "high_consumption_hours": 8.5
 }
 ```
 
@@ -85,15 +77,13 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 ```json
 {
   "id": 501,
-  "imovel_id": 12,
-  "consumo_kwh": 420.0,
-  "uso_horario_pico": true,
-  "horas_alto_consumo": 8.5,
-  "custo_estimado_mensal": 315.00,
-  "categoria": "ALTO",
-  "probabilidade": 0.8125,
-  "status": "CONCLUIDA",
-  "recomendacoes": [
+  "consumption_kwh": 420.0,
+  "peak_hour_usage": true,
+  "high_consumption_hours": 8.5,
+  "estimated_monthly_cost": 315.00,
+  "category": "ALTO",
+  "probability": 0.8125,
+  "recommendations": [
     "Reduzir o uso de ar-condicionado",
     "Trocar lâmpadas",
     "Evitar banhos em horario de pico"
@@ -104,7 +94,7 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 
 ## Parte 2: Contrato para a Equipe de Ciência de Dados (Python / IA)
 
-Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição. O Java atua como agregador, agrupando o inventário do imóvel por categorias de consumo antes de enviar para o modelo preditivo.
+Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição. O Java atua como agregador, agrupando o inventário de equipamentos por categorias de consumo antes de enviar para o modelo preditivo.
 
 ### 1. Endpoint de Predição (Servidor Python)
 
@@ -115,16 +105,16 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
 
 ```json
 {
-  "consumo_kwh": 420.0,
-  "uso_horario_pico": true,
-  "quantidade_equipamentos": 10,
-  "tipo_imovel": "CASA",
-  "horas_alto_consumo": 8.5,
-  "distribuicao_consumo_diario": {
-    "REFRIGERACAO_WATTS": 1500.0,
-    "AQUECIMENTO_WATTS": 7500.0,
-    "CLIMATIZACAO_WATTS": 4200.0,
-    "ILUMINACAO_WATTS": 800.0
+  "consumption_kwh": 420.0,
+  "peak_hour_usage": true,
+  "equipment_quantity": 10,
+  "property_type": "CASA",
+  "high_consumption_hours": 8.5,
+  "daily_consumption_distribution": {
+    "REFRIGERATION_WATTS": 1500.0,
+    "HEATING_WATTS": 7500.0,
+    "AIR_CONDITIONING_WATTS": 4200.0,
+    "LIGHTING_WATTS": 800.0
   }
 }
 ```
@@ -133,9 +123,9 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
 
 ```json
 {
-  "categoria": "ALTO",
-  "probabilidade": 0.8125,
-  "recomendacoes": [
+  "category": "ALTO",
+  "probability": 0.8125,
+  "recommendations": [
     "Reduzir o uso de ar-condicionado",
     "Trocar lâmpadas",
     "Evitar banhos em horario de pico"

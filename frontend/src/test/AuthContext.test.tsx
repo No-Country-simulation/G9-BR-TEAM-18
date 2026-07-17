@@ -9,18 +9,18 @@ const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
 
 function TestConsumer() {
-  const { usuario, login, cadastrar, logout, loading } = useAuth()
+  const { user, login, register, logout, loading } = useAuth()
 
   if (loading) return <span>loading...</span>
 
   const handleLogin = () => { login('a@a.com', '123').catch(() => {}) }
-  const handleCadastrar = () => { cadastrar('A', 'a@a.com', '123').catch(() => {}) }
+  const handleRegister = () => { register('A', 'a@a.com', '123').catch(() => {}) }
 
   return (
     <div>
-      <span>{usuario ? `logado como ${usuario.nome}` : 'deslogado'}</span>
+      <span>{user ? `logged in as ${user.name}` : 'logged out'}</span>
       <button onClick={handleLogin}>login</button>
-      <button onClick={handleCadastrar}>cadastrar</button>
+      <button onClick={handleRegister}>register</button>
       <button onClick={logout}>logout</button>
     </div>
   )
@@ -37,55 +37,55 @@ describe('AuthContext', () => {
     document.cookie = 'SESSION_TOKEN=; Path=/; Max-Age=0'
   })
 
-  it('exibe deslogado após carregamento', async () => {
+  it('shows logged out after loading', async () => {
     renderWithAuth(<TestConsumer />)
 
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
   })
 
-  it('login bem-sucedido atualiza estado', async () => {
+  it('successful login updates state', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ id: '1', nome: 'Alice', email: 'a@a.com' }),
+      json: () => Promise.resolve({ id: '1', name: 'Alice', email: 'a@a.com' }),
     })
 
     renderWithAuth(<TestConsumer />)
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
 
     await userEvent.click(screen.getByText('login'))
 
-    await waitFor(() => expect(screen.getByText('logado como Alice')).toBeInTheDocument())
-    expect(localStorage.getItem('energiai_usuario')).toContain('Alice')
+    await waitFor(() => expect(screen.getByText('logged in as Alice')).toBeInTheDocument())
+    expect(localStorage.getItem('energiai_user')).toContain('Alice')
   })
 
-  it('login com erro não altera estado', async () => {
+  it('login error does not change state', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ mensagem: 'Credenciais inválidas' }),
+      json: () => Promise.resolve({ message: 'Credenciais inválidas' }),
     })
 
     renderWithAuth(<TestConsumer />)
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
 
     await userEvent.click(screen.getByText('login'))
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
   })
 
-  it('logout limpa estado e localStorage', async () => {
-    localStorage.setItem('energiai_usuario', JSON.stringify({ id: '1', nome: 'Alice', email: 'a@a.com' }))
+  it('logout clears state and localStorage', async () => {
+    localStorage.setItem('energiai_user', JSON.stringify({ id: '1', name: 'Alice', email: 'a@a.com' }))
     document.cookie = 'SESSION_TOKEN=abc; Path=/'
 
     renderWithAuth(<TestConsumer />)
 
-    await waitFor(() => expect(screen.getByText('logado como Alice')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged in as Alice')).toBeInTheDocument())
 
     await userEvent.click(screen.getByText('logout'))
 
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
-    expect(localStorage.getItem('energiai_usuario')).toBeNull()
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
+    expect(localStorage.getItem('energiai_user')).toBeNull()
   })
 
-  it('cadastrar bem-sucedido faz login automático', async () => {
+  it('successful register auto-logs in', async () => {
     // cadastro OK
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -94,14 +94,14 @@ describe('AuthContext', () => {
     // login automático OK
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ id: '2', nome: 'Bob', email: 'b@b.com' }),
+      json: () => Promise.resolve({ id: '2', name: 'Bob', email: 'b@b.com' }),
     })
 
     renderWithAuth(<TestConsumer />)
-    await waitFor(() => expect(screen.getByText('deslogado')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged out')).toBeInTheDocument())
 
-    await userEvent.click(screen.getByText('cadastrar'))
+    await userEvent.click(screen.getByText('register'))
 
-    await waitFor(() => expect(screen.getByText('logado como Bob')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('logged in as Bob')).toBeInTheDocument())
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { analisarDemo } from '../services/demo'
+import { analyzeDemo } from '../services/demo'
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
@@ -7,24 +7,24 @@ globalThis.fetch = mockFetch
 const API_URL = 'http://localhost:8080'
 
 const requestBody = {
-  consumo_kwh: 200,
-  uso_horario_pico: false,
-  quantidade_equipamentos: 8,
-  tipo_imovel: 'Casa' as const,
-  horas_alto_consumo: 4,
+  consumption_kwh: 200,
+  peak_hour_usage: false,
+  equipment_quantity: 8,
+  property_type: 'Casa' as const,
+  high_consumption_hours: 4,
 }
 
-describe('analisarDemo', () => {
+describe('analyzeDemo', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('retorna AnaliseResponse em caso de sucesso', async () => {
+  it('returns AnalysisResponse on success', async () => {
     const responseData = {
-      categoria: 'BOM',
-      probabilidade: 0.85,
-      recomendacoes: ['Mantenha o bom acompanhamento'],
-      custo_estimado_mensal: 150,
+      category: 'BOM',
+      probability: 0.85,
+      recommendations: ['Mantenha o bom acompanhamento'],
+      estimated_monthly_cost: 150,
     }
 
     mockFetch.mockResolvedValueOnce({
@@ -32,9 +32,9 @@ describe('analisarDemo', () => {
       json: () => Promise.resolve(responseData),
     })
 
-    const result = await analisarDemo(requestBody)
+    const result = await analyzeDemo(requestBody)
 
-    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/analise-energetica`, {
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/energy-analysis`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
@@ -43,10 +43,10 @@ describe('analisarDemo', () => {
     expect(result).toEqual(responseData)
   })
 
-  it('lança ApiError em caso de erro 400', async () => {
+  it('throws ApiError on 400 error', async () => {
     const errorBody = {
-      mensagem: 'Erro de validação',
-      campos: { consumo_kwh: 'deve ser positivo' },
+      message: 'Erro de validação',
+      fields: { consumption_kwh: 'deve ser positivo' },
     }
 
     mockFetch.mockResolvedValueOnce({
@@ -54,28 +54,28 @@ describe('analisarDemo', () => {
       json: () => Promise.resolve(errorBody),
     })
 
-    await expect(analisarDemo(requestBody)).rejects.toThrow('Erro de validação')
+    await expect(analyzeDemo(requestBody)).rejects.toThrow('Erro de validação')
   })
 
-  it('usa mensagem padrão quando o servidor não retorna mensagem', async () => {
+  it('uses default message when server does not return message', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ campos: {} }),
+      json: () => Promise.resolve({ fields: {} }),
     })
 
-    await expect(analisarDemo(requestBody)).rejects.toThrow('Erro ao analisar consumo')
+    await expect(analyzeDemo(requestBody)).rejects.toThrow('Erro ao analisar consumo')
   })
 
-  it('usa API_URL obtida dinamicamente', async () => {
+  it('uses dynamically obtained API_URL', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ categoria: 'EFICIENTE' }),
+      json: () => Promise.resolve({ category: 'EFICIENTE' }),
     })
 
-    await analisarDemo({ ...requestBody, consumo_kwh: 100 })
+    await analyzeDemo({ ...requestBody, consumption_kwh: 100 })
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/analise-energetica'),
+      expect.stringContaining('/energy-analysis'),
       expect.objectContaining({ method: 'POST' })
     )
   })

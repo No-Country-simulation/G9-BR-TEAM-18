@@ -1,11 +1,11 @@
-# G9-BR-TEAM-18 - EnergIAI
+# G9-BR-TEAM-18 - EnergiIA
 
 ## Inteligência Artificial para Análise de Consumo Energético
 
-O **EnergIAI** é um MVP desenvolvido pela equipe **G9-BR-TEAM-18** durante o
+O **EnergiIA** é um MVP desenvolvido pela equipe **G9-BR-TEAM-18** durante o
 Hackathon **ONE G9-BR (Alura + Oracle + NoCountry)**.
 
-O projeto **EnergIAI** tem como objetivo analisar padrões de consumo de energia
+O projeto **EnergiIA** tem como objetivo analisar padrões de consumo de energia
 elétrica, classificar o perfil energético de residências e pequenos
 estabelecimentos, estimar custos mensais e gerar recomendações para redução do
 consumo.
@@ -145,15 +145,15 @@ Serviços:
 
 ## API REST
 
-### `POST /analise-energetica`
+### `POST /energy-analysis`
 
 ```json
 {
-  "consumo_kwh": 250,
-  "uso_horario_pico": true,
-  "quantidade_equipamentos": 12,
-  "tipo_imovel": "Casa",
-  "horas_alto_consumo": 6
+  "consumption_kwh": 250,
+  "peak_hour_usage": true,
+  "equipment_quantity": 12,
+  "property_type": "Casa",
+  "high_consumption_hours": 6
 }
 ```
 
@@ -162,10 +162,10 @@ Resposta:
 ```json
 {
   "id": 1,
-  "categoria": "MEDIANO",
-  "probabilidade": 0.78,
-  "recomendacoes": ["Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."],
-  "custo_estimado_mensal": 187.5,
+  "category": "MEDIANO",
+  "probability": 0.78,
+  "recommendations": ["Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."],
+  "estimated_monthly_cost": 187.5,
   "created_at": "2026-07-15T12:00:00"
 }
 ```

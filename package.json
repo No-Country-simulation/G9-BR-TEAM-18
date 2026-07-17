@@ -18,10 +18,27 @@
     "@cspell/dict-pt-br": "^1.0.0"
   },
   "lint-staged": {
+    "backend/**/*.java": [
+      "cd backend && mvn -q spotless:apply"
+    ],
+    "ml-service/**/*.py": [
+      "cd ml-service && ruff check --fix",
+      "cd ml-service && ruff format"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "cd frontend && npx eslint --fix",
+      "cd frontend && npx prettier --write"
+    ],
     "*.md": [
       "markdownlint-cli2 --fix",
       "cspell --no-must-find-files",
       "node scripts/check-forbidden-chars.mjs"
+    ],
+    "**/*.{yml,yaml}": [
+      "yamllint"
+    ],
+    "**/Dockerfile*": [
+      "hadolint"
     ]
   }
 }

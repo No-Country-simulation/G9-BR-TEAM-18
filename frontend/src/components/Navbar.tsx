@@ -1,41 +1,56 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, Sun, Moon, LogOut } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import Logo from './Logo'
 
+const FULL_NAME = 'EnergiIA'
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [typed, setTyped] = useState('')
+  const [done, setDone] = useState(false)
   const { theme, toggle } = useTheme()
   const location = useLocation()
-  const { usuario, logout } = useAuth()
+  const { user, logout } = useAuth()
 
-  const links = usuario
+  useEffect(() => {
+    if (typed.length < FULL_NAME.length) {
+      const t = setTimeout(() => setTyped(FULL_NAME.slice(0, typed.length + 1)), 150)
+      return () => clearTimeout(t)
+    }
+    const t = setTimeout(() => setDone(true), 600)
+    return () => clearTimeout(t)
+  }, [typed])
+
+  const links = user
     ? [
         { to: '/dashboard', label: 'Dashboard' },
-        { to: '/historico', label: 'Hist\u00f3rico' },
+        { to: '/history', label: 'Hist\u00f3rico' },
       ]
     : [
         { to: '/login', label: 'Login' },
-        { to: '/cadastrar', label: 'Cadastrar' },
+        { to: '/register', label: 'Cadastrar' },
       ]
 
   return (
     <nav className="navbar">
       <div className="navbar-inner">
         <Link to="/" className="navbar-logo">
-          <Logo size={26} />
-          <span className="navbar-logo-text">EnergIAI</span>
+          <Logo size={34} />
+          <span className="navbar-logo-text logo-type">
+            {typed}<span className={`logo-cursor${done ? ' logo-cursor--done' : ''}`} />
+          </span>
         </Link>
 
         <div className="navbar-right">
-          {usuario && (
+          {user && (
             <span className="navbar-user" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '0.5rem' }}>
-              {usuario.nome}
+              {user.name}
             </span>
           )}
-          {usuario && (
+          {user && (
             <button className="theme-toggle" onClick={logout} aria-label="Sair" title="Sair">
               <LogOut size={18} />
             </button>

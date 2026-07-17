@@ -34,11 +34,11 @@ Atua como a camada de orquestração de casos de uso e fluxo de controle.
   * **dto**: Data Transfer Objects. Classes utilizadas para padronizar os contratos de entrada e saída (payloads JSON).
   * **mapper**: Utilitários de conversão bidirecional entre DTOs e entidades de domínio.
 * **adapters/out**: Adaptadores Secundários (Driven Adapters). Implementam obrigatoriamente as interfaces definidas em `ports/out`.
-  * **persistence**: Responsável pela integração com o banco de dados Oracle.
+  * **persistence**: Responsável pela integração com o banco de dados H2.
     * **entity**: Classes de persistência mapeadas com anotações JPA (`@Entity`, `@Table`).
     * **repository**: Interfaces que herdam abstrações do ecossistema Spring Data (ex.: `JpaRepository`).
     * **adapter**: Classes que injetam o repository e implementam a porta de saída de persistência, orquestrando a conversão entre o domínio puro e as entidades JPA.
-  * **client/python**: Responsável pela comunicação HTTP com o modelo preditivo de IA. Contém as interfaces de integração via Spring Cloud OpenFeign.
+  * **client/python**: Responsável pela comunicação HTTP com o modelo preditivo de IA. Contém as interfaces de integração via Spring WebClient.
 * **config**: Diretório destinado às parametrizações da infraestrutura.
   * Handlers globais de exceção (`@ControllerAdvice` para mapear erros de domínio em status HTTP coerentes).
   * Configurações de injeção de dependência (registro de Beans do core) e parametrizações sistêmicas (CORS, transações, etc.).

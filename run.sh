@@ -20,23 +20,26 @@ EOF
 }
 
 cmd_backend() {
-  echo ">>> Iniciando backend (Spring Boot) na porta 8080..."
+  PORT="${SERVER_PORT:-8080}"
+  echo ">>> Iniciando backend (Spring Boot) na porta $PORT..."
   cd "$ROOT_DIR/backend"
   if [ ! -f "mvnw" ]; then
-    echo "Aviso: mvnw não encontrado. Use 'mvn spring-boot:run' se tiver Maven instalado."
+    echo "mvnw não encontrado. Use 'mvn spring-boot:run' se tiver Maven instalado."
   fi
-  ./mvnw spring-boot:run -q
+  SERVER_PORT="$PORT" ./mvnw spring-boot:run -q
 }
 
 cmd_frontend() {
-  echo ">>> Iniciando frontend (Vite) na porta 5173..."
+  PORT="${FRONTEND_PORT:-5173}"
+  echo ">>> Iniciando frontend (Vite) na porta $PORT..."
   cd "$ROOT_DIR/frontend"
   npm install --silent
-  npm run dev
+  FRONTEND_PORT="$PORT" npm run dev
 }
 
 cmd_ml_service() {
-  echo ">>> Iniciando ML Service (FastAPI) na porta 8000..."
+  PORT="${ML_SERVICE_PORT:-8000}"
+  echo ">>> Iniciando ML Service (FastAPI) na porta $PORT..."
   cd "$ROOT_DIR/ml-service"
   if [ ! -d "venv" ]; then
     echo "Criando virtual environment..."
@@ -44,7 +47,7 @@ cmd_ml_service() {
   fi
   source venv/bin/activate
   pip install -q -r requirements.txt
-  uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  uvicorn main:app --host 0.0.0.0 --port "$PORT" --reload
 }
 
 cmd_test() {

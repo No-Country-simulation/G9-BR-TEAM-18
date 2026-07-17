@@ -3,7 +3,7 @@ interface LogoProps {
   className?: string
 }
 
-export default function Logo({ size = 28, className }: LogoProps) {
+export default function Logo({ size = 40, className }: LogoProps) {
   return (
     <svg
       width={size}
@@ -12,47 +12,51 @@ export default function Logo({ size = 28, className }: LogoProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="GambIA logo"
+      aria-label="EnergiIA logo"
     >
-      {/* Canopy - organic tree crown */}
-      <circle cx="60" cy="48" r="30" fill="#059669" />
-      <circle cx="42" cy="54" r="20" fill="#059669" />
-      <circle cx="78" cy="54" r="20" fill="#059669" />
-
-      {/* Canopy highlight layers */}
-      <circle cx="60" cy="42" r="22" fill="#10b981" />
-      <circle cx="48" cy="48" r="14" fill="#34d399" />
-
-      {/* G letter cutout in white */}
+      {/* Outer energy ring */}
       <path
-        d="M50 38 C50 34 55 32 62 32 C68 32 72 35 72 40 L72 46 L56 46 L56 62 L70 62 L70 55 L63 55"
-        stroke="white"
-        strokeWidth="4.5"
-        fill="none"
+        d="M16,58 A44,44 0 1,1 104,58"
+        stroke="#0A0A0A"
+        strokeWidth="5"
         strokeLinecap="round"
-        strokeLinejoin="round"
+        fill="none"
+      />
+      <path
+        d="M22,58 A38,38 0 1,1 98,58"
+        stroke="#29E7CD"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
       />
 
-      {/* Trunk */}
-      <rect x="56" y="76" width="8" height="24" rx="3" fill="#047857" />
+      {/* Lightning bolt */}
+      <path
+        d="M80,15 L45,55 L55,55 L35,100 L60,68 L50,68 Z"
+        fill="#C6FF3D"
+        stroke="#0A0A0A"
+        strokeWidth="5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
 
-      {/* Root detail */}
-      <path d="M56 98 L50 104" stroke="#047857" strokeWidth="3" strokeLinecap="round" />
-      <path d="M64 98 L70 104" stroke="#047857" strokeWidth="3" strokeLinecap="round" />
+      {/* Inner bolt highlight */}
+      <path
+        d="M72,24 L46,55 L54,55 L40,85 L57,64 L50,64 Z"
+        fill="rgba(255,255,255,0.25)"
+      />
+
+      {/* Energy spark at strike point */}
+      <circle cx="95" cy="72" r="5" fill="#FF4FA3" stroke="#0A0A0A" strokeWidth="3" />
     </svg>
   )
 }
 
 export function logoFaviconSvg(): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-    <circle cx="60" cy="48" r="30" fill="#059669"/>
-    <circle cx="42" cy="54" r="20" fill="#059669"/>
-    <circle cx="78" cy="54" r="20" fill="#059669"/>
-    <circle cx="60" cy="42" r="22" fill="#10b981"/>
-    <circle cx="48" cy="48" r="14" fill="#34d399"/>
-    <path d="M50 38 C50 34 55 32 62 32 C68 32 72 35 72 40 L72 46 L56 46 L56 62 L70 62 L70 55 L63 55" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="56" y="76" width="8" height="24" rx="3" fill="#047857"/>
-    <path d="M56 98 L50 104" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
-    <path d="M64 98 L70 104" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+    <path d="M16,58 A44,44 0 1,1 104,58" stroke="#0A0A0A" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M22,58 A38,38 0 1,1 98,58" stroke="#29E7CD" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M80,15 L45,55 L55,55 L35,100 L60,68 L50,68 Z" fill="#C6FF3D" stroke="#0A0A0A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="95" cy="72" r="5" fill="#FF4FA3" stroke="#0A0A0A" stroke-width="3"/>
   </svg>`
 }
