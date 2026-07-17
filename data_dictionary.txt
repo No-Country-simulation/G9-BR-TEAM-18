@@ -1,0 +1,172 @@
+DICIONARIO DE DADOS - consumo_energetico_completo.csv
+Pesquisa PPH 2019 | Notebook: analise_energetica_pph2019.ipynb
+========================================================================
+
+Cada linha da tabela representa UMA ENTREVISTA (um domicilio).
+Unidades: quantidade = numero de aparelhos; kwh_* = kWh estimados POR MES.
+
+
+1) IDENTIFICACAO
+------------------------------------------------------------------------
+ENTREVISTA   -> Codigo unico da entrevista/domicilio.
+REGIAO       -> Regiao do Brasil (Norte, Nordeste, Sul, Sudeste, Centro-Oeste).
+UF           -> Unidade federativa (estado) do domicilio.
+MUNICIPIO    -> Municipio do domicilio.
+
+
+2) QUANTIDADE DE APARELHOS (posse)
+------------------------------------------------------------------------
+qtd_geladeira          -> Numero de geladeiras/refrigeradores no domicilio.
+qtd_ar_condicionado    -> Numero de aparelhos de ar-condicionado.
+qtd_ventilador         -> Numero de ventiladores (soma de ventilador de teto
+                          + ventilador/circulador de ar).
+qtd_lampadas           -> Numero total de lampadas do domicilio, somando
+                          todos os comodos (quarto, banheiro, sala, cozinha,
+                          area de servico, garagem, area externa, corredores,
+                          varandas, outros) e todos os 26 tipos de lampada
+                          (incandescente, fluorescente, LED, dicroica etc.).
+qtd_microondas         -> Numero de fornos micro-ondas.
+qtd_air_fryer          -> Numero de fritadeiras eletricas sem oleo (Air Fryer).
+qtd_lavar_secar        -> Numero de maquinas de lavar roupa + secadoras de
+                          roupa (por aquecimento e centrifuga), somadas.
+qtd_computadores       -> Numero de computadores, somando notebooks + 
+                          computadores de mesa (desktop).
+qtd_videogame          -> Numero de videogames.
+qtd_tv                 -> Numero de televisores.
+qtd_chuveiro_eletrico  -> Numero de chuveiros eletricos.
+
+
+3) CONSUMO ELETRICO ESTIMADO POR APARELHO (kWh/mes)
+------------------------------------------------------------------------
+Formula geral (quando nao ha dado real de potencia no questionario):
+   kWh/mes = quantidade x (potencia_W / 1000) x horas por uso x dias de uso/mes
+
+kwh_geladeira          -> Estimado com premissa de consumo fixo por unidade
+                          (45 kWh/mes, aparelho classe A rodando 24h/dia),
+                          pois a pesquisa nao pergunta frequencia/tempo de
+                          uso da geladeira (ela fica sempre ligada).
+kwh_ar_condicionado    -> Potencia obtida a partir da capacidade termica em
+                          BTU/h informada (unico aparelho, alem do chuveiro,
+                          com algum dado real de potencia); horas/dia
+                          estimadas contando os horarios marcados como uso;
+                          dias de uso/mes = media das frequencias mensais
+                          (janeiro a dezembro) informadas no questionario.
+kwh_ventilador         -> Soma do consumo do ventilador de teto (~100 W) e do
+                          ventilador/circulador de ar (~70 W), cada um usando
+                          sua propria frequencia e duracao de uso informadas.
+kwh_iluminacao         -> Soma do consumo de todos os tipos/comodos de
+                          lampada. Potencia de cada um dos 26 tipos de
+                          lampada foi extraida do proprio codebook da
+                          pesquisa (ponto medio da faixa de watts). Horas de
+                          uso por comodo vem da contagem de horarios
+                          marcados; comodos "eventuais" (quarto e banheiro de
+                          uso eventual) nao tem essa pergunta no
+                          questionario, entao foi assumida 1h/dia para eles.
+kwh_microondas         -> Potencia assumida de 1200 W.
+kwh_air_fryer          -> Potencia assumida de 1500 W.
+kwh_lavar_secar        -> Soma do consumo da maquina de lavar roupas
+                          (potencia ~700 W, considerando o numero de
+                          lavagens/dia informado e 1h assumida por ciclo) +
+                          secadora por aquecimento (~3000 W) + secadora
+                          centrifuga (~400 W).
+kwh_computadores       -> Soma do consumo de notebooks (~60 W) e
+                          computadores de mesa (~200 W).
+kwh_videogame          -> Potencia assumida de 150 W.
+kwh_tv                 -> Potencia assumida de 120 W; como a pesquisa nao
+                          pergunta duracao de uso da TV, as horas/dia foram
+                          estimadas contando os horarios marcados como uso.
+kwh_chuveiro_eletrico  -> UNICO aparelho (alem do AC) com dado real e
+                          completo no questionario: potencia declarada (em
+                          faixas de W), numero de vezes/dia que toma banho e
+                          duracao media do banho. Nao e uma premissa de
+                          mercado, e sim calculado com as respostas reais.
+
+IMPORTANTE: exceto geladeira (fixo 24h) e chuveiro/ar-condicionado (dados
+reais), todas as potencias usadas sao valores de referencia tipicos de
+mercado, nao valores medidos. Se voce tiver a potencia real de algum
+aparelho, ajuste a constante correspondente no notebook (Secao 4) e rode de
+novo - o resto do calculo nao precisa mudar.
+
+
+4) CONSUMO AGREGADO POR CATEGORIA (kWh/mes)
+------------------------------------------------------------------------
+kwh_categoria_iluminacao        -> = kwh_iluminacao
+kwh_categoria_refrigeracao      -> = kwh_geladeira
+kwh_categoria_climatizacao      -> = kwh_ventilador + kwh_ar_condicionado
+kwh_categoria_eletrodomesticos  -> = kwh_microondas + kwh_air_fryer +
+                                     kwh_lavar_secar + kwh_chuveiro_eletrico
+kwh_categoria_tecnologia        -> = kwh_computadores + kwh_videogame + kwh_tv
+
+
+5) CONSUMO REAL DECLARADO E FONTE DE ENERGIA
+------------------------------------------------------------------------
+consumo_real_medio_kwh_mes -> Media do consumo mensal de energia eletrica
+                              (em kWh) que o entrevistado informou a partir
+                              do historico real da conta de luz (ate 12
+                              meses). E o UNICO valor de consumo que nao e
+                              estimativa - vem direto da conta de luz.
+                              Fica vazio (NaN) quando o entrevistado nao
+                              soube/nao quis informar o valor da conta.
+fonte_energia              -> Origem da energia eletrica do domicilio (ex.:
+                              rede geral de distribuicao / concessionaria,
+                              gerada no proprio domicilio, mista).
+fonte_propria_energia      -> Quando ha geracao propria, qual a fonte (ex.:
+                              solar, eolica, diesel/gasolina/gas, sistema
+                              misto). Vazio quando o domicilio nao gera a
+                              propria energia.
+
+
+6) HABITOS DE ECONOMIA DE ENERGIA
+------------------------------------------------------------------------
+Cada coluna abaixo vem de uma pergunta do tipo "com que frequencia voce
+faz X?", com respostas: Sempre / Normalmente / Raramente / Nunca /
+Nao se aplica. Foram incluidos apenas os habitos relacionados aos 11
+aparelhos selecionados, mais dois habitos gerais.
+
+habito_compra_consciente          -> Ao comprar lampadas/eletrodomesticos,
+                                      da preferencia aos que consomem menos
+                                      energia (habito geral).
+habito_evita_standby               -> Evita deixar aparelhos ligados na
+                                      tomada em stand-by (habito geral).
+habito_desliga_tv_sem_uso          -> Desliga a TV quando ninguem esta
+                                      assistindo.
+habito_ac_portas_fechadas          -> Mantem portas/janelas fechadas ao usar
+                                      o ar-condicionado.
+habito_ac_desliga_ausencia         -> Desliga o ar-condicionado quando fica
+                                      fora do ambiente por muito tempo.
+habito_evita_banho_longo           -> Evita banhos demorados no chuveiro
+                                      eletrico.
+habito_chuveiro_posicao_verao      -> Usa a chave seletora do chuveiro na
+                                      posicao verao para reduzir consumo.
+habito_geladeira_porta_fechada     -> Nao deixa a porta da geladeira/freezer
+                                      aberta nem abre varias vezes.
+habito_geladeira_alimentos_frios   -> Nao guarda alimentos quentes/sem
+                                      tampa na geladeira.
+habito_geladeira_termostato        -> Regula o termostato da geladeira
+                                      conforme a estacao do ano.
+habito_geladeira_nao_seca_roupa    -> Nunca usa a parte de tras da
+                                      geladeira para secar panos/roupas.
+habito_geladeira_borracha_vedacao  -> Mantem a borracha de vedacao da porta
+                                      da geladeira em bom estado.
+habito_lava_roupa_carga_maxima     -> So liga a maquina de lavar com a
+                                      capacidade maxima de roupa indicada.
+habito_prefere_lampada_led         -> Da preferencia a lampadas LED ou
+                                      fluorescentes.
+habito_evita_luz_dia               -> Evita acender lampadas durante o dia,
+                                      aproveitando luz natural.
+habito_apaga_luz_ambiente_vazio    -> Apaga sempre as lampadas de ambientes
+                                      desocupados.
+
+
+========================================================================
+ARQUIVOS DERIVADOS (mesmas colunas, apenas filtrados em linhas/colunas):
+
+consumo_top3_aparelhos.csv
+   -> Identificacao + quantidade/consumo apenas dos 3 aparelhos que mais
+      consumiram energia no total da amostra (ver ranking no notebook,
+      Secao 7): geladeira, chuveiro eletrico e ventilador.
+
+consumo_categoria_top.csv
+   -> Identificacao + quantidade/consumo apenas dos aparelhos da categoria
+      que mais consumiu energia no total da amostra: Refrigeracao.
+========================================================================
