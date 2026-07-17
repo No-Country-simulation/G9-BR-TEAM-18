@@ -193,7 +193,7 @@ public class AnalysisController {
                       entry
                           .getKey()
                           .getMonth()
-                          .getDisplayName(TextStyle.SHORT, new Locale("pt", "BR"));
+                          .getDisplayName(TextStyle.SHORT, Locale.of("pt", "BR"));
                   monthName = monthName.replace(".", "");
                   if (monthName.length() > 0) {
                     monthName = monthName.substring(0, 1).toUpperCase() + monthName.substring(1);
