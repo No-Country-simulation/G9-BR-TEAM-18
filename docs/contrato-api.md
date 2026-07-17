@@ -1,17 +1,19 @@
-# Contrato de API - EnergiAI
+# Contrato de API
 
-Este documento define as interfaces de comunicação entre o Front-end, o Back-end (Spring Boot) e a API de Inteligência Artificial (Python).
+Definição das interfaces de comunicação entre o frontend, o backend (Spring Boot) e a API de inteligência artificial (Python).
 
----
+## Parte 1: Contratos do frontend (comunicação com o Spring Boot)
 
-## Parte 1: Contratos do Front-end (Comunicação com o Spring Boot)
+### Endpoint: Registro do usuário
 
-### 1. Registro do Usuário
+#### Identificação
 
-* **Método:** `POST`
-* **Rota:** `/auth/register`
+| Campo | Valor |
+|---|---|
+| Método | `POST` |
+| Rota | `/auth/register` |
 
-**Request Body:**
+#### Contrato de entrada
 
 ```json
 {
@@ -21,7 +23,7 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-**Response (201 Created):**
+#### Contrato de saída
 
 ```json
 {
@@ -31,12 +33,18 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-### 2. Login do Usuário
+**Status:** `201 Created`
 
-* **Método:** `POST`
-* **Rota:** `/auth/login`
+### Endpoint: Login do usuário
 
-**Request Body:**
+#### Identificação
+
+| Campo | Valor |
+|---|---|
+| Método | `POST` |
+| Rota | `/auth/login` |
+
+#### Contrato de entrada
 
 ```json
 {
@@ -45,7 +53,7 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-**Response (200 OK):**
+#### Contrato de saída
 
 ```json
 {
@@ -55,12 +63,18 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-### 3. Geração da Análise Energética (Endpoint MVP)
+**Status:** `200 OK`
 
-* **Método:** `POST`
-* **Rota:** `/energy-analysis`
+### Endpoint: Geração da análise energética
 
-**Request Body:**
+#### Identificação
+
+| Campo | Valor |
+|---|---|
+| Método | `POST` |
+| Rota | `/energy-analysis` |
+
+#### Contrato de entrada
 
 ```json
 {
@@ -72,7 +86,7 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-**Response (201 Created):**
+#### Contrato de saída
 
 ```json
 {
@@ -92,16 +106,22 @@ Este documento define as interfaces de comunicação entre o Front-end, o Back-e
 }
 ```
 
-## Parte 2: Contrato para a Equipe de Ciência de Dados (Python / IA)
+**Status:** `201 Created`
 
-Este contrato define a comunicação interna entre o Back-end Java e a API Python de predição. O Java atua como agregador, agrupando o inventário de equipamentos por categorias de consumo antes de enviar para o modelo preditivo.
+## Parte 2: Contrato interno (backend com ML Service)
 
-### 1. Endpoint de Predição (Servidor Python)
+Este contrato define a comunicação entre o backend Java e a API Python de predição. O Java atua como agregador, agrupando o inventário de equipamentos por categorias de consumo antes de enviar ao modelo preditivo.
 
-* **Método:** `POST`
-* **Rota sugerida:** `/predict`
+### Endpoint: Predição (servidor Python)
 
-**O que o Java vai enviar (Request Body):**
+#### Identificação
+
+| Campo | Valor |
+|---|---|
+| Método | `POST` |
+| Rota sugerida | `/predict` |
+
+#### Contrato de entrada (enviado pelo Java)
 
 ```json
 {
@@ -119,7 +139,7 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
 }
 ```
 
-**O que o Python DEVE devolver para o Java (Response 200 OK):**
+#### Contrato de saída (devolvido pelo Python)
 
 ```json
 {
@@ -132,3 +152,7 @@ Este contrato define a comunicação interna entre o Back-end Java e a API Pytho
   ]
 }
 ```
+
+**Status:** `200 OK`
+
+> **Nota:** Consulte a [arquitetura do projeto](./arquitetura.md) para entender como as camadas se integram, o [guia de execução](./guia-execucao.md) para instruções de deploy, e o [glossário do projeto](./glossario.md) para definição dos termos de domínio.
