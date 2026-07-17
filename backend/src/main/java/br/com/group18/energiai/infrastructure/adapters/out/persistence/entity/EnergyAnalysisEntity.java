@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +17,8 @@ import java.util.List;
 public class EnergyAnalysisEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "analysis_seq")
+    @SequenceGenerator(name = "analysis_seq", sequenceName = "ANALYSIS_SEQ", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false)
@@ -50,7 +53,7 @@ public class EnergyAnalysisEntity {
     @Column(nullable = false)
     private Double estimatedMonthlyCost;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     @Convert(converter = StringListConverter.class)
     private List<String> recommendations;
 

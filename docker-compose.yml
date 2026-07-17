@@ -1,5 +1,24 @@
 services:
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: energiaia-postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: energiaia
+      POSTGRES_USER: energiaia
+      POSTGRES_PASSWORD: energiaia123
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - energiaia-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U energiaia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   ml-service:
     build:
       context: ./ml-service
@@ -26,8 +45,13 @@ services:
       - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8000}
       - KWH_TARIFF=${KWH_TARIFF:-0.75}
       - CO2_EMISSION_FACTOR=${CO2_EMISSION_FACTOR:-0.096}
-    env_file:
-      - ./.env
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/energiai}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-energiai}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-energiai123}
+      - SPRING_JPA_DATABASE_PLATFORM=${SPRING_JPA_DATABASE_PLATFORM:-org.hibernate.dialect.PostgreSQLDialect}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - energiaia-net
 
@@ -46,3 +70,7 @@ services:
 networks:
   energiaia-net:
     driver: bridge
+
+volumes:
+  pg_data:
+    driver: local
