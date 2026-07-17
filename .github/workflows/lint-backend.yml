@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - "backend/**"
+  push:
+    branches:
+      - dev
+    paths:
+      - "backend/**"
 
 jobs:
   static-analysis:
@@ -16,3 +21,4 @@ jobs:
           distribution: "temurin"
           cache: maven
       - run: cd backend && mvn -B validate process-classes
+      - run: cd backend && mvn -B spotless:check
