@@ -1,38 +1,46 @@
 package br.com.group18.energiai.core.domain.model;
 
-/**
- * Representa um aparelho selecionado pelo usuário com sua quantidade.
- */
+/** Represents an appliance selected by the user with its quantity. */
 public class ApplianceItem {
 
-    private ApplianceType tipo;
-    private int quantidade;
+  private ApplianceType type;
+  private int quantity;
 
-    public ApplianceItem() {}
+  public ApplianceItem() {}
 
-    public ApplianceItem(ApplianceType tipo, int quantidade) {
-        this.tipo = tipo;
-        this.quantidade = quantidade;
-    }
+  public ApplianceItem(ApplianceType type, int quantity) {
+    this.type = type;
+    this.quantity = quantity;
+  }
 
-    public ApplianceType getTipo() { return tipo; }
-    public void setTipo(ApplianceType tipo) { this.tipo = tipo; }
+  public ApplianceType getType() {
+    return type;
+  }
 
-    public int getQuantidade() { return quantidade; }
-    public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
+  public void setType(ApplianceType type) {
+    this.type = type;
+  }
 
-    /** Consumo diário estimado em kWh (watts * horas * quantidade / 1000) */
-    public double getConsumoDiarioKwh() {
-        return (tipo.getPotenciaWatts() * tipo.getHorasUsoDia() * quantidade) / 1000.0;
-    }
+  public int getQuantity() {
+    return quantity;
+  }
 
-    /** Consumo mensal estimado em kWh */
-    public double getConsumoMensalKwh() {
-        return getConsumoDiarioKwh() * 30;
-    }
+  public void setQuantity(int quantity) {
+    this.quantity = quantity;
+  }
 
-    /** Potência total em watts (potência * quantidade) */
-    public double getPotenciaTotalWatts() {
-        return tipo.getPotenciaWatts() * quantidade;
-    }
+  /** Estimated daily consumption in kWh (watts * hours * quantity / 1000) */
+  public double getDailyConsumptionKwh() {
+    return (type.getPowerWatts() * type.getDailyUsageHours() * quantity) / 1000.0;
+  }
+
+  /** Estimated monthly consumption in kWh */
+  public double getMonthlyConsumptionKwh() {
+    return getDailyConsumptionKwh() * 30;
+  }
+
+  /** Total power in watts (power * quantity) */
+  public double getTotalPowerWatts() {
+    return type.getPowerWatts() * quantity;
+  }
 }
