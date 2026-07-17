@@ -11,6 +11,8 @@
     "lint:java": "sh -c 'docker run --rm --volume m2_cache:/root/.m2 -v $(pwd):/workspace -w /workspace/backend maven:3.9-eclipse-temurin-21 mvn -q spotless:apply'",
     "lint:python-check": "sh -c 'docker run --rm -v $(pwd):/workspace -w /workspace/ml-service ghcr.io/astral-sh/ruff:latest check --fix'",
     "lint:python-format": "sh -c 'docker run --rm -v $(pwd):/workspace -w /workspace/ml-service ghcr.io/astral-sh/ruff:latest format'",
+    "lint:frontend-lint": "cd frontend && npx eslint --fix",
+    "lint:frontend-format": "cd frontend && npx prettier --write",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -29,8 +31,8 @@
       "npm run lint:python-format"
     ],
     "frontend/**/*.{ts,tsx}": [
-      "cd frontend && npx eslint --fix",
-      "cd frontend && npx prettier --write"
+      "npm run lint:frontend-lint",
+      "npm run lint:frontend-format"
     ],
     "*.md": [
       "markdownlint-cli2 --fix",
