@@ -10,28 +10,28 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserRepositoryAdapter implements UserRepositoryPort {
 
-  private final UserJpaRepository jpaRepository;
-  private final UserMapper mapper;
+    private final UserJpaRepository jpaRepository;
+    private final UserMapper mapper;
 
-  public UserRepositoryAdapter(UserJpaRepository jpaRepository, UserMapper mapper) {
-    this.jpaRepository = jpaRepository;
-    this.mapper = mapper;
-  }
+    public UserRepositoryAdapter(UserJpaRepository jpaRepository, UserMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
-  @Override
-  public User save(User user) {
-    var entity = mapper.toEntity(user);
-    var saved = jpaRepository.save(entity);
-    return mapper.toDomain(saved);
-  }
+    @Override
+    public User save(User user) {
+        var entity = mapper.toEntity(user);
+        var saved = jpaRepository.save(entity);
+        return mapper.toDomain(saved);
+    }
 
-  @Override
-  public Optional<User> findByEmail(String email) {
-    return jpaRepository.findByEmail(email).map(mapper::toDomain);
-  }
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaRepository.findByEmail(email).map(mapper::toDomain);
+    }
 
-  @Override
-  public Optional<User> findById(Long id) {
-    return jpaRepository.findById(id).map(mapper::toDomain);
-  }
+    @Override
+    public Optional<User> findById(Long id) {
+        return jpaRepository.findById(id).map(mapper::toDomain);
+    }
 }

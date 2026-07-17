@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfiguration {
 
-  @Bean
-  public EnergyAnalysisService energyAnalysisService(
-      AnalysisRepositoryPort repository, MlServiceClient mlServiceClient) {
-    return new EnergyAnalysisService(repository, mlServiceClient);
-  }
+    @Bean
+    public EnergyAnalysisService energyAnalysisService(
+            AnalysisRepositoryPort repository, MlServiceClient mlServiceClient) {
+        return new EnergyAnalysisService(repository, mlServiceClient);
+    }
 }

@@ -17,12 +17,13 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(BeanConfiguration.class)
 class AnalysisControllerIntegrationTest {
 
-  @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Test
-  void shouldReturn201WithValidAnalysis() throws Exception {
-    String body =
-        """
+    @Test
+    void shouldReturn201WithValidAnalysis() throws Exception {
+        String body =
+                """
             {
                 "consumption_kwh": 200,
                 "peak_hour_usage": false,
@@ -32,21 +33,22 @@ class AnalysisControllerIntegrationTest {
             }
             """;
 
-    mockMvc
-        .perform(post("/energy-analysis").contentType(MediaType.APPLICATION_JSON).content(body))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.category").value("BOM"))
-        .andExpect(jsonPath("$.probability").isNumber())
-        .andExpect(jsonPath("$.recommendations").isArray())
-        .andExpect(jsonPath("$.estimated_monthly_cost").value(150.0))
-        .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.created_at").exists());
-  }
+        mockMvc.perform(post("/energy-analysis")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.category").value("BOM"))
+                .andExpect(jsonPath("$.probability").isNumber())
+                .andExpect(jsonPath("$.recommendations").isArray())
+                .andExpect(jsonPath("$.estimated_monthly_cost").value(150.0))
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.created_at").exists());
+    }
 
-  @Test
-  void shouldReturn400ForInvalidData() throws Exception {
-    String body =
-        """
+    @Test
+    void shouldReturn400ForInvalidData() throws Exception {
+        String body =
+                """
             {
                 "consumptionKwh": -10,
                 "peakHourUsage": null,
@@ -56,17 +58,19 @@ class AnalysisControllerIntegrationTest {
             }
             """;
 
-    mockMvc
-        .perform(post("/energy-analysis").contentType(MediaType.APPLICATION_JSON).content(body))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Erro de validação"))
-        .andExpect(jsonPath("$.fields").isMap());
-  }
+        mockMvc.perform(post("/energy-analysis")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Erro de validação"))
+                .andExpect(jsonPath("$.fields").isMap());
+    }
 
-  @Test
-  void shouldReturn400ForEmptyBody() throws Exception {
-    mockMvc
-        .perform(post("/energy-analysis").contentType(MediaType.APPLICATION_JSON).content("{}"))
-        .andExpect(status().isBadRequest());
-  }
+    @Test
+    void shouldReturn400ForEmptyBody() throws Exception {
+        mockMvc.perform(post("/energy-analysis")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
 }

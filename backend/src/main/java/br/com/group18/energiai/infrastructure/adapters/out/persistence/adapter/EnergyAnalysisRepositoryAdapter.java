@@ -11,24 +11,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
 
-  private final EnergyAnalysisJpaRepository jpaRepository;
-  private final EnergyAnalysisMapper mapper;
+    private final EnergyAnalysisJpaRepository jpaRepository;
+    private final EnergyAnalysisMapper mapper;
 
-  public EnergyAnalysisRepositoryAdapter(
-      EnergyAnalysisJpaRepository jpaRepository, EnergyAnalysisMapper mapper) {
-    this.jpaRepository = jpaRepository;
-    this.mapper = mapper;
-  }
+    public EnergyAnalysisRepositoryAdapter(EnergyAnalysisJpaRepository jpaRepository, EnergyAnalysisMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
-  @Override
-  public EnergyAnalysis save(EnergyAnalysis analysis) {
-    var entity = mapper.toEntity(analysis);
-    var saved = jpaRepository.save(entity);
-    return mapper.toDomain(saved);
-  }
+    @Override
+    public EnergyAnalysis save(EnergyAnalysis analysis) {
+        var entity = mapper.toEntity(analysis);
+        var saved = jpaRepository.save(entity);
+        return mapper.toDomain(saved);
+    }
 
-  @Override
-  public List<EnergyAnalysis> listAll() {
-    return jpaRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
+    @Override
+    public List<EnergyAnalysis> listAll() {
+        return jpaRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
+    }
 }

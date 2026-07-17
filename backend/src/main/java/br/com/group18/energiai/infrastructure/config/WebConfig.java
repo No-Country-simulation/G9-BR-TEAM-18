@@ -10,21 +10,21 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class WebConfig {
 
-  @Value("${CORS_ALLOWED_ORIGINS:*}")
-  private String allowedOrigins;
+    @Value("${CORS_ALLOWED_ORIGINS:*}")
+    private String allowedOrigins;
 
-  @Bean
-  public CorsFilter corsFilter() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
-    for (String origin : allowedOrigins.split(",")) {
-      config.addAllowedOriginPattern(origin.trim());
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        for (String origin : allowedOrigins.split(",")) {
+            config.addAllowedOriginPattern(origin.trim());
+        }
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
-    config.addAllowedHeader("*");
-    config.addAllowedMethod("*");
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return new CorsFilter(source);
-  }
 }

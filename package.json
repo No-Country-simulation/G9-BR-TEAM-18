@@ -8,7 +8,7 @@
     "lint:spell": "cspell $(git ls-files \"*.md\")",
     "lint:chars": "node scripts/check-forbidden-chars.mjs $(git ls-files \"*.md\")",
     "lint:docs": "npm run lint:markdown && npm run lint:spell && npm run lint:chars",
-    "lint:java": "docker run --rm --volume m2_cache:/root/.m2 -v $(pwd):/workspace -w /workspace/backend maven:3.9-eclipse-temurin-21 mvn -q spotless:apply",
+    "lint:java": "sh -c 'docker run --rm --volume m2_cache:/root/.m2 -v $(pwd):/workspace -w /workspace/backend maven:3.9-eclipse-temurin-21 mvn -q spotless:apply'",
     "prepare": "husky"
   },
   "devDependencies": {
