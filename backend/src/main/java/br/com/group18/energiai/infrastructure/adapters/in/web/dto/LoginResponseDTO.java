@@ -2,24 +2,39 @@ package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
 public class LoginResponseDTO {
 
-    private Long id;
-    private String nome;
-    private String email;
+  private Long id;
+  private String name;
+  private String email;
 
-    public LoginResponseDTO() {}
+  public LoginResponseDTO() {}
 
-    public LoginResponseDTO(Long id, String nome, String email) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-    }
+  public LoginResponseDTO(Long id, String name, String email) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+  }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+  public Long getId() {
+    return id;
+  }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
 }

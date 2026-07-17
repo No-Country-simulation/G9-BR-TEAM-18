@@ -6,15 +6,25 @@ import jakarta.validation.constraints.Size;
 
 public class LoginRequestDTO {
 
-    @NotBlank @Email
-    private String email;
+  @NotBlank @Email private String email;
 
-    @NotBlank @Size(min = 6)
-    private String senha;
+  @NotBlank
+  @Size(min = 6)
+  private String password;
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getSenha() { return senha; }
-    public void setSenha(String senha) { this.senha = senha; }
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }
