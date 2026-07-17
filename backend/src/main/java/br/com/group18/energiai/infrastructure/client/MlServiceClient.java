@@ -14,8 +14,10 @@ public class MlServiceClient {
   private static final Logger log = LoggerFactory.getLogger(MlServiceClient.class);
 
   private final WebClient webClient;
+  private final String mlServiceUrl;
 
   public MlServiceClient(@Value("${ml.service.url:http://localhost:8000}") String mlServiceUrl) {
+    this.mlServiceUrl = mlServiceUrl;
     this.webClient = WebClient.builder().baseUrl(mlServiceUrl).build();
   }
 
@@ -27,9 +29,12 @@ public class MlServiceClient {
           .bodyValue(request)
           .retrieve()
           .bodyToMono(MlPredictResponse.class)
-          .block(Duration.ofSeconds(5));
+          .block(Duration.ofSeconds(45));
     } catch (Exception e) {
-      log.warn("ML Service indisponível: {}", e.getMessage());
+      log.warn(
+          "ML Service indisponível — timeout de 45s excedido ou conexão recusada em {}: {}",
+          mlServiceUrl,
+          e.getMessage());
       return null;
     }
   }
