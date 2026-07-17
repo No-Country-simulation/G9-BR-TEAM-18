@@ -1,0 +1,27 @@
+name: lint-infra
+
+on:
+  pull_request:
+    paths:
+      - "**/Dockerfile*"
+      - "**/*.yml"
+      - "**/*.yaml"
+
+jobs:
+  hadolint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile: [backend/Dockerfile, frontend/Dockerfile]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install yamllint
+      - run: yamllint .
