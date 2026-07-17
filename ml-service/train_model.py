@@ -1,11 +1,13 @@
 """
 Training script for the energy efficiency classification model.
 
-Generates synthetic data + loads labeled data from CSVs + real feedback
-for cyclic retraining. Each run the model incorporates:
-  - labeled-energy-base.csv (1000 real records)
-  - treino_feedback.jsonl (accumulated real predictions)
-  - synthetic data (for balancing)
+Loads real data from PPH 2019 survey + labeled CSV + feedback loop,
+with synthetic data for class balancing.
+
+Data sources:
+  - pph-data-complete.csv (27,827 real Brazilian household records)
+  - labeled-energy-base.csv (1,000 labeled records)
+  - treino_feedback.jsonl (accumulated live predictions)
 
 Usage:
     python3 train_model.py
@@ -59,6 +61,7 @@ model_filename = os.getenv("MODEL_PATH", "categorization-model.joblib")
 MODEL_PATH = os.path.join(BASE_DIR, model_filename)
 
 LABELED_CSV = os.path.join(DATA_DIR, "labeled-energy-base.csv")
+PPH_CSV = os.path.join(DATA_DIR, "pph-data-complete.csv")
 
 CATEGORIES = ["Excelente", "Bom", "Mediano", "Ruim", "Critico"]
 MAP_CATEGORY_UPPER = {c.upper(): c for c in CATEGORIES}
@@ -74,7 +77,7 @@ BASE_CONSUMPTION_BY_TYPE = {
     "Outro": 250,
 }
 
-N_SYNTHETIC = int(os.getenv("N_SYNTHETIC", "4000"))
+N_SYNTHETIC = int(os.getenv("N_SYNTHETIC", "2000"))
 FEEDBACK_WEIGHT = int(os.getenv("FEEDBACK_WEIGHT", "5"))
 
 BASE_NUMERIC_COLUMNS = [
@@ -102,6 +105,72 @@ ENGINEERED_COLUMNS = [
 TOTAL_NUMERIC_COLUMNS = BASE_NUMERIC_COLUMNS + BOOLEAN_COLUMNS + ENGINEERED_COLUMNS
 
 FEATURE_COLUMNS = BASE_NUMERIC_COLUMNS + CATEGORICAL_COLUMNS + BOOLEAN_COLUMNS
+
+# Columns in PPH CSV used for feature extraction
+PPH_APPLIANCE_QTY_COLUMNS = [
+    "qtd_geladeira",
+    "qtd_ar_condicionado",
+    "qtd_ventilador",
+    "qtd_lampadas",
+    "qtd_microondas",
+    "qtd_air_fryer",
+    "qtd_lavar_secar",
+    "qtd_computadores",
+    "qtd_videogame",
+    "qtd_tv",
+    "qtd_chuveiro_eletrico",
+]
+
+PPH_CATEGORY_KWH_COLUMNS = {
+    "kwh_categoria_iluminacao": "Iluminacao",
+    "kwh_categoria_refrigeracao": "Refrigeracao",
+    "kwh_categoria_climatizacao": "Climatizacao",
+    "kwh_categoria_eletrodomesticos": "Eletrodomesticos",
+    "kwh_categoria_tecnologia": "Tecnologia",
+}
+
+
+def _assign_region_property(region, counter):
+    """Assign property type based on region with proportional distribution."""
+    distribution = {
+        "Norte": ["Casa", "Rural", "Outro", "Casa", "Casa"],
+        "Nordeste": ["Casa", "Casa", "Rural", "Apartamento", "Outro"],
+        "Centro-Oeste": ["Casa", "Rural", "Outro", "Casa", "Comercial"],
+        "Sudeste": ["Apartamento", "Casa", "Apartamento", "Casa", "Comercial"],
+        "Sul": ["Casa", "Casa", "Apartamento", "Rural", "Outro"],
+    }
+    options = distribution.get(region, ["Casa", "Outro"])
+    return options[counter % len(options)]
+
+
+def _estimate_high_consumption_hours(kwh, equipment_qty):
+    """Estimate high consumption hours based on consumption per equipment."""
+    consumption_per_unit = kwh / max(equipment_qty, 1)
+    if consumption_per_unit > 40:
+        return 8.0
+    elif consumption_per_unit > 25:
+        return 5.0
+    else:
+        return 3.0
+
+
+def _infer_peak_usage(row):
+    """Infer peak hour usage from multiple habit columns."""
+    peak_indicators = [
+        "habito_evita_standby",
+        "habito_ac_portas_fechadas",
+        "habito_desliga_tv_sem_uso",
+    ]
+    conscious_count = sum(
+        1
+        for col in peak_indicators
+        if col in row.index
+        and isinstance(row[col], str)
+        and row[col].strip() in ("Nunca", "Raramente")
+    )
+    if conscious_count >= 2:
+        return 1
+    return 0
 
 
 def generate_record(client_id):
@@ -173,6 +242,94 @@ def load_labeled_csv(path):
         if col not in df.columns:
             df[col] = 0.0
     return df[FEATURE_COLUMNS + ["category"]]
+
+
+def load_pph_data(path):
+    """Load PPH 2019 survey data and convert to training format.
+
+    The PPH dataset contains real Brazilian household energy consumption
+    data with appliance-level detail. Since it has no efficiency label,
+    we compute the inefficiency index to create labeled categories.
+
+    Features derived from PPH columns:
+      - consumption_kwh: consumo_real_medio_kwh_mes
+      - equipment_quantity: sum of qtd_* appliance columns
+      - property_type: inferred from REGIAO with proportional distribution
+      - high_consumption_hours: estimated from consumption per equipment
+      - peak_hour_usage: inferred from multiple habit columns
+      - consumption distribution: from kwh_categoria_* columns
+      - highest_consumption_category: from max of kwh_categoria_*
+    """
+    if not os.path.exists(path):
+        print("  File not found.")
+        return pd.DataFrame()
+
+    df = pd.read_csv(path, encoding="utf-8-sig")
+
+    # Assign property type with regional proportional distribution
+    df["property_type"] = df.reset_index(drop=True).apply(
+        lambda row: _assign_region_property(
+            row["REGIAO"].strip() if isinstance(row["REGIAO"], str) else "Outro",
+            row.name,
+        ),
+        axis=1,
+    )
+
+    # Calculate total equipment quantity from all appliance columns
+    qty_cols = [c for c in PPH_APPLIANCE_QTY_COLUMNS if c in df.columns]
+    df["equipment_quantity"] = df[qty_cols].fillna(0).astype(int).sum(axis=1)
+
+    # Calculate consumption kWh from reported value, with fallback
+    kwh_cols = [
+        "kwh_" + c.replace("qtd_", "")
+        for c in qty_cols
+        if "kwh_" + c.replace("qtd_", "") in df.columns
+    ]
+    df["consumption_kwh"] = pd.to_numeric(df["consumo_real_medio_kwh_mes"], errors="coerce").fillna(
+        df[kwh_cols].fillna(0).sum(axis=1)
+    )
+
+    # Estimate high consumption hours deterministically from consumption intensity
+    df["high_consumption_hours"] = df.apply(
+        lambda row: _estimate_high_consumption_hours(
+            row["consumption_kwh"], row["equipment_quantity"]
+        ),
+        axis=1,
+    )
+
+    # Infer peak hour usage from multiple habit columns
+    df["peak_hour_usage"] = df.apply(_infer_peak_usage, axis=1)
+
+    # Map category kWh to consumption distribution (monthly kWh -> avg watts)
+    df["refrigeration_watts"] = df.get("kwh_categoria_refrigeracao", 0).fillna(0) * 1000 / 730
+    df["air_conditioning_watts"] = df.get("kwh_categoria_climatizacao", 0).fillna(0) * 1000 / 730
+    df["heating_watts"] = df.get("kwh_categoria_eletrodomesticos", 0).fillna(0) * 1000 / 730
+    df["lighting_watts"] = df.get("kwh_categoria_iluminacao", 0).fillna(0) * 1000 / 730
+
+    # Determine highest consumption category from kWh distribution
+    cat_cols = [c for c in PPH_CATEGORY_KWH_COLUMNS if c in df.columns]
+    if cat_cols:
+        cat_values = df[cat_cols].fillna(0)
+        max_cat_idx = cat_values.idxmax(axis=1)
+        df["highest_consumption_category"] = max_cat_idx.map(PPH_CATEGORY_KWH_COLUMNS)
+    else:
+        df["highest_consumption_category"] = "Outros"
+
+    # Handle missing values
+    df["consumption_kwh"] = (
+        df["consumption_kwh"].fillna(df["consumption_kwh"].median()).clip(lower=20)
+    )
+    df["highest_consumption_category"] = df["highest_consumption_category"].fillna("Outros")
+
+    # Calculate inefficiency index to create labels
+    pph_subset = df[FEATURE_COLUMNS].copy()
+    pph_subset["peak_hour_usage"] = pph_subset["peak_hour_usage"].astype(int)
+    index = calculate_inefficiency_index(pph_subset)
+    df["category"] = pd.qcut(index, q=5, labels=CATEGORIES)
+
+    result = df[FEATURE_COLUMNS + ["category"]].copy()
+    result["peak_hour_usage"] = result["peak_hour_usage"].astype(int)
+    return result
 
 
 def load_feedback(path):
@@ -250,6 +407,18 @@ print("=" * 60)
 print("DATA LOADING")
 print("=" * 60)
 
+parts = []
+
+print("Loading PPH 2019 real survey data...")
+df_pph = load_pph_data(PPH_CSV)
+if len(df_pph) > 0:
+    print(f"  {len(df_pph)} records from PPH 2019 survey")
+    print("  Category distribution (PPH):")
+    for cat, count in df_pph["category"].value_counts().items():
+        print(f"    {cat}: {count}")
+    parts.append(df_pph)
+print()
+
 print("Loading labeled data from CSVs...")
 df_csv = load_labeled_csv(LABELED_CSV)
 if len(df_csv) > 0:
@@ -257,19 +426,17 @@ if len(df_csv) > 0:
     print("  Category distribution (CSV):")
     for cat, count in df_csv["category"].value_counts().items():
         print(f"    {cat}: {count}")
+    parts.append(df_csv)
 print()
 
-print("Generating synthetic data...")
+print("Generating synthetic data for class balancing...")
 df_sint = generate_synthetic(N_SYNTHETIC)
 print(f"  {len(df_sint)} synthetic records generated")
+parts.append(df_sint)
 print()
 
 print("Loading feedback from real predictions...")
 df_fb = load_feedback(FEEDBACK_PATH)
-parts = [df_sint]
-
-if len(df_csv) > 0:
-    parts.append(df_csv)
 
 if len(df_fb) > 0:
     print(f"  {len(df_fb)} feedback records loaded")
