@@ -498,35 +498,32 @@ export default function DemoTool() {
     );
   }, [applianceTypes, searchTerm]);
 
-  // --- Cálculo dos totais a partir dos aparelhos selecionados ---
-  const applianceSummary = selectedAppliances.reduce(
-    (acc, item) => {
-      const tipo = applianceTypes.find((t) => t.id === item.type);
-      if (!tipo) return acc;
-      const dailyKwh = (tipo.powerWatts * tipo.dailyUsageHours * item.quantity) / 1000;
+  // --- Cálculo único e consolidado dos aparelhos selecionados ---
+  const applianceCalc = useMemo(() => {
+    if (selectedAppliances.length === 0) {
       return {
-        totalEquipamentos: acc.totalEquipamentos + item.quantity,
-        consumoMensalKwh: acc.consumoMensalKwh + dailyKwh * 30,
+        totalEquipamentos: 0,
+        consumoMensalKwh: 0,
+        highestConsumptionCategory: "Outros",
+        refrigerationWatts: 0,
+        heatingWatts: 0,
+        airConditioningWatts: 0,
+        lightingWatts: 0,
       };
-    },
-    { totalEquipamentos: 0, consumoMensalKwh: 0 },
-  );
+    }
 
-  // Quando aparelhos mudam, auto-preenche consumption_kwh e campos avançados
-  useEffect(() => {
-    if (selectedAppliances.length === 0) return;
-
-    // Recalcula agregações dentro do efeito para evitar dependências de objeto
     const agregado: Record<string, number> = {};
     let totalConsumo = 0;
+    let totalQty = 0;
 
     for (const item of selectedAppliances) {
       const tipo = applianceTypes.find((t) => t.id === item.type);
       if (!tipo) continue;
       const dailyKwh = (tipo.powerWatts * tipo.dailyUsageHours * item.quantity) / 1000;
       totalConsumo += dailyKwh * 30;
-      const cat = tipo.mlCategory;
+      totalQty += item.quantity;
       const totalW = tipo.powerWatts * item.quantity;
+      const cat = tipo.mlCategory;
       agregado[cat] = (agregado[cat] ?? 0) + totalW;
       if (tipo.distributionField !== "NONE") {
         const distKey = `dist_${tipo.distributionField}`;
@@ -534,36 +531,42 @@ export default function DemoTool() {
       }
     }
 
-    // Determina categoria de maior consumo
-    const CATEGORY_NAMES: Record<string, string> = {
-      Refrigeracao: "Refrigeração",
-      Climatizacao: "Climatização",
-      Tecnologia: "Tecnologia",
-      Iluminacao: "Iluminação",
-      Eletrodomesticos: "Eletrodomésticos",
-      Servicos: "Serviços",
-      Outros: "Outros",
-    };
+    // Categoria de maior consumo (sem acentos, consistente com o modelo ML)
     let maiorCat = "Outros";
     let maiorValor = -1;
     for (const [cat, val] of Object.entries(agregado)) {
       if (cat.startsWith("dist_")) continue;
       if (val > maiorValor) {
         maiorValor = val;
-        maiorCat = CATEGORY_NAMES[cat] ?? "Outros";
+        maiorCat = cat;
       }
     }
 
+    return {
+      totalEquipamentos: totalQty,
+      consumoMensalKwh: totalConsumo,
+      highestConsumptionCategory: maiorCat,
+      refrigerationWatts: agregado["dist_REFRIGERATION_WATTS"] ?? 0,
+      heatingWatts: agregado["dist_HEATING_WATTS"] ?? 0,
+      airConditioningWatts: agregado["dist_AIR_CONDITIONING_WATTS"] ?? 0,
+      lightingWatts: agregado["dist_LIGHTING_WATTS"] ?? 0,
+    };
+  }, [selectedAppliances, applianceTypes]);
+
+  // Sincroniza applianceCalc com o formulário (apenas quando aparelhos mudam)
+  useEffect(() => {
+    if (selectedAppliances.length === 0) return;
+    const ac = applianceCalc;
     setForm((prev) => ({
       ...prev,
-      consumption_kwh: Math.round(totalConsumo),
-      highest_consumption_category: maiorCat,
-      refrigeration_watts: agregado["dist_REFRIGERATION_WATTS"] ?? 0,
-      heating_watts: agregado["dist_HEATING_WATTS"] ?? 0,
-      air_conditioning_watts: agregado["dist_AIR_CONDITIONING_WATTS"] ?? 0,
-      lighting_watts: agregado["dist_LIGHTING_WATTS"] ?? 0,
+      consumption_kwh: Math.round(ac.consumoMensalKwh),
+      highest_consumption_category: ac.highestConsumptionCategory,
+      refrigeration_watts: ac.refrigerationWatts,
+      heating_watts: ac.heatingWatts,
+      air_conditioning_watts: ac.airConditioningWatts,
+      lighting_watts: ac.lightingWatts,
     }));
-  }, [selectedAppliances, applianceTypes]);
+  }, [selectedAppliances, applianceCalc]);
 
   // --- Handlers ---
   function toggleCategory(cat: string) {
@@ -612,18 +615,21 @@ export default function DemoTool() {
         property_type: form.property_type,
         high_consumption_hours: form.high_consumption_hours,
         peak_hour_usage: form.peak_hour_usage,
-        consumption_kwh: form.consumption_kwh,
-        equipment_quantity:
-          selectedAppliances.length > 0 ? applianceSummary.totalEquipamentos : undefined,
-        highest_consumption_category: form.highest_consumption_category,
-        daily_consumption_distribution: {
-          REFRIGERATION_WATTS: form.refrigeration_watts,
-          HEATING_WATTS: form.heating_watts,
-          AIR_CONDITIONING_WATTS: form.air_conditioning_watts,
-          LIGHTING_WATTS: form.lighting_watts,
-        },
-        // Aparelhos específicos (precisão quantitativa)
+        // Quando há aparelhos, o backend recalcula tudo — fonte única de verdade
         appliances: selectedAppliances.length > 0 ? selectedAppliances : undefined,
+        consumption_kwh: selectedAppliances.length > 0 ? undefined : form.consumption_kwh,
+        equipment_quantity: undefined,
+        highest_consumption_category:
+          selectedAppliances.length > 0 ? undefined : form.highest_consumption_category,
+        daily_consumption_distribution:
+          selectedAppliances.length > 0
+            ? undefined
+            : {
+                REFRIGERATION_WATTS: form.refrigeration_watts,
+                HEATING_WATTS: form.heating_watts,
+                AIR_CONDITIONING_WATTS: form.air_conditioning_watts,
+                LIGHTING_WATTS: form.lighting_watts,
+              }
       };
       const res = await analyzeDemo(request);
       setResult(res);
@@ -726,7 +732,7 @@ export default function DemoTool() {
               Seus Aparelhos
               {selectedAppliances.length > 0 && (
                 <span className="appliance-count-badge">
-                  {applianceSummary.totalEquipamentos} equip.
+                  {applianceCalc.totalEquipamentos} equip.
                 </span>
               )}
             </h3>
@@ -846,12 +852,12 @@ export default function DemoTool() {
                 <div className="appliance-summary">
                   <div className="summary-stat">
                     <span className="summary-label">Equipamentos</span>
-                    <span className="summary-value">{applianceSummary.totalEquipamentos}</span>
+                    <span className="summary-value">{applianceCalc.totalEquipamentos}</span>
                   </div>
                   <div className="summary-stat">
                     <span className="summary-label">Consumo estimado</span>
                     <span className="summary-value">
-                      {applianceSummary.consumoMensalKwh.toFixed(0)} kWh/mês
+                      {applianceCalc.consumoMensalKwh.toFixed(0)} kWh/mês
                     </span>
                   </div>
                 </div>

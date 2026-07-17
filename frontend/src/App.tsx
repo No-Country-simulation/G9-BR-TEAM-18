@@ -16,7 +16,8 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 export default function App() {
   // Warm up the backend on first load to reduce cold start delay
   useEffect(() => {
-    fetch(`${API_URL}/swagger-ui.html`, { mode: "no-cors" }).catch(() => {});
+    // Usa a raiz (/) em vez de /swagger-ui.html — mais leve, sem depender do SpringDoc
+    fetch(`${API_URL}/`, { mode: "no-cors" }).catch(() => {});
   }, []);
 
   return (

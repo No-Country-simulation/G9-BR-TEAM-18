@@ -74,6 +74,7 @@ public class AnalysisController {
     public ResponseEntity<AnalysisResponseDTO> analyze(@Valid @RequestBody AnalysisRequestDTO request) {
         Double consumptionKwh = request.getConsumptionKwh();
         Integer equipmentQuantity = request.getEquipmentQuantity();
+        if (equipmentQuantity == null) equipmentQuantity = 0;
         String highestConsumptionCategory = request.getHighestConsumptionCategory();
         Double refrigeration = request.getRefrigerationWatts();
         Double heating = request.getHeatingWatts();

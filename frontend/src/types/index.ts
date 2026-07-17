@@ -4,10 +4,10 @@ export interface User {
   email: string
 }
 
-/** Categorias de maior consumo (ML Service) */
+/** Categorias de maior consumo (ML Service) — sem acentos para consistência com o modelo */
 export const HIGHEST_CONSUMPTION_CATEGORIES = [
-  'Refrigeração', 'Climatização', 'Tecnologia',
-  'Iluminação', 'Eletrodomésticos', 'Serviços', 'Outros',
+  'Refrigeracao', 'Climatizacao', 'Tecnologia',
+  'Iluminacao', 'Eletrodomesticos', 'Servicos', 'Outros',
 ] as const
 
 export type HighestConsumptionCategory = typeof HIGHEST_CONSUMPTION_CATEGORIES[number]
