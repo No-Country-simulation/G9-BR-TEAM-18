@@ -1,13 +1,22 @@
 import pandas as pd
 
 BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250, "Apartamento": 150, "Comercial": 500,
-    "Industria": 800, "Rural": 300, "Outro": 250,
+    "Casa": 250,
+    "Apartamento": 150,
+    "Comercial": 500,
+    "Industria": 800,
+    "Rural": 300,
+    "Outro": 250,
 }
 
 HIGHEST_CONSUMPTION_CATEGORIES = [
-    "Refrigeracao", "Climatizacao", "Tecnologia", "Iluminacao",
-    "Eletrodomesticos", "Servicos", "Outros",
+    "Refrigeracao",
+    "Climatizacao",
+    "Tecnologia",
+    "Iluminacao",
+    "Eletrodomesticos",
+    "Servicos",
+    "Outros",
 ]
 
 
@@ -34,7 +43,7 @@ def normalize_category(cat):
         "eletrodomesticos": "Eletrodomesticos",
         "serviços": "Servicos",
         "servicos": "Servicos",
-        "outros": "Outros"
+        "outros": "Outros",
     }
     return mapping.get(cat_lower, "Outros")
 
@@ -46,7 +55,9 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     epsilon = 1e-6
 
     if "highest_consumption_category" in df.columns:
-        df["highest_consumption_category"] = df["highest_consumption_category"].apply(normalize_category)
+        df["highest_consumption_category"] = df["highest_consumption_category"].apply(
+            normalize_category
+        )
 
     df["consumption_per_equipment"] = df["consumption_kwh"] / (df["equipment_quantity"] + epsilon)
     df["consumption_per_hour"] = df["consumption_kwh"] / (df["high_consumption_hours"] + epsilon)
@@ -56,8 +67,10 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df["consumption_per_hour"] = df["consumption_per_hour"].clip(0, 500)
 
     total = (
-        df["refrigeration_watts"] + df["heating_watts"]
-        + df["air_conditioning_watts"] + df["lighting_watts"]
+        df["refrigeration_watts"]
+        + df["heating_watts"]
+        + df["air_conditioning_watts"]
+        + df["lighting_watts"]
     )
     df["total_watts"] = total
     df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)
@@ -68,7 +81,10 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     if "highest_consumption_category" in df.columns:
         df["highest_consumption_category_lower"] = df["highest_consumption_category"].str.lower()
         for cat in HIGHEST_CONSUMPTION_CATEGORIES:
-            df[f"cat_highest_{cat.lower()}"] = (df["highest_consumption_category_lower"] == cat.lower()).astype(int)
+            lower_cat = cat.lower()
+            df[f"cat_highest_{lower_cat}"] = (
+                df["highest_consumption_category_lower"] == lower_cat
+            ).astype(int)
 
     if "daily_consumption_distribution" in df.columns:
         df["refrigeration_watts"] = df["daily_consumption_distribution"].apply(
@@ -84,8 +100,10 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
             lambda x: x.get("LIGHTING_WATTS", 0.0) if isinstance(x, dict) else 0.0
         )
         total = (
-            df["refrigeration_watts"] + df["heating_watts"]
-            + df["air_conditioning_watts"] + df["lighting_watts"]
+            df["refrigeration_watts"]
+            + df["heating_watts"]
+            + df["air_conditioning_watts"]
+            + df["lighting_watts"]
         )
         df["total_watts"] = total
         df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)

@@ -1,20 +1,23 @@
-import os
 import json
+import os
+import re
 import time
+import traceback
+from datetime import UTC, date, datetime
+
 import joblib
 import pandas as pd
-from datetime import datetime, timezone, date
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from pydantic import BaseModel
 from groq import Groq
+from pydantic import BaseModel
 
 load_dotenv()
 
 app = FastAPI(
     title="EnergiAI - API de Inteligência Artificial",
     description="API interna para análise e classificação de eficiência energética.",
-    version="2.1.0"
+    version="2.1.0",
 )
 
 # -------------------------------------------------------------
@@ -23,13 +26,25 @@ app = FastAPI(
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "categorization-model.joblib")
+
+print("[EnergiAI] Startup debug:")
+print(f"[EnergiAI]   BASE_DIR = {BASE_DIR}")
+print(f"[EnergiAI]   MODEL_PATH = {MODEL_PATH}")
+print(f"[EnergiAI]   CWD = {os.getcwd()}")
+print(f"[EnergiAI]   Files in /app: {os.listdir('/app') if os.path.isdir('/app') else 'N/A'}")
+print(f"[EnergiAI]   Model file exists: {os.path.exists(MODEL_PATH)}")
+
 model = None
 
 try:
     model = joblib.load(MODEL_PATH)
-    print(f"[EnergiAI] Model loaded from {MODEL_PATH}")
+    print(f"[EnergiAI] Model loaded successfully from {MODEL_PATH}")
+except FileNotFoundError:
+    print(f"[EnergiAI] ERROR: Model file not found at {MODEL_PATH}")
+    print(f"[EnergiAI]   Files in BASE_DIR: {os.listdir(BASE_DIR)}")
 except Exception as e:
-    print(f"[EnergiAI] Warning: model not found ({e}) — using fallback rule-based")
+    print(f"[EnergiAI] ERROR: Failed to load model: {e}")
+    print(f"[EnergiAI]   Traceback: {traceback.format_exc()}")
 
 # -------------------------------------------------------------
 # GROQ (fallback when confidence < 80%)
@@ -80,20 +95,27 @@ def _groq_register_call():
     _groq_call_times.append(time.time())
     _groq_calls_today += 1
 
+
 # -------------------------------------------------------------
 # CONTRACT DEFINITION
 # -------------------------------------------------------------
 
 BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250.0, "Apartamento": 150.0, "Comercial": 500.0,
-    "Industria": 800.0, "Rural": 300.0, "Outro": 250.0,
+    "Casa": 250.0,
+    "Apartamento": 150.0,
+    "Comercial": 500.0,
+    "Industria": 800.0,
+    "Rural": 300.0,
+    "Outro": 250.0,
 }
+
 
 class ConsumptionDistribution(BaseModel):
     REFRIGERATION_WATTS: float = 0.0
     HEATING_WATTS: float = 0.0
     AIR_CONDITIONING_WATTS: float = 0.0
     LIGHTING_WATTS: float = 0.0
+
 
 class PredictRequest(BaseModel):
     consumption_kwh: float
@@ -104,11 +126,13 @@ class PredictRequest(BaseModel):
     highest_consumption_category: str | None = "Outros"
     daily_consumption_distribution: ConsumptionDistribution | None = None
 
+
 class PredictResponse(BaseModel):
     category: str
     probability: float
     recommendations: list[str]
     source: str = ""
+
 
 class StatusResponse(BaseModel):
     groq_available: bool
@@ -118,9 +142,11 @@ class StatusResponse(BaseModel):
     groq_minute_limit: int
     model_loaded: bool
 
+
 # -------------------------------------------------------------
 # CLASSIFICATION LOGIC (RULE-BASED)
 # -------------------------------------------------------------
+
 
 def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
     base = BASE_CONSUMPTION_BY_TYPE.get(data.property_type, 250.0)
@@ -142,10 +168,13 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
         return "RUIM", 0.82
     return "CRITICO", 0.90
 
+
 def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
     if data.peak_hour_usage:
-        recs.append("Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h).")
+        recs.append(
+            "Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."
+        )
 
     if category in ("RUIM", "CRITICO"):
         recs.append("Considere substituir equipamentos antigos por modelos mais eficientes.")
@@ -154,7 +183,10 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
         recs.append("Avalie a real necessidade de todos os equipamentos ligados simultaneamente.")
 
     if data.high_consumption_hours > 5:
-        recs.append("Distribua o uso de equipamentos ao longo do dia para reduzir o horário de alto consumo.")
+        recs.append(
+            "Distribua o uso de equipamentos ao longo do dia "
+            "para reduzir o horário de alto consumo."
+        )
 
     if data.daily_consumption_distribution:
         dc = data.daily_consumption_distribution
@@ -172,13 +204,15 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
 
     return recs
 
+
 # -------------------------------------------------------------
 # GROQ — RECOMMENDATION GENERATION VIA LLM
 # -------------------------------------------------------------
 
+
 def _generate_recommendations_groq(data: PredictRequest, category: str) -> list[str]:
-    prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas
-e realmente úteis para melhorar a eficiência energética do imóvel.
+    prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas\
+ e realmente úteis para melhorar a eficiência energética do imóvel.
 
 REGRAS OBRIGATÓRIAS:
 - Envolva EXCLUSIVAMENTE: hábitos de uso de equipamentos elétricos, horários de consumo, ou
@@ -206,7 +240,14 @@ sem introdução e sem comentários adicionais."""
     response = groq_client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[
-            {"role": "system", "content": "Você é um assistente especializado em eficiência energética residencial e comercial. Responda sempre em português do Brasil, de forma objetiva e sem rodeios."},
+            {
+                "role": "system",
+                "content": (
+                    "Você é um assistente especializado em eficiência energética "
+                    "residencial e comercial. Responda sempre em português do Brasil, "
+                    "de forma objetiva e sem rodeios."
+                ),
+            },
             {"role": "user", "content": prompt},
         ],
         max_tokens=150,
@@ -214,7 +255,6 @@ sem introdução e sem comentários adicionais."""
     )
 
     text = (response.choices[0].message.content or "").strip()
-    import re
     recommendations = [
         re.sub(r"^\s*[\d]+[\.\)]?\s*", "", linha.strip("-•* ").strip())
         for linha in text.split("\n")
@@ -222,15 +262,22 @@ sem introdução e sem comentários adicionais."""
     ]
     return [r for r in recommendations[:3] if r]
 
+
 # -------------------------------------------------------------
 # STORAGE FOR RETRAINING (feedback loop)
 # -------------------------------------------------------------
 
-def _store_for_training(data: PredictRequest, category: str, probability: float,
-                        recommendations: list[str], source: str):
+
+def _store_for_training(
+    data: PredictRequest,
+    category: str,
+    probability: float,
+    recommendations: list[str],
+    source: str,
+):
     dc = data.daily_consumption_distribution or ConsumptionDistribution()
     record = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "features": {
             "consumption_kwh": data.consumption_kwh,
             "peak_hour_usage": data.peak_hour_usage,
@@ -256,9 +303,11 @@ def _store_for_training(data: PredictRequest, category: str, probability: float,
     except Exception as e:
         print(f"[EnergiAI] Error storing feedback: {e}")
 
+
 # -------------------------------------------------------------
 # PREDICTION ENDPOINT
 # -------------------------------------------------------------
+
 
 @app.post("/predict", response_model=PredictResponse)
 def predict_consumption(data: PredictRequest):
@@ -271,18 +320,23 @@ def predict_consumption(data: PredictRequest):
     if model is not None:
         try:
             dc = data.daily_consumption_distribution or ConsumptionDistribution()
-            df = pd.DataFrame([{
-                "consumption_kwh": data.consumption_kwh,
-                "peak_hour_usage": int(data.peak_hour_usage),
-                "equipment_quantity": data.equipment_quantity,
-                "property_type": data.property_type,
-                "high_consumption_hours": data.high_consumption_hours,
-                "highest_consumption_category": data.highest_consumption_category or "Outros",
-                "refrigeration_watts": dc.REFRIGERATION_WATTS,
-                "heating_watts": dc.HEATING_WATTS,
-                "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
-                "lighting_watts": dc.LIGHTING_WATTS,
-            }])
+            df = pd.DataFrame(
+                [
+                    {
+                        "consumption_kwh": data.consumption_kwh,
+                        "peak_hour_usage": int(data.peak_hour_usage),
+                        "equipment_quantity": data.equipment_quantity,
+                        "property_type": data.property_type,
+                        "high_consumption_hours": data.high_consumption_hours,
+                        "highest_consumption_category": data.highest_consumption_category
+                        or "Outros",
+                        "refrigeration_watts": dc.REFRIGERATION_WATTS,
+                        "heating_watts": dc.HEATING_WATTS,
+                        "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
+                        "lighting_watts": dc.LIGHTING_WATTS,
+                    }
+                ]
+            )
             pred = model.predict(df)[0]
             probs = model.predict_proba(df)[0]
             max_prob = float(max(probs))

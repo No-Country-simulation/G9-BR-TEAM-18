@@ -9,6 +9,8 @@
     "lint:chars": "node scripts/check-forbidden-chars.mjs $(git ls-files \"*.md\")",
     "lint:docs": "npm run lint:markdown && npm run lint:spell && npm run lint:chars",
     "lint:java": "sh -c 'docker run --rm --volume m2_cache:/root/.m2 -v $(pwd):/workspace -w /workspace/backend maven:3.9-eclipse-temurin-21 mvn -q spotless:apply'",
+    "lint:python-check": "sh -c 'docker run --rm -v $(pwd):/workspace -w /workspace/ml-service ghcr.io/astral-sh/ruff:latest check --fix'",
+    "lint:python-format": "sh -c 'docker run --rm -v $(pwd):/workspace -w /workspace/ml-service ghcr.io/astral-sh/ruff:latest format'",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -23,8 +25,8 @@
       "npm run lint:java"
     ],
     "ml-service/**/*.py": [
-      "cd ml-service && ruff check --fix",
-      "cd ml-service && ruff format"
+      "npm run lint:python-check",
+      "npm run lint:python-format"
     ],
     "frontend/**/*.{ts,tsx}": [
       "cd frontend && npx eslint --fix",
