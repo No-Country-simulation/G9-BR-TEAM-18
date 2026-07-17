@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.config;
 
+import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,14 @@ public class GlobalExceptionHandler {
         body.put("message", "Erro de validação");
         body.put("fields", fields);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(MlServiceUnavailableException.class)
+    public ResponseEntity<Map<String, String>> handleMlUnavailable(MlServiceUnavailableException ex) {
+        log.warn("ML Service indisponível: {}", ex.getMessage());
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }
 
     @ExceptionHandler(Exception.class)
