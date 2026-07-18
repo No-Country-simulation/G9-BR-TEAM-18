@@ -1,4 +1,9 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 export default function Hero() {
+  const { user } = useAuth();
+
   return (
     <section className="hero">
       <div className="hero-bg" />
@@ -7,18 +12,18 @@ export default function Hero() {
           Transforme seu consumo de <span className="hero-highlight">energia</span>
         </h1>
         <p className="hero-subtitle">
-          Descubra com inteligência artificial como reduzir sua conta de luz,
-          otimizar o uso de equipamentos e tornar seu imóvel mais eficiente.
+          Descubra com inteligência artificial como reduzir sua conta de luz, otimizar o uso de
+          equipamentos e tornar seu imóvel mais eficiente.
         </p>
         <div className="hero-actions">
-          <a href="#demo" className="btn btn-primary">
+          <Link to={user ? "/analysis" : "/register"} className="btn btn-primary">
             Experimente Agora
-          </a>
-          <a href="#features" className="btn btn-secondary">
+          </Link>
+          <a href="#como-funciona" className="btn btn-secondary">
             Saiba Mais
           </a>
         </div>
       </div>
     </section>
-  )
+  );
 }
