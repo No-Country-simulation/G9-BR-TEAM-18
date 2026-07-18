@@ -1,172 +1,244 @@
-DICIONARIO DE DADOS - consumo_energetico_completo.csv
+DICIONARIO DE DADOS - consumo_energetico_completo.csv (v2)
 Pesquisa PPH 2019 | Notebook: analise_energetica_pph2019.ipynb
 ========================================================================
 
 Cada linha da tabela representa UMA ENTREVISTA (um domicilio).
-Unidades: quantidade = numero de aparelhos; kwh_* = kWh estimados POR MES.
+- Colunas qtd_*: numero de aparelhos (inteiro).
+- Colunas kwh_*: consumo estimado do aparelho, em kWh POR MES.
+- consumo_total_kwh_mes: soma de todos os kwh_* (exceto o subtotal
+  kwh_ar_condicionado_split, que já está contido em kwh_ar_condicionado).
+- valor_estimado_conta_reais: consumo_total_kwh_mes x R$ 0,75/kWh.
 
 
 1) IDENTIFICACAO
 ------------------------------------------------------------------------
 ENTREVISTA   -> Codigo unico da entrevista/domicilio.
-REGIAO       -> Regiao do Brasil (Norte, Nordeste, Sul, Sudeste, Centro-Oeste).
-UF           -> Unidade federativa (estado) do domicilio.
+REGIAO       -> Regiao do Brasil.
+UF           -> Estado do domicilio.
 MUNICIPIO    -> Municipio do domicilio.
 
 
-2) QUANTIDADE DE APARELHOS (posse)
+2) REFRIGERACAO
 ------------------------------------------------------------------------
-qtd_geladeira          -> Numero de geladeiras/refrigeradores no domicilio.
-qtd_ar_condicionado    -> Numero de aparelhos de ar-condicionado.
-qtd_ventilador         -> Numero de ventiladores (soma de ventilador de teto
-                          + ventilador/circulador de ar).
-qtd_lampadas           -> Numero total de lampadas do domicilio, somando
-                          todos os comodos (quarto, banheiro, sala, cozinha,
-                          area de servico, garagem, area externa, corredores,
-                          varandas, outros) e todos os 26 tipos de lampada
-                          (incandescente, fluorescente, LED, dicroica etc.).
-qtd_microondas         -> Numero de fornos micro-ondas.
-qtd_air_fryer          -> Numero de fritadeiras eletricas sem oleo (Air Fryer).
-qtd_lavar_secar        -> Numero de maquinas de lavar roupa + secadoras de
-                          roupa (por aquecimento e centrifuga), somadas.
-qtd_computadores       -> Numero de computadores, somando notebooks + 
-                          computadores de mesa (desktop).
-qtd_videogame          -> Numero de videogames.
-qtd_tv                 -> Numero de televisores.
-qtd_chuveiro_eletrico  -> Numero de chuveiros eletricos.
+qtd_geladeira / kwh_geladeira
+    Refrigeradores que NAO sao do tipo "Frigobar" (1 porta, combinado 2
+    portas ou mais, side-by-side, com ou sem frost free). Consumo fixo de
+    45 kWh/mes por unidade (premissa de mercado, aparelho classe A rodando
+    24h/dia; a pesquisa nao pergunta frequencia/tempo de uso desse item).
+
+qtd_frigobar / kwh_frigobar
+    Refrigeradores do tipo "Frigobar (ate 199L)". APROXIMACAO: a pesquisa
+    pergunta a quantidade TOTAL de refrigeradores e, separadamente, o TIPO
+    predominante do(s) aparelho(s) - nao ha como saber, numa casa com mais
+    de um refrigerador, quantos sao de cada tipo. Toda a quantidade e
+    atribuida ao tipo informado. Consumo fixo de 25 kWh/mes/unidade.
+
+qtd_freezer / kwh_freezer
+    Freezers/congeladores independentes. Consumo fixo de 40 kWh/mes/unidade
+    (mesma logica da geladeira: fica ligado 24h/dia, sem pergunta de uso).
+
+qtd_bebedouro / kwh_bebedouro
+    Bebedouro / purificador / filtro de agua. UNICO item de refrigeracao
+    com frequencia e tempo de uso reais no questionario -> consumo
+    calculado pela formula padrao (potencia assumida: 90 W).
 
 
-3) CONSUMO ELETRICO ESTIMADO POR APARELHO (kWh/mes)
+3) CLIMATIZACAO
 ------------------------------------------------------------------------
-Formula geral (quando nao ha dado real de potencia no questionario):
-   kWh/mes = quantidade x (potencia_W / 1000) x horas por uso x dias de uso/mes
+qtd_ar_condicionado / kwh_ar_condicionado
+    TODOS os aparelhos de ar-condicionado do domicilio (Janela, Portatil,
+    Split comum, Split inverter, Outro). Potencia obtida a partir da
+    capacidade termica em BTU/h informada (regra pratica: ~10 BTU/h por
+    Watt). Horas/dia = horarios de uso marcados; dias de uso/mes = media
+    das frequencias mensais (janeiro a dezembro) informadas.
 
-kwh_geladeira          -> Estimado com premissa de consumo fixo por unidade
-                          (45 kWh/mes, aparelho classe A rodando 24h/dia),
-                          pois a pesquisa nao pergunta frequencia/tempo de
-                          uso da geladeira (ela fica sempre ligada).
-kwh_ar_condicionado    -> Potencia obtida a partir da capacidade termica em
-                          BTU/h informada (unico aparelho, alem do chuveiro,
-                          com algum dado real de potencia); horas/dia
-                          estimadas contando os horarios marcados como uso;
-                          dias de uso/mes = media das frequencias mensais
-                          (janeiro a dezembro) informadas no questionario.
-kwh_ventilador         -> Soma do consumo do ventilador de teto (~100 W) e do
-                          ventilador/circulador de ar (~70 W), cada um usando
-                          sua propria frequencia e duracao de uso informadas.
-kwh_iluminacao         -> Soma do consumo de todos os tipos/comodos de
-                          lampada. Potencia de cada um dos 26 tipos de
-                          lampada foi extraida do proprio codebook da
-                          pesquisa (ponto medio da faixa de watts). Horas de
-                          uso por comodo vem da contagem de horarios
-                          marcados; comodos "eventuais" (quarto e banheiro de
-                          uso eventual) nao tem essa pergunta no
-                          questionario, entao foi assumida 1h/dia para eles.
-kwh_microondas         -> Potencia assumida de 1200 W.
-kwh_air_fryer          -> Potencia assumida de 1500 W.
-kwh_lavar_secar        -> Soma do consumo da maquina de lavar roupas
-                          (potencia ~700 W, considerando o numero de
-                          lavagens/dia informado e 1h assumida por ciclo) +
-                          secadora por aquecimento (~3000 W) + secadora
-                          centrifuga (~400 W).
-kwh_computadores       -> Soma do consumo de notebooks (~60 W) e
-                          computadores de mesa (~200 W).
-kwh_videogame          -> Potencia assumida de 150 W.
-kwh_tv                 -> Potencia assumida de 120 W; como a pesquisa nao
-                          pergunta duracao de uso da TV, as horas/dia foram
-                          estimadas contando os horarios marcados como uso.
-kwh_chuveiro_eletrico  -> UNICO aparelho (alem do AC) com dado real e
-                          completo no questionario: potencia declarada (em
-                          faixas de W), numero de vezes/dia que toma banho e
-                          duracao media do banho. Nao e uma premissa de
-                          mercado, e sim calculado com as respostas reais.
+qtd_ar_condicionado_split / kwh_ar_condicionado_split
+    Subconjunto do item acima: apenas aparelhos do tipo "Split comum" ou
+    "Split inverter". APROXIMACAO: mesma logica do Frigobar (tipo
+    predominante aplicado a toda a quantidade). IMPORTANTE: este kWh JA
+    ESTA INCLUIDO em kwh_ar_condicionado - nao some as duas colunas, ou o
+    consumo de Split sera contado em dobro.
 
-IMPORTANTE: exceto geladeira (fixo 24h) e chuveiro/ar-condicionado (dados
-reais), todas as potencias usadas sao valores de referencia tipicos de
-mercado, nao valores medidos. Se voce tiver a potencia real de algum
-aparelho, ajuste a constante correspondente no notebook (Secao 4) e rode de
-novo - o resto do calculo nao precisa mudar.
+qtd_ventilador / kwh_ventilador
+    Ventilador ou circulador de ar (tipo "de mesa/portatil", nao o de
+    teto). Potencia assumida: 70 W.
+
+qtd_ventilador_teto / kwh_ventilador_teto
+    Ventilador de teto. Potencia assumida: 100 W.
+
+qtd_aquecedor_eletrico / kwh_aquecedor_eletrico
+    Aquecedor de ambiente (aquecedor eletrico portatil). Potencia
+    assumida: 1500 W.
 
 
-4) CONSUMO AGREGADO POR CATEGORIA (kWh/mes)
+4) TECNOLOGIA
 ------------------------------------------------------------------------
-kwh_categoria_iluminacao        -> = kwh_iluminacao
-kwh_categoria_refrigeracao      -> = kwh_geladeira
-kwh_categoria_climatizacao      -> = kwh_ventilador + kwh_ar_condicionado
-kwh_categoria_eletrodomesticos  -> = kwh_microondas + kwh_air_fryer +
-                                     kwh_lavar_secar + kwh_chuveiro_eletrico
-kwh_categoria_tecnologia        -> = kwh_computadores + kwh_videogame + kwh_tv
+qtd_tv / kwh_tv
+    Televisores (todos os tipos: CRT, Plasma, LCD/LED - a pesquisa nao
+    distingue OLED separadamente). Potencia assumida: 120 W. Horas/dia
+    estimadas pelos horarios de uso marcados.
+
+qtd_computador_desktop / kwh_computador_desktop
+    Computadores de mesa (chamados apenas de "Computador" no
+    questionario, para diferenciar de Notebook). Potencia assumida: 200 W.
+
+qtd_notebook / kwh_notebook
+    Notebooks. Potencia assumida: 60 W.
+
+qtd_roteador_wifi / kwh_roteador_wifi
+    Roteadores Wi-Fi, somando duas variantes perguntadas separadamente no
+    questionario: o roteador de propriedade do morador + o modem-roteador
+    fornecido pela operadora de internet. Potencia assumida: 10 W.
+
+qtd_videogame / kwh_videogame
+    Videogames. Potencia assumida: 150 W.
+
+qtd_caixa_som / kwh_caixa_som
+    APROXIMACAO: a pesquisa nao pergunta "Caixa de som" especificamente;
+    usamos o item mais proximo, "Aparelho de som/radio" (aparelhos
+    ligados na tomada; radios a pilha ja sao excluidos pelo proprio
+    questionario). Potencia assumida: 50 W.
 
 
-5) CONSUMO REAL DECLARADO E FONTE DE ENERGIA
+5) ILUMINACAO
 ------------------------------------------------------------------------
-consumo_real_medio_kwh_mes -> Media do consumo mensal de energia eletrica
-                              (em kWh) que o entrevistado informou a partir
-                              do historico real da conta de luz (ate 12
-                              meses). E o UNICO valor de consumo que nao e
-                              estimativa - vem direto da conta de luz.
-                              Fica vazio (NaN) quando o entrevistado nao
-                              soube/nao quis informar o valor da conta.
-fonte_energia              -> Origem da energia eletrica do domicilio (ex.:
-                              rede geral de distribuicao / concessionaria,
-                              gerada no proprio domicilio, mista).
-fonte_propria_energia      -> Quando ha geracao propria, qual a fonte (ex.:
-                              solar, eolica, diesel/gasolina/gas, sistema
-                              misto). Vazio quando o domicilio nao gera a
-                              propria energia.
+qtd_lampada_led / kwh_lampada_led
+qtd_lampada_fluorescente / kwh_lampada_fluorescente
+qtd_lampada_incandescente / kwh_lampada_incandescente
+    A pesquisa detalha 26 tecnologias de lampada por comodo (quarto, sala,
+    cozinha, banheiro, area de servico, garagem, area externa, corredores,
+    varandas, outros). Agrupamos essas 26 tecnologias em 3 familias:
+      - Incandescente: incandescentes comuns (ate 40W, 60W, 100W, 150W+).
+      - Fluorescente: fluorescente compacta + fluorescente tubular
+        (G/M/P).
+      - LED: LED comum + tubo LED (G/M/P) + dicroica LED + mini dicroica
+        LED.
+    NOTA: a pesquisa tambem inclui "dicroica" e "mini dicroica" halogenas
+    (nao-LED) e "outros", que nao se encaixam em nenhuma das 3 familias
+    pedidas - essas unidades NAO aparecem em nenhuma das 3 colunas acima
+    (nao foram somadas em nenhum grupo, para nao distorcer as categorias).
+    Potencia de cada tecnologia extraida do proprio codebook da pesquisa
+    (ponto medio de cada faixa de watts). Horas de uso por comodo: contagem
+    dos horarios marcados; comodos "eventuais" (quarto/banheiro de uso
+    eventual, sem pergunta de horario) usam premissa de 1h/dia.
 
 
-6) HABITOS DE ECONOMIA DE ENERGIA
+6) ELETRODOMESTICOS
 ------------------------------------------------------------------------
-Cada coluna abaixo vem de uma pergunta do tipo "com que frequencia voce
-faz X?", com respostas: Sempre / Normalmente / Raramente / Nunca /
-Nao se aplica. Foram incluidos apenas os habitos relacionados aos 11
-aparelhos selecionados, mais dois habitos gerais.
+qtd_chuveiro_eletrico / kwh_chuveiro_eletrico
+    UNICO aparelho (alem do ar-condicionado) com potencia REAL declarada
+    pelo entrevistado (faixas de W), alem de vezes/dia e duracao media do
+    banho - nao e premissa de mercado, e sim calculado com respostas reais.
 
-habito_compra_consciente          -> Ao comprar lampadas/eletrodomesticos,
-                                      da preferencia aos que consomem menos
-                                      energia (habito geral).
-habito_evita_standby               -> Evita deixar aparelhos ligados na
-                                      tomada em stand-by (habito geral).
-habito_desliga_tv_sem_uso          -> Desliga a TV quando ninguem esta
-                                      assistindo.
-habito_ac_portas_fechadas          -> Mantem portas/janelas fechadas ao usar
-                                      o ar-condicionado.
-habito_ac_desliga_ausencia         -> Desliga o ar-condicionado quando fica
-                                      fora do ambiente por muito tempo.
-habito_evita_banho_longo           -> Evita banhos demorados no chuveiro
-                                      eletrico.
-habito_chuveiro_posicao_verao      -> Usa a chave seletora do chuveiro na
-                                      posicao verao para reduzir consumo.
-habito_geladeira_porta_fechada     -> Nao deixa a porta da geladeira/freezer
-                                      aberta nem abre varias vezes.
-habito_geladeira_alimentos_frios   -> Nao guarda alimentos quentes/sem
-                                      tampa na geladeira.
-habito_geladeira_termostato        -> Regula o termostato da geladeira
-                                      conforme a estacao do ano.
-habito_geladeira_nao_seca_roupa    -> Nunca usa a parte de tras da
-                                      geladeira para secar panos/roupas.
-habito_geladeira_borracha_vedacao  -> Mantem a borracha de vedacao da porta
-                                      da geladeira em bom estado.
-habito_lava_roupa_carga_maxima     -> So liga a maquina de lavar com a
-                                      capacidade maxima de roupa indicada.
-habito_prefere_lampada_led         -> Da preferencia a lampadas LED ou
-                                      fluorescentes.
-habito_evita_luz_dia               -> Evita acender lampadas durante o dia,
-                                      aproveitando luz natural.
-habito_apaga_luz_ambiente_vazio    -> Apaga sempre as lampadas de ambientes
-                                      desocupados.
+qtd_maquina_lavar / kwh_maquina_lavar
+    Maquina de lavar roupas (todos os tipos: automatica, automatica
+    lava-e-seca, semiautomatica/tanquinho). Numero de lavagens/dia vem de
+    uma coluna irmã "_TXT" (armadilha do banco de dados - o campo numerico
+    principal so marca a opcao selecionada, nao a quantidade real).
+    Potencia assumida: 700 W; duracao assumida de 1h/ciclo (a pesquisa nao
+    pergunta duracao do ciclo).
+
+qtd_secadora_roupas / kwh_secadora_roupas
+    Secadoras de roupa, somando os dois subtipos perguntados (por
+    aquecimento: 3000 W; e centrifuga: 400 W).
+
+qtd_lava_loucas / kwh_lava_loucas
+    Maquina de lavar loucas. Potencia assumida: 1200 W.
+
+qtd_microondas / kwh_microondas
+    Forno de micro-ondas. Potencia assumida: 1200 W.
+
+qtd_forno_eletrico / kwh_forno_eletrico
+    Forno eletrico ("forninho", nao o acendedor do fogao a gas). Potencia
+    assumida: 1500 W.
+
+qtd_fogao_eletrico / kwh_fogao_eletrico
+    Fogao/cooktop eletrico (placa de vidro, nao e acendedor do fogao a
+    gas). Potencia assumida: 2000 W.
+
+qtd_air_fryer / kwh_air_fryer
+    Fritadeira eletrica SEM oleo (Air Fryer). Potencia assumida: 1500 W.
+
+qtd_cafeteira_eletrica / kwh_cafeteira_eletrica
+    Cafeteira eletrica. Potencia assumida: 800 W.
+
+qtd_ferro_passar / kwh_ferro_passar
+    Ferro de passar roupa, somando os 3 subtipos perguntados (a seco, a
+    vapor usando vapor, a vapor sem usar vapor). Potencia assumida:
+    1200 W (aplicada aos 3 subtipos).
+
+qtd_aspirador_po / kwh_aspirador_po
+    Aspirador de po. Potencia assumida: 1400 W.
+
+qtd_secador_cabelo / kwh_secador_cabelo
+    Secador de cabelo. Potencia assumida: 1800 W.
+
+qtd_liquidificador / kwh_liquidificador
+    Liquidificador. Potencia assumida: 600 W.
+
+qtd_batedeira / kwh_batedeira
+    Batedeira. Potencia assumida: 300 W.
+
+qtd_maquina_costura / kwh_maquina_costura
+    Maquina de costura. Potencia assumida: 100 W.
+
+
+7) SERVICOS
+------------------------------------------------------------------------
+qtd_bomba_dagua / kwh_bomba_dagua
+    Bomba d'agua. Potencia assumida: 750 W.
+
+qtd_portao_eletrico / kwh_portao_eletrico
+    Portao eletronico/eletrico. Potencia assumida: 300 W.
+
+qtd_motor_piscina / kwh_motor_piscina
+    APROXIMACAO: a pesquisa nao pergunta "Motor de piscina" separadamente;
+    usamos "Filtro de Piscina" (no contexto residencial brasileiro, o
+    filtro de piscina normalmente ja inclui o motor/bomba de recirculacao
+    da agua, entao a aproximacao tende a ser bastante proxima da
+    realidade). Potencia assumida: 750 W.
+
+
+8) TOTAIS
+------------------------------------------------------------------------
+consumo_total_kwh_mes
+    Soma de todas as colunas kwh_* da tabela, EXCETO
+    kwh_ar_condicionado_split (que ja esta contido dentro de
+    kwh_ar_condicionado - nao seria correto somar de novo).
+
+valor_estimado_conta_reais
+    consumo_total_kwh_mes x R$ 0,75/kWh (tarifa fixa assumida).
+
+
+========================================================================
+ITENS PEDIDOS QUE NAO EXISTEM NO QUESTIONARIO PPH 2019
+(Nao aparecem em NENHUMA coluna do CSV - nao foram inventados nem
+preenchidos com zero, para nao sugerir uma informacao que a pesquisa nao
+coletou)
+------------------------------------------------------------------------
+Tecnologia:       Monitor, Soundbar, Carregador (smartphone/tablet),
+                  Televisao OLED (a pesquisa so distingue CRT/Plasma/
+                  LCD-LED, sem opcao OLED)
+Iluminacao:       Lustre/luminaria, Abajur, Spot LED embutido (a pesquisa
+                  registra a TECNOLOGIA da lampada, nao o tipo de
+                  luminaria/fixacao)
+Eletrodomesticos: Torneira eletrica, Exaustor/coifa
+Servicos:         Aquecedor central, Boiler eletrico (como item
+                  separado), Interfone/porteiro, Cancela eletrica,
+                  Sistema de seguranca/CFTV, Sensor de presenca, Cercas
+                  eletricas
 
 
 ========================================================================
 ARQUIVOS DERIVADOS (mesmas colunas, apenas filtrados em linhas/colunas):
 
 consumo_top3_aparelhos.csv
-   -> Identificacao + quantidade/consumo apenas dos 3 aparelhos que mais
-      consumiram energia no total da amostra (ver ranking no notebook,
-      Secao 7): geladeira, chuveiro eletrico e ventilador.
+   -> Identificacao + qtd/kwh apenas dos 3 aparelhos que mais consumiram
+      energia no total da amostra (calculado no notebook, Secao 10),
+      + consumo_total_kwh_mes + valor_estimado_conta_reais.
 
 consumo_categoria_top.csv
-   -> Identificacao + quantidade/consumo apenas dos aparelhos da categoria
-      que mais consumiu energia no total da amostra: Refrigeracao.
+   -> Identificacao + qtd/kwh apenas dos aparelhos da categoria que mais
+      consumiu energia no total da amostra, + consumo_total_kwh_mes +
+      valor_estimado_conta_reais.
 ========================================================================
