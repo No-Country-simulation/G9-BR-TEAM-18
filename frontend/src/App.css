@@ -1821,6 +1821,16 @@ body::after {
   }
 }
 
+/* ─── Analysis Page ─── */
+
+.analysis-page {
+  padding-top: 7rem;
+}
+
+.analysis-page .demo-section {
+  padding-top: 0;
+}
+
 /* ─── Dashboard ─── */
 
 .dash-page {

@@ -2,7 +2,7 @@ import AnalysisForm from "../components/AnalysisForm";
 
 export default function AnalysisPage() {
   return (
-    <div>
+    <div className="analysis-page">
       <AnalysisForm />
     </div>
   );
