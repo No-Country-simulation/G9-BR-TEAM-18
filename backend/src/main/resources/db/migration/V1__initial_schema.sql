@@ -43,7 +43,6 @@ CREATE TABLE app_user (
 -- ---------------------------------------------------------------------------
 CREATE TABLE energy_analysis (
     id                              BIGINT       NOT NULL DEFAULT nextval('analysis_seq'),
-    user_id                         BIGINT       NOT NULL,
     consumption_kwh                 DOUBLE PRECISION NOT NULL,
     peak_hour_usage                 BOOLEAN      NOT NULL,
     equipment_quantity              INTEGER      NOT NULL,
@@ -60,8 +59,7 @@ CREATE TABLE energy_analysis (
     recommendations                 TEXT,
     source                          VARCHAR(100),
     created_at                      TIMESTAMP    NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_energy_analysis PRIMARY KEY (id),
-    CONSTRAINT fk_energy_analysis_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+    CONSTRAINT pk_energy_analysis PRIMARY KEY (id)
 );
 
 -- ---------------------------------------------------------------------------
