@@ -111,6 +111,7 @@ public class AuthController {
         cookie.setPath("/");
         cookie.setMaxAge(sessionMaxAge);
         cookie.setSecure(sessionSecure);
+        cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         response.addCookie(cookie);
     }
 
