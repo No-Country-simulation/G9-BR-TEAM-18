@@ -62,9 +62,9 @@ function LucideIcon({
 }
 
 const APPLIANCE_FALLBACK: ApplianceType[] = [
-  // Refrigeração
+  // ========== REFRIGERAÇÃO ==========
   {
-    id: "GELADEIRA",
+    id: "REFRIGERATOR",
     name: "Geladeira",
     mlCategory: "Refrigeracao",
     distributionField: "REFRIGERATION_WATTS",
@@ -91,7 +91,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Snowflake",
   },
   {
-    id: "BEBEDOURO",
+    id: "WATER_COOLER",
     name: "Bebedouro",
     mlCategory: "Refrigeracao",
     distributionField: "REFRIGERATION_WATTS",
@@ -99,9 +99,9 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 12,
     icon: "Snowflake",
   },
-  // Climatização
+  // ========== CLIMATIZAÇÃO ==========
   {
-    id: "AR_CONDICIONADO",
+    id: "AIR_CONDITIONER",
     name: "Ar-condicionado",
     mlCategory: "Climatizacao",
     distributionField: "AIR_CONDITIONING_WATTS",
@@ -110,7 +110,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wind",
   },
   {
-    id: "AR_CONDICIONADO_SPLIT",
+    id: "SPLIT_AIR_CONDITIONER",
     name: "Ar-condicionado Split",
     mlCategory: "Climatizacao",
     distributionField: "AIR_CONDITIONING_WATTS",
@@ -119,7 +119,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wind",
   },
   {
-    id: "VENTILADOR",
+    id: "FAN",
     name: "Ventilador",
     mlCategory: "Climatizacao",
     distributionField: "AIR_CONDITIONING_WATTS",
@@ -128,7 +128,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wind",
   },
   {
-    id: "VENTILADOR_TETO",
+    id: "CEILING_FAN",
     name: "Ventilador de teto",
     mlCategory: "Climatizacao",
     distributionField: "AIR_CONDITIONING_WATTS",
@@ -137,7 +137,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wind",
   },
   {
-    id: "AQUECEDOR_ELETRICO",
+    id: "ELECTRIC_HEATER",
     name: "Aquecedor elétrico",
     mlCategory: "Climatizacao",
     distributionField: "AIR_CONDITIONING_WATTS",
@@ -145,9 +145,9 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 4,
     icon: "Wind",
   },
-  // Aquecimento
+  // ========== AQUECIMENTO ==========
   {
-    id: "CHUVEIRO_ELETRICO",
+    id: "ELECTRIC_SHOWER",
     name: "Chuveiro elétrico",
     mlCategory: "Eletrodomesticos",
     distributionField: "HEATING_WATTS",
@@ -156,13 +156,22 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "TORNEIRA_ELETRICA",
+    id: "ELECTRIC_FAUCET",
     name: "Torneira elétrica",
     mlCategory: "Eletrodomesticos",
     distributionField: "HEATING_WATTS",
     powerWatts: 3000,
     dailyUsageHours: 1,
     icon: "Home",
+  },
+  {
+    id: "CENTRAL_HEATER",
+    name: "Aquecedor central",
+    mlCategory: "Servicos",
+    distributionField: "HEATING_WATTS",
+    powerWatts: 4000,
+    dailyUsageHours: 4,
+    icon: "Wrench",
   },
   {
     id: "BOILER",
@@ -173,9 +182,9 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 6,
     icon: "Wrench",
   },
-  // Iluminação
+  // ========== ILUMINAÇÃO ==========
   {
-    id: "LAMPADA_LED",
+    id: "LED_BULB",
     name: "Lâmpada LED",
     mlCategory: "Iluminacao",
     distributionField: "LIGHTING_WATTS",
@@ -184,7 +193,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Lightbulb",
   },
   {
-    id: "LAMPADA_FLUOR",
+    id: "FLUORESCENT_BULB",
     name: "Lâmpada fluorescente",
     mlCategory: "Iluminacao",
     distributionField: "LIGHTING_WATTS",
@@ -193,7 +202,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Lightbulb",
   },
   {
-    id: "LAMPADA_INCAND",
+    id: "INCANDESCENT_BULB",
     name: "Lâmpada incandescente",
     mlCategory: "Iluminacao",
     distributionField: "LIGHTING_WATTS",
@@ -202,7 +211,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Lightbulb",
   },
   {
-    id: "LUSTRE",
+    id: "CHANDELIER",
     name: "Lustre / luminária",
     mlCategory: "Iluminacao",
     distributionField: "LIGHTING_WATTS",
@@ -211,7 +220,16 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Lightbulb",
   },
   {
-    id: "SPOT_LED",
+    id: "LAMP",
+    name: "Abajur",
+    mlCategory: "Iluminacao",
+    distributionField: "LIGHTING_WATTS",
+    powerWatts: 40,
+    dailyUsageHours: 4,
+    icon: "Lightbulb",
+  },
+  {
+    id: "LED_SPOT",
     name: "Spot LED embutido",
     mlCategory: "Iluminacao",
     distributionField: "LIGHTING_WATTS",
@@ -219,7 +237,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 6,
     icon: "Lightbulb",
   },
-  // Tecnologia
+  // ========== TECNOLOGIA ==========
   {
     id: "TV",
     name: "Televisão",
@@ -230,7 +248,16 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Monitor",
   },
   {
-    id: "COMPUTADOR",
+    id: "OLED_TV",
+    name: "Televisão OLED",
+    mlCategory: "Tecnologia",
+    distributionField: "NONE",
+    powerWatts: 200,
+    dailyUsageHours: 6,
+    icon: "Monitor",
+  },
+  {
+    id: "DESKTOP_COMPUTER",
     name: "Computador desktop",
     mlCategory: "Tecnologia",
     distributionField: "NONE",
@@ -257,7 +284,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Monitor",
   },
   {
-    id: "ROTEADOR",
+    id: "ROUTER",
     name: "Roteador Wi-Fi",
     mlCategory: "Tecnologia",
     distributionField: "NONE",
@@ -275,7 +302,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Monitor",
   },
   {
-    id: "CAIXA_SOM",
+    id: "SPEAKER",
     name: "Caixa de som",
     mlCategory: "Tecnologia",
     distributionField: "NONE",
@@ -283,9 +310,27 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 3,
     icon: "Monitor",
   },
-  // Eletrodomésticos
   {
-    id: "MAQUINA_LAVAR",
+    id: "SOUNDBAR",
+    name: "Soundbar",
+    mlCategory: "Tecnologia",
+    distributionField: "NONE",
+    powerWatts: 80,
+    dailyUsageHours: 4,
+    icon: "Monitor",
+  },
+  {
+    id: "CHARGER",
+    name: "Carregador (smartphone/tablet)",
+    mlCategory: "Tecnologia",
+    distributionField: "NONE",
+    powerWatts: 15,
+    dailyUsageHours: 6,
+    icon: "Monitor",
+  },
+  // ========== ELETRODOMÉSTICOS ==========
+  {
+    id: "WASHING_MACHINE",
     name: "Máquina de lavar",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -294,7 +339,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "SECADORA",
+    id: "DRYER",
     name: "Secadora de roupas",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -303,7 +348,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "LAVA_LOUCAS",
+    id: "DISHWASHER",
     name: "Lava-louças",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -312,7 +357,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "MICROONDAS",
+    id: "MICROWAVE",
     name: "Micro-ondas",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -321,11 +366,20 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "FORNO_ELETRICO",
+    id: "ELECTRIC_OVEN",
     name: "Forno elétrico",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
     powerWatts: 2000,
+    dailyUsageHours: 1,
+    icon: "Home",
+  },
+  {
+    id: "ELECTRIC_STOVE",
+    name: "Fogão elétrico",
+    mlCategory: "Eletrodomesticos",
+    distributionField: "NONE",
+    powerWatts: 3000,
     dailyUsageHours: 1,
     icon: "Home",
   },
@@ -339,7 +393,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "CAFETEIRA",
+    id: "COFFEE_MAKER",
     name: "Cafeteira elétrica",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -348,7 +402,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "FERRO_PASSAR",
+    id: "CLOTHES_IRON",
     name: "Ferro de passar",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -357,7 +411,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "ASPIRADOR_PO",
+    id: "VACUUM_CLEANER",
     name: "Aspirador de pó",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -366,7 +420,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Home",
   },
   {
-    id: "SECADOR_CABELO",
+    id: "HAIR_DRYER",
     name: "Secador de cabelo",
     mlCategory: "Eletrodomesticos",
     distributionField: "NONE",
@@ -374,9 +428,45 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 0.25,
     icon: "Home",
   },
-  // Serviços
   {
-    id: "BOMBA_AGUA",
+    id: "BLENDER",
+    name: "Liquidificador",
+    mlCategory: "Eletrodomesticos",
+    distributionField: "NONE",
+    powerWatts: 400,
+    dailyUsageHours: 0.25,
+    icon: "Home",
+  },
+  {
+    id: "MIXER",
+    name: "Batedeira",
+    mlCategory: "Eletrodomesticos",
+    distributionField: "NONE",
+    powerWatts: 300,
+    dailyUsageHours: 0.5,
+    icon: "Home",
+  },
+  {
+    id: "EXHAUST_FAN",
+    name: "Exaustor / coifa",
+    mlCategory: "Eletrodomesticos",
+    distributionField: "NONE",
+    powerWatts: 250,
+    dailyUsageHours: 2,
+    icon: "Home",
+  },
+  {
+    id: "SEWING_MACHINE",
+    name: "Máquina de costura",
+    mlCategory: "Eletrodomesticos",
+    distributionField: "NONE",
+    powerWatts: 100,
+    dailyUsageHours: 2,
+    icon: "Home",
+  },
+  // ========== SERVIÇOS ==========
+  {
+    id: "WATER_PUMP",
     name: "Bomba d'água",
     mlCategory: "Servicos",
     distributionField: "NONE",
@@ -385,7 +475,7 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wrench",
   },
   {
-    id: "PORTAO_ELETRICO",
+    id: "ELECTRIC_GATE",
     name: "Portão elétrico",
     mlCategory: "Servicos",
     distributionField: "NONE",
@@ -394,8 +484,8 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wrench",
   },
   {
-    id: "INTERFONE",
-    name: "Interfone",
+    id: "INTERCOM",
+    name: "Interfone / porteiro",
     mlCategory: "Servicos",
     distributionField: "NONE",
     powerWatts: 10,
@@ -403,7 +493,16 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wrench",
   },
   {
-    id: "MOTOR_PISCINA",
+    id: "ELECTRIC_BARRIER",
+    name: "Cancela elétrica",
+    mlCategory: "Servicos",
+    distributionField: "NONE",
+    powerWatts: 500,
+    dailyUsageHours: 0.5,
+    icon: "Wrench",
+  },
+  {
+    id: "POOL_PUMP",
     name: "Motor de piscina",
     mlCategory: "Servicos",
     distributionField: "NONE",
@@ -412,17 +511,35 @@ const APPLIANCE_FALLBACK: ApplianceType[] = [
     icon: "Wrench",
   },
   {
-    id: "SISTEMA_SEG",
-    name: "Sistema de segurança",
+    id: "SECURITY_SYSTEM",
+    name: "Sistema de segurança / CFTV",
     mlCategory: "Servicos",
     distributionField: "NONE",
     powerWatts: 50,
     dailyUsageHours: 24,
     icon: "Wrench",
   },
-  // Outros
   {
-    id: "OUTRO",
+    id: "MOTION_SENSOR",
+    name: "Sensor de presença",
+    mlCategory: "Servicos",
+    distributionField: "NONE",
+    powerWatts: 5,
+    dailyUsageHours: 24,
+    icon: "Wrench",
+  },
+  {
+    id: "ELECTRIC_FENCE",
+    name: "Cercas elétricas",
+    mlCategory: "Servicos",
+    distributionField: "NONE",
+    powerWatts: 30,
+    dailyUsageHours: 24,
+    icon: "Wrench",
+  },
+  // ========== OUTROS ==========
+  {
+    id: "OTHER",
     name: "Outro aparelho",
     mlCategory: "Outros",
     distributionField: "NONE",
