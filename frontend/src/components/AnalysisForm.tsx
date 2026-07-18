@@ -13,7 +13,7 @@ import {
   CATEGORY_DISPLAY,
   HIGHEST_CONSUMPTION_CATEGORIES,
 } from "../types";
-import { analyzeDemo, listApplianceTypes } from "../services/demo";
+import { analyzeEnergy, listApplianceTypes } from "../services/api";
 
 const PROPERTY_TYPES: PropertyType[] = [
   "Casa",
@@ -440,7 +440,7 @@ const FIELD_NAMES: Record<string, string> = {
   peak_hour_usage: "Uso em horário de pico",
 };
 
-export default function DemoTool() {
+export default function AnalysisForm() {
   // --- Appliance types (fetch do backend) ---
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
@@ -629,9 +629,9 @@ export default function DemoTool() {
                 HEATING_WATTS: form.heating_watts,
                 AIR_CONDITIONING_WATTS: form.air_conditioning_watts,
                 LIGHTING_WATTS: form.lighting_watts,
-              }
+              },
       };
-      const res = await analyzeDemo(request);
+      const res = await analyzeEnergy(request);
       setResult(res);
     } catch (err) {
       if (err instanceof ApiError) {
