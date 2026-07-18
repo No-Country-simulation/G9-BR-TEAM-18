@@ -30,4 +30,11 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
     public List<EnergyAnalysis> listAll() {
         return jpaRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
     }
+
+    @Override
+    public List<EnergyAnalysis> listByUserId(Long userId) {
+        return jpaRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

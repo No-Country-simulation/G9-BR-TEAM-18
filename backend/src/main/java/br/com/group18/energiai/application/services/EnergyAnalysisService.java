@@ -31,6 +31,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
 
     @Override
     public EnergyAnalysis execute(
+            Long userId,
             Double consumptionKwh,
             Boolean peakHourUsage,
             Integer equipmentQuantity,
@@ -42,7 +43,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             Double airConditioningWatts,
             Double lightingWatts) {
         EnergyAnalysis analysis = new EnergyAnalysis(
-                consumptionKwh, peakHourUsage, equipmentQuantity, propertyType, highConsumptionHours);
+                userId, consumptionKwh, peakHourUsage, equipmentQuantity, propertyType, highConsumptionHours);
         analysis.setHighestConsumptionCategory(highestConsumptionCategory);
         analysis.setRefrigerationWatts(refrigerationWatts);
         analysis.setHeatingWatts(heatingWatts);

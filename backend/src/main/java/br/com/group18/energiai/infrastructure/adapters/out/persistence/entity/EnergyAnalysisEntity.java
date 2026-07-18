@@ -22,6 +22,9 @@ public class EnergyAnalysisEntity {
     private Long id;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private Double consumptionKwh;
 
     @Column(nullable = false)
@@ -71,6 +74,14 @@ public class EnergyAnalysisEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Double getConsumptionKwh() {

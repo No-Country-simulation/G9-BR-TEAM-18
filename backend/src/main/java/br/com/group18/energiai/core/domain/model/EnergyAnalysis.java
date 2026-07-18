@@ -21,16 +21,19 @@ public class EnergyAnalysis {
     private Double estimatedMonthlyCost;
     private List<String> recommendations;
     private String source;
+    private Long userId;
     private LocalDateTime createdAt;
 
     public EnergyAnalysis() {}
 
     public EnergyAnalysis(
+            Long userId,
             Double consumptionKwh,
             Boolean peakHourUsage,
             Integer equipmentQuantity,
             String propertyType,
             Double highConsumptionHours) {
+        this.userId = userId;
         this.consumptionKwh = consumptionKwh;
         this.peakHourUsage = peakHourUsage;
         this.equipmentQuantity = equipmentQuantity;
@@ -165,6 +168,14 @@ public class EnergyAnalysis {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public LocalDateTime getCreatedAt() {

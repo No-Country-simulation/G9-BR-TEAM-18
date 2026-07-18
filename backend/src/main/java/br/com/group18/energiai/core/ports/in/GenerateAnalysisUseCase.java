@@ -4,6 +4,7 @@ import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
 
 public interface GenerateAnalysisUseCase {
     EnergyAnalysis execute(
+            Long userId,
             Double consumptionKwh,
             Boolean peakHourUsage,
             Integer equipmentQuantity,
@@ -16,12 +17,14 @@ public interface GenerateAnalysisUseCase {
             Double lightingWatts);
 
     default EnergyAnalysis execute(
+            Long userId,
             Double consumptionKwh,
             Boolean peakHourUsage,
             Integer equipmentQuantity,
             String propertyType,
             Double highConsumptionHours) {
         return execute(
+                userId,
                 consumptionKwh,
                 peakHourUsage,
                 equipmentQuantity,

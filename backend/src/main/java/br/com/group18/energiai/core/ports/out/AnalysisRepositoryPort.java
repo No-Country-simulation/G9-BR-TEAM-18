@@ -7,4 +7,6 @@ public interface AnalysisRepositoryPort {
     EnergyAnalysis save(EnergyAnalysis analysis);
 
     List<EnergyAnalysis> listAll();
+
+    List<EnergyAnalysis> listByUserId(Long userId);
 }

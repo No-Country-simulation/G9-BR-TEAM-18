@@ -9,6 +9,7 @@ import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
@@ -71,7 +72,13 @@ public class AnalysisController {
     }
 
     @PostMapping("/energy-analysis")
-    public ResponseEntity<AnalysisResponseDTO> analyze(@Valid @RequestBody AnalysisRequestDTO request) {
+    public ResponseEntity<AnalysisResponseDTO> analyze(
+            @Valid @RequestBody AnalysisRequestDTO request, HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Double consumptionKwh = request.getConsumptionKwh();
         Integer equipmentQuantity = request.getEquipmentQuantity();
         if (equipmentQuantity == null) equipmentQuantity = 0;
@@ -111,6 +118,7 @@ public class AnalysisController {
         }
 
         EnergyAnalysis result = generateAnalysisUseCase.execute(
+                userId,
                 consumptionKwh,
                 request.getPeakHourUsage(),
                 equipmentQuantity,
@@ -148,15 +156,24 @@ public class AnalysisController {
             @JsonProperty("dailyUsageHours") double dailyUsageHours) {}
 
     @GetMapping("/analyses")
-    public ResponseEntity<List<AnalysisResponseDTO>> list() {
-        List<AnalysisResponseDTO> list =
-                analysisRepository.listAll().stream().map(this::toResponse).collect(Collectors.toList());
+    public ResponseEntity<List<AnalysisResponseDTO>> list(HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<AnalysisResponseDTO> list = analysisRepository.listByUserId(userId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardDTO> dashboard() {
-        List<EnergyAnalysis> all = analysisRepository.listAll();
+    public ResponseEntity<DashboardDTO> dashboard(HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<EnergyAnalysis> all = analysisRepository.listByUserId(userId);
         if (all.isEmpty()) {
             return ResponseEntity.ok(new DashboardDTO(0, 0.0, 0.0, 0.0, List.of()));
         }

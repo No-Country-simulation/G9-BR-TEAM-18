@@ -12,6 +12,7 @@ public class EnergyAnalysisMapper {
 
         EnergyAnalysisEntity entity = new EnergyAnalysisEntity();
         entity.setId(domain.getId());
+        entity.setUserId(domain.getUserId());
         entity.setConsumptionKwh(domain.getConsumptionKwh());
         entity.setPeakHourUsage(domain.getPeakHourUsage());
         entity.setEquipmentQuantity(domain.getEquipmentQuantity());
@@ -35,6 +36,7 @@ public class EnergyAnalysisMapper {
         if (entity == null) return null;
 
         EnergyAnalysis domain = new EnergyAnalysis(
+                entity.getUserId(),
                 entity.getConsumptionKwh(),
                 entity.getPeakHourUsage(),
                 entity.getEquipmentQuantity(),
