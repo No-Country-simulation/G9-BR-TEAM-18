@@ -2,7 +2,9 @@ package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 public class AnalysisRequestDTO {
@@ -38,16 +40,26 @@ public class AnalysisRequestDTO {
     private Integer equipmentQuantity;
 
     @NotBlank
+    @Pattern(regexp = "^(Casa|Apartamento|Comercial|Industria|Rural|Outro)$")
     private String propertyType;
 
     @NotNull
     @Positive
     private Double highConsumptionHours;
 
+    @Pattern(regexp = "^(Refrigeracao|Climatizacao|Tecnologia|Iluminacao|Eletrodomesticos|Servicos|Outros)$")
     private String highestConsumptionCategory = "Outros";
+
+    @PositiveOrZero
     private Double refrigerationWatts = 0.0;
+
+    @PositiveOrZero
     private Double heatingWatts = 0.0;
+
+    @PositiveOrZero
     private Double airConditioningWatts = 0.0;
+
+    @PositiveOrZero
     private Double lightingWatts = 0.0;
 
     private List<ApplianceItemDTO> appliances;
