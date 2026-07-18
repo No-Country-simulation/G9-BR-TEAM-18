@@ -27,7 +27,7 @@ export default function HowItWorks() {
   return (
     <section id="como-funciona" className="features">
       <div className="features-container">
-        <h2>Como funciona</h2>
+        <h2>Passo a passo</h2>
         <p className="features-subtitle">
           Da coleta de dados à recomendação personalizada em segundos
         </p>
