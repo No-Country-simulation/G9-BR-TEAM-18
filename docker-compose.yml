@@ -40,6 +40,8 @@ services:
     container_name: energiaia-backend
     ports:
       - "${SERVER_PORT:-8080}:8080"
+    env_file:
+      - ./.env
     environment:
       - SERVER_PORT=${SERVER_PORT:-8080}
       - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8000}
