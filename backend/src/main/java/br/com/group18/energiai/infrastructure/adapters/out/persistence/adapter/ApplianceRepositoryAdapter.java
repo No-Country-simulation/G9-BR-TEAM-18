@@ -21,7 +21,9 @@ public class ApplianceRepositoryAdapter implements ApplianceRepositoryPort {
 
     @Override
     public List<Appliance> findAll() {
-        return repository.findAllByOrderByNameAsc().stream().map(mapper::toDomain).toList();
+        return repository.findAllByOrderByNameAsc().stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

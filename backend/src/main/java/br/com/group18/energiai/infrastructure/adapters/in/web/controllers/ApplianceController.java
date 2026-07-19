@@ -21,7 +21,8 @@ public class ApplianceController {
 
     @GetMapping
     public ResponseEntity<List<ApplianceResponseDTO>> list() {
-        return ResponseEntity.ok(applianceRepository.findAll().stream().map(this::toResponse).toList());
+        return ResponseEntity.ok(
+                applianceRepository.findAll().stream().map(this::toResponse).toList());
     }
 
     private ApplianceResponseDTO toResponse(Appliance appliance) {

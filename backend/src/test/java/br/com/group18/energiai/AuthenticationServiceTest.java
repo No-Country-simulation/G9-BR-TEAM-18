@@ -26,11 +26,12 @@ class AuthenticationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenRegisteringDuplicateEmail() {
-        when(userRepository.findByEmail("teste@email.com")).thenReturn(Optional.of(new User("Teste", "teste@email.com", "hash")));
+        when(userRepository.findByEmail("teste@email.com"))
+                .thenReturn(Optional.of(new User("Teste", "teste@email.com", "hash")));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                authenticationService.register("Teste 2", "teste@email.com", "senha123")
-        );
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> authenticationService.register("Teste 2", "teste@email.com", "senha123"));
 
         assertEquals("E-mail já cadastrado", exception.getMessage());
     }

@@ -21,10 +21,14 @@ class ApplianceAggregationServiceTest {
 
     @Test
     void shouldAggregateAppliancesCorrectly() {
-        Appliance geladeira = new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
-        Appliance arCondicionado = new Appliance(2L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
-        Appliance chuveiro = new Appliance(3L, "Chuveiro Eletrico", "Aquecimento", new BigDecimal("5500.0"), new BigDecimal("0.5"));
-        Appliance lampada = new Appliance(4L, "Lampada LED", "Iluminacao", new BigDecimal("12.0"), new BigDecimal("6.0"));
+        Appliance geladeira =
+                new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
+        Appliance arCondicionado =
+                new Appliance(2L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
+        Appliance chuveiro =
+                new Appliance(3L, "Chuveiro Eletrico", "Aquecimento", new BigDecimal("5500.0"), new BigDecimal("0.5"));
+        Appliance lampada =
+                new Appliance(4L, "Lampada LED", "Iluminacao", new BigDecimal("12.0"), new BigDecimal("6.0"));
 
         PropertyAppliance pa1 = new PropertyAppliance(1L, geladeira, 1);
         PropertyAppliance pa2 = new PropertyAppliance(1L, arCondicionado, 2);

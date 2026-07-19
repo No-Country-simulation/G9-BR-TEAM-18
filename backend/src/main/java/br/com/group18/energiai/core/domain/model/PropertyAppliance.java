@@ -61,7 +61,8 @@ public class PropertyAppliance {
                 || quantity == null) {
             return BigDecimal.ZERO.setScale(2);
         }
-        return appliance.getAveragePowerWatts()
+        return appliance
+                .getAveragePowerWatts()
                 .multiply(appliance.getAverageDailyUseHours())
                 .multiply(BigDecimal.valueOf(quantity))
                 .multiply(DAYS_PER_MONTH)

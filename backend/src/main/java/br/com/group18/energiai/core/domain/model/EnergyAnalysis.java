@@ -24,10 +24,7 @@ public class EnergyAnalysis {
     public EnergyAnalysis() {}
 
     public EnergyAnalysis(
-            Long propertyId,
-            BigDecimal consumptionKwh,
-            Boolean peakHourUsage,
-            BigDecimal highConsumptionHours) {
+            Long propertyId, BigDecimal consumptionKwh, Boolean peakHourUsage, BigDecimal highConsumptionHours) {
         this.propertyId = propertyId;
         this.consumptionKwh = consumptionKwh;
         this.peakHourUsage = peakHourUsage;

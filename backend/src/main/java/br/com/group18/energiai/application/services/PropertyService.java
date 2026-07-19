@@ -79,7 +79,8 @@ public class PropertyService {
         getOwned(propertyId, userId);
         PropertyAppliance propertyAppliance = propertyApplianceRepository
                 .findByPropertyIdAndApplianceId(propertyId, applianceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aparelho n\u00e3o est\u00e1 vinculado \u00e0 propriedade."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aparelho n\u00e3o est\u00e1 vinculado \u00e0 propriedade."));
         propertyApplianceRepository.delete(propertyAppliance);
     }
 }

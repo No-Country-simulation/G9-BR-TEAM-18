@@ -28,24 +28,30 @@ public class PropertyApplianceRepositoryAdapter implements PropertyApplianceRepo
 
     @Override
     public PropertyAppliance save(PropertyAppliance propertyAppliance) {
-        ApplianceEntity appliance = applianceRepository.getReferenceById(propertyAppliance.getAppliance().getId());
+        ApplianceEntity appliance = applianceRepository.getReferenceById(
+                propertyAppliance.getAppliance().getId());
         return mapper.toDomain(repository.save(mapper.toEntity(propertyAppliance, appliance)));
     }
 
     @Override
     public List<PropertyAppliance> findByPropertyId(Long propertyId) {
-        return repository.findByPropertyIdOrderByIdAsc(propertyId).stream().map(mapper::toDomain).toList();
+        return repository.findByPropertyIdOrderByIdAsc(propertyId).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override
     public Optional<PropertyAppliance> findByPropertyIdAndApplianceId(Long propertyId, Long applianceId) {
-        return repository.findByPropertyIdAndAppliance_Id(propertyId, applianceId).map(mapper::toDomain);
+        return repository
+                .findByPropertyIdAndAppliance_Id(propertyId, applianceId)
+                .map(mapper::toDomain);
     }
 
     @Override
     public void delete(PropertyAppliance propertyAppliance) {
         repository.delete(mapper.toEntity(
                 propertyAppliance,
-                applianceRepository.getReferenceById(propertyAppliance.getAppliance().getId())));
+                applianceRepository.getReferenceById(
+                        propertyAppliance.getAppliance().getId())));
     }
 }

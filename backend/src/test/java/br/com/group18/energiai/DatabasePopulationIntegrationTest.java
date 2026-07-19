@@ -32,13 +32,15 @@ class DatabasePopulationIntegrationTest {
     @Test
     void shouldPopulateAllTablesSuccessfully() throws Exception {
         String email = "eduardo-" + System.currentTimeMillis() + "@ucb.br";
-        String registerBody = """
+        String registerBody =
+                """
                 {
                     "name": "Eduardo",
                     "email": "%s",
                     "password": "SenhaSegura123!"
                 }
-                """.formatted(email);
+                """
+                        .formatted(email);
 
         MvcResult authResult = mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -51,7 +53,8 @@ class DatabasePopulationIntegrationTest {
         String tokenValue = setCookieHeader.split(";")[0].replace("SESSION_TOKEN=", "");
         Cookie sessionCookie = new Cookie("SESSION_TOKEN", tokenValue);
 
-        String propertyBody = """
+        String propertyBody =
+                """
                 {
                     "alias": "Apartamento UCB",
                     "property_type": "Apartamento",
@@ -68,7 +71,8 @@ class DatabasePopulationIntegrationTest {
 
         Integer propertyId = JsonPath.read(propertyResult.getResponse().getContentAsString(), "$.id");
 
-        String applianceBody = """
+        String applianceBody =
+                """
                 {
                     "appliance_id": 1,
                     "quantity": 2
@@ -82,20 +86,19 @@ class DatabasePopulationIntegrationTest {
                 .andExpect(status().isCreated());
 
         MlServiceClient.MlPredictResponse mockResponse = new MlServiceClient.MlPredictResponse(
-                "CRITICO",
-                0.88,
-                List.of("Troque as lâmpadas por LED", "Desligue a geladeira à noite (brincadeira)")
-        );
+                "CRITICO", 0.88, List.of("Troque as lâmpadas por LED", "Desligue a geladeira à noite (brincadeira)"));
         when(mlServiceClient.predict(any())).thenReturn(mockResponse);
 
-        String analysisBody = """
+        String analysisBody =
+                """
                 {
                     "property_id": %d,
                     "consumption_kwh": 250.50,
                     "peak_hour_usage": true,
                     "high_consumption_hours": 6.5
                 }
-                """.formatted(propertyId);
+                """
+                        .formatted(propertyId);
 
         mockMvc.perform(post("/energy-analysis")
                         .cookie(sessionCookie)

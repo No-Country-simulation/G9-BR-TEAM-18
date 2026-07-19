@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EnergyAnalysisService implements GenerateAnalysisUseCase {
 
-    private static final BigDecimal KWH_TARIFF =
-            new BigDecimal(System.getenv().getOrDefault("KWH_TARIFF", "0.75"));
+    private static final BigDecimal KWH_TARIFF = new BigDecimal(System.getenv().getOrDefault("KWH_TARIFF", "0.75"));
 
     private final AnalysisRepositoryPort repository;
     private final MlServiceClient mlServiceClient;
@@ -45,10 +44,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         }
 
         EnergyAnalysis analysis = repository.save(new EnergyAnalysis(
-                property.getId(),
-                scale(consumptionKwh),
-                peakHourUsage,
-                scale(highConsumptionHours)));
+                property.getId(), scale(consumptionKwh), peakHourUsage, scale(highConsumptionHours)));
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
         try {

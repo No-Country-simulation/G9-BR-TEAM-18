@@ -1,5 +1,14 @@
 package br.com.group18.energiai;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import br.com.group18.energiai.application.services.ApplianceAggregationService;
 import br.com.group18.energiai.application.services.EnergyAnalysisService;
 import br.com.group18.energiai.core.domain.model.Appliance;
@@ -11,22 +20,12 @@ import br.com.group18.energiai.infrastructure.client.MlServiceClient;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient.MlPredictRequest;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient.MlPredictResponse;
 import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
+import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class EnergyAnalysisServiceTest {
 
@@ -48,7 +47,8 @@ class EnergyAnalysisServiceTest {
     @Test
     void shouldCreateAnalysisWithSuccess() {
         Property property = new Property(1L, "Minha Casa", "Casa");
-        Appliance geladeira = new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
+        Appliance geladeira =
+                new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
         PropertyAppliance propertyAppliance = new PropertyAppliance(1L, geladeira, 1);
 
         when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -56,7 +56,8 @@ class EnergyAnalysisServiceTest {
         when(mlClientMock.predict(any(MlPredictRequest.class)))
                 .thenReturn(new MlPredictResponse("EXCELENTE", 0.95, List.of("Ótimo consumo.")));
 
-        EnergyAnalysis result = service.execute(property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"));
+        EnergyAnalysis result = service.execute(
+                property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"));
 
         assertNotNull(result);
         assertEquals("EXCELENTE", result.getCategory());
@@ -67,18 +68,24 @@ class EnergyAnalysisServiceTest {
     @Test
     void shouldSaveAsFalhaAndThrowExceptionWhenMlServiceIsUnavailable() {
         Property property = new Property(1L, "Minha Casa", "Casa");
-        Appliance geladeira = new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
+        Appliance geladeira =
+                new Appliance(1L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
         PropertyAppliance propertyAppliance = new PropertyAppliance(1L, geladeira, 1);
 
         when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         when(mlClientMock.predict(any(MlPredictRequest.class)))
-                .thenThrow(new MlServiceUnavailableException("Serviço de análise temporariamente indisponível. Tente novamente em instantes."));
+                .thenThrow(new MlServiceUnavailableException(
+                        "Serviço de análise temporariamente indisponível. Tente novamente em instantes."));
 
-        MlServiceUnavailableException exception = assertThrows(MlServiceUnavailableException.class,
-                () -> service.execute(property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5")));
+        MlServiceUnavailableException exception = assertThrows(
+                MlServiceUnavailableException.class,
+                () -> service.execute(
+                        property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5")));
 
-        assertEquals("Serviço de análise temporariamente indisponível. Tente novamente em instantes.", exception.getMessage());
+        assertEquals(
+                "Serviço de análise temporariamente indisponível. Tente novamente em instantes.",
+                exception.getMessage());
 
         ArgumentCaptor<EnergyAnalysis> analysisCaptor = ArgumentCaptor.forClass(EnergyAnalysis.class);
         verify(repoMock, times(2)).save(analysisCaptor.capture());

@@ -24,13 +24,15 @@ class AnalysisControllerIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        String registerBody = """
+        String registerBody =
+                """
                 {
                     "name": "Test User",
                     "email": "test-%d@example.com",
                     "password": "Senha123!"
                 }
-                """.formatted(System.currentTimeMillis());
+                """
+                        .formatted(System.currentTimeMillis());
 
         MvcResult result = mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -47,7 +49,8 @@ class AnalysisControllerIntegrationTest {
 
     @Test
     void shouldReturn400ForInvalidData() throws Exception {
-        String body = """
+        String body =
+                """
             {
                 "propertyId": -1,
                 "property_id": -1,
@@ -69,7 +72,8 @@ class AnalysisControllerIntegrationTest {
 
     @Test
     void shouldReturn401WhenNotAuthenticated() throws Exception {
-        String body = """
+        String body =
+                """
             {
                 "propertyId": 1,
                 "property_id": 1,

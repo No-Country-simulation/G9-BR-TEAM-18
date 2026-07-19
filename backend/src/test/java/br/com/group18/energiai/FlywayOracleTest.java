@@ -6,10 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=none",
-        "spring.main.web-application-type=none"
-})
+@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=none", "spring.main.web-application-type=none"})
 class FlywayOracleTest {
 
     @Autowired

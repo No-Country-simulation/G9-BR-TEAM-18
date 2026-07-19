@@ -68,12 +68,12 @@ public class AnalysisController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(analysesForUser(userId).stream().map(this::toResponse).toList());
+        return ResponseEntity.ok(
+                analysesForUser(userId).stream().map(this::toResponse).toList());
     }
 
     @GetMapping("/analyses/{analysisId}")
-    public ResponseEntity<AnalysisResponseDTO> getById(
-            @PathVariable Long analysisId, HttpServletRequest httpRequest) {
+    public ResponseEntity<AnalysisResponseDTO> getById(@PathVariable Long analysisId, HttpServletRequest httpRequest) {
         Long userId = AuthController.getUserId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -119,7 +119,8 @@ public class AnalysisController {
                 .collect(Collectors.groupingBy(
                         analysis -> YearMonth.from(analysis.getCreatedAt()),
                         TreeMap::new,
-                        Collectors.summingDouble(analysis -> analysis.getConsumptionKwh().doubleValue())));
+                        Collectors.summingDouble(
+                                analysis -> analysis.getConsumptionKwh().doubleValue())));
         List<MonthlyConsumptionDTO> monthlyConsumption = consumptionByMonth.entrySet().stream()
                 .map(entry -> new MonthlyConsumptionDTO(
                         entry.getKey().getMonth().getDisplayName(TextStyle.SHORT, Locale.of("pt", "BR"))
@@ -133,7 +134,9 @@ public class AnalysisController {
     }
 
     private List<EnergyAnalysis> analysesForUser(Long userId) {
-        List<Long> propertyIds = propertyService.listByUserId(userId).stream().map(Property::getId).toList();
+        List<Long> propertyIds = propertyService.listByUserId(userId).stream()
+                .map(Property::getId)
+                .toList();
         return analysisRepository.listByPropertyIds(propertyIds);
     }
 

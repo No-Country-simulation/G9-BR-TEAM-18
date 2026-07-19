@@ -31,10 +31,8 @@ class PropertyServiceTest {
 
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(property));
 
-        ForbiddenOperationException exception = assertThrows(
-                ForbiddenOperationException.class,
-                () -> propertyService.getOwned(100L, 2L)
-        );
+        ForbiddenOperationException exception =
+                assertThrows(ForbiddenOperationException.class, () -> propertyService.getOwned(100L, 2L));
 
         assertEquals("Você não tem acesso a esta propriedade.", exception.getMessage());
     }

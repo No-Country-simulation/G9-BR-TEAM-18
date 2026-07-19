@@ -25,13 +25,15 @@ class PropertyControllerIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         String email = "proptest-" + System.currentTimeMillis() + "@example.com";
-        String registerBody = """
+        String registerBody =
+                """
                 {
                     "name": "Test User",
                     "email": "%s",
                     "password": "Senha123!"
                 }
-                """.formatted(email);
+                """
+                        .formatted(email);
 
         MvcResult result = mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -47,7 +49,8 @@ class PropertyControllerIntegrationTest {
 
     @Test
     void shouldCreatePropertyWhenAuthenticated() throws Exception {
-        String propertyBody = """
+        String propertyBody =
+                """
             {
                 "alias": "Casa de Campo",
                 "property_type": "Casa",
@@ -64,7 +67,8 @@ class PropertyControllerIntegrationTest {
 
     @Test
     void shouldReturn401WhenCreatingPropertyWithoutAuth() throws Exception {
-        String propertyBody = """
+        String propertyBody =
+                """
             {
                 "alias": "Apartamento",
                 "property_type": "Apartamento",

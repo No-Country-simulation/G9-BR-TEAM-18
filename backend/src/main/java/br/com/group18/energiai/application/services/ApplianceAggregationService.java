@@ -46,16 +46,12 @@ public class ApplianceAggregationService {
                 || propertyAppliance.getAppliance().getApplianceCategory() == null) {
             return Distribution.OTHER;
         }
-        String category = propertyAppliance
-                .getAppliance()
-                .getApplianceCategory()
-                .strip()
-                .toUpperCase(Locale.ROOT);
+        String category =
+                propertyAppliance.getAppliance().getApplianceCategory().strip().toUpperCase(Locale.ROOT);
         return switch (category) {
             case "REFRIGERACAO", "REFRIGERAÇÃO", "REFRIGERATION" -> Distribution.REFRIGERATION;
             case "AQUECIMENTO", "HEATING" -> Distribution.HEATING;
-            case "CLIMATIZACAO", "CLIMATIZAÇÃO", "AR_CONDICIONADO", "AIR_CONDITIONING" ->
-                    Distribution.AIR_CONDITIONING;
+            case "CLIMATIZACAO", "CLIMATIZAÇÃO", "AR_CONDICIONADO", "AIR_CONDITIONING" -> Distribution.AIR_CONDITIONING;
             case "ILUMINACAO", "ILUMINAÇÃO", "LIGHTING" -> Distribution.LIGHTING;
             default -> Distribution.OTHER;
         };

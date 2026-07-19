@@ -21,14 +21,14 @@ class AuthControllerIntegrationTest {
 
     @Test
     void shouldReturn401ForInvalidJwt() throws Exception {
-        mockMvc.perform(get("/auth/me")
-                        .cookie(new Cookie("SESSION_TOKEN", "jwt.invalido.aqui")))
+        mockMvc.perform(get("/auth/me").cookie(new Cookie("SESSION_TOKEN", "jwt.invalido.aqui")))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void shouldReturn401WhenLoginFails() throws Exception {
-        String loginBody = """
+        String loginBody =
+                """
             {
                 "email": "inexistente@email.com",
                 "password": "senhaIncorreta"

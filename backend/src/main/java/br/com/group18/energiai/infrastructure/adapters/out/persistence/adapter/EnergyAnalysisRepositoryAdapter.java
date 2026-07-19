@@ -10,7 +10,6 @@ import br.com.group18.energiai.infrastructure.adapters.out.persistence.repositor
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,12 +75,15 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
         if (entities.isEmpty()) {
             return List.of();
         }
-        Map<Long, List<String>> recommendationsByAnalysis = recommendationRepository
-                .findByAnalysisIdIn(entities.stream().map(EnergyAnalysisEntity::getId).toList())
-                .stream()
-                .collect(Collectors.groupingBy(
-                        AnalysisRecommendationEntity::getAnalysisId,
-                        Collectors.mapping(AnalysisRecommendationEntity::getDescription, Collectors.toList())));
+        Map<Long, List<String>> recommendationsByAnalysis =
+                recommendationRepository
+                        .findByAnalysisIdIn(entities.stream()
+                                .map(EnergyAnalysisEntity::getId)
+                                .toList())
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                AnalysisRecommendationEntity::getAnalysisId,
+                                Collectors.mapping(AnalysisRecommendationEntity::getDescription, Collectors.toList())));
 
         return entities.stream()
                 .map(entity -> {

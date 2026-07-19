@@ -48,7 +48,9 @@ public class PropertyController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(propertyService.listByUserId(userId).stream().map(this::toResponse).toList());
+        return ResponseEntity.ok(propertyService.listByUserId(userId).stream()
+                .map(this::toResponse)
+                .toList());
     }
 
     @PutMapping("/{propertyId}")
@@ -113,8 +115,8 @@ public class PropertyController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(toResponse(propertyService.addOrUpdateAppliance(
-                propertyId, userId, applianceId, request.getQuantity())));
+        return ResponseEntity.ok(toResponse(
+                propertyService.addOrUpdateAppliance(propertyId, userId, applianceId, request.getQuantity())));
     }
 
     @DeleteMapping("/{propertyId}/appliances/{applianceId}")
@@ -134,10 +136,7 @@ public class PropertyController {
 
     private PropertyResponseDTO toResponse(Property property) {
         return new PropertyResponseDTO(
-                property.getId(),
-                property.getAlias(),
-                property.getPropertyType(),
-                property.isActive());
+                property.getId(), property.getAlias(), property.getPropertyType(), property.isActive());
     }
 
     private PropertyApplianceResponseDTO toResponse(PropertyAppliance propertyAppliance) {

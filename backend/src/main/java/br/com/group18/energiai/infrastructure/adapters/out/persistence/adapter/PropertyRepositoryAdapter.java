@@ -31,7 +31,9 @@ public class PropertyRepositoryAdapter implements PropertyRepositoryPort {
 
     @Override
     public List<Property> findByUserId(Long userId) {
-        return repository.findByUserIdOrderByAliasAsc(userId).stream().map(mapper::toDomain).toList();
+        return repository.findByUserIdOrderByAliasAsc(userId).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override
