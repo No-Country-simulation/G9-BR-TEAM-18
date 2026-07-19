@@ -1,14 +1,12 @@
 package br.com.group18.energiai.core.domain.model;
 
-import java.time.LocalDateTime;
-
+/** User persisted in {@code tb_user}. Password is always stored as a hash. */
 public class User {
 
     private Long id;
     private String name;
     private String email;
     private String passwordHash;
-    private LocalDateTime createdAt;
 
     public User() {}
 
@@ -16,7 +14,6 @@ public class User {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -49,13 +46,5 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

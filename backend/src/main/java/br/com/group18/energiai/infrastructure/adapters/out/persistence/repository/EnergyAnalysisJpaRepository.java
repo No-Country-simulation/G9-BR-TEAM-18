@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EnergyAnalysisJpaRepository extends JpaRepository<EnergyAnalysisEntity, Long> {
-    List<EnergyAnalysisEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<EnergyAnalysisEntity> findByPropertyIdOrderByCreatedAtDesc(Long propertyId);
+
+    List<EnergyAnalysisEntity> findByPropertyIdInOrderByCreatedAtDesc(List<Long> propertyIds);
 }

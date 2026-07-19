@@ -2,11 +2,14 @@ package br.com.group18.energiai.core.ports.out;
 
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
 import java.util.List;
+import java.util.Optional;
 
 public interface AnalysisRepositoryPort {
     EnergyAnalysis save(EnergyAnalysis analysis);
 
-    List<EnergyAnalysis> listAll();
+    Optional<EnergyAnalysis> findById(Long id);
 
-    List<EnergyAnalysis> listByUserId(Long userId);
+    List<EnergyAnalysis> listByPropertyId(Long propertyId);
+
+    List<EnergyAnalysis> listByPropertyIds(List<Long> propertyIds);
 }

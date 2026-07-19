@@ -1,72 +1,72 @@
 package br.com.group18.energiai.infrastructure.adapters.out.persistence.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "energy_analysis")
+@Table(name = "tb_energy_analysis")
 public class EnergyAnalysisEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "analysis_seq")
-    @SequenceGenerator(name = "analysis_seq", sequenceName = "ANALYSIS_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    @Column(name = "property_id", nullable = false)
+    private Long propertyId;
 
-    @Column(nullable = false)
-    private Double consumptionKwh;
+    @Column(name = "consumption_kwh", nullable = false, precision = 10, scale = 2)
+    private BigDecimal consumptionKwh;
 
-    @Column(nullable = false)
-    private Boolean peakHourUsage;
+    @Column(name = "peak_hour_usage", nullable = false, precision = 1, scale = 0)
+    private Integer peakHourUsage;
 
-    @Column(nullable = false)
-    private Integer equipmentQuantity;
+    @Column(name = "high_consumption_hours", nullable = false, precision = 4, scale = 2)
+    private BigDecimal highConsumptionHours;
 
-    @Column(nullable = false, length = 50)
-    private String propertyType;
-
-    @Column(nullable = false)
-    private Double highConsumptionHours;
+    @Column(name = "estimated_monthly_cost", precision = 10, scale = 2)
+    private BigDecimal estimatedMonthlyCost;
 
     @Column(length = 50)
-    private String highestConsumptionCategory;
-
-    private Double refrigerationWatts;
-    private Double heatingWatts;
-    private Double airConditioningWatts;
-    private Double lightingWatts;
-
-    @Column(nullable = false, length = 20)
     private String category;
 
-    @Column(nullable = false)
-    private Double probability;
+    @Column(precision = 5, scale = 2)
+    private BigDecimal probability;
 
-    @Column(nullable = false)
-    private Double estimatedMonthlyCost;
+    @Column(nullable = false, length = 20)
+    private String status;
 
-    @Lob
-    @Convert(converter = StringListConverter.class)
-    private List<String> recommendations;
-
-    @Column(length = 100)
-    private String source;
-
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public EnergyAnalysisEntity() {}
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (status == null) {
+            status = "PENDENTE";
+        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -76,92 +76,44 @@ public class EnergyAnalysisEntity {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getPropertyId() {
+        return propertyId;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setPropertyId(Long propertyId) {
+        this.propertyId = propertyId;
     }
 
-    public Double getConsumptionKwh() {
+    public BigDecimal getConsumptionKwh() {
         return consumptionKwh;
     }
 
-    public void setConsumptionKwh(Double consumptionKwh) {
+    public void setConsumptionKwh(BigDecimal consumptionKwh) {
         this.consumptionKwh = consumptionKwh;
     }
 
-    public Boolean getPeakHourUsage() {
+    public Integer getPeakHourUsage() {
         return peakHourUsage;
     }
 
-    public void setPeakHourUsage(Boolean peakHourUsage) {
+    public void setPeakHourUsage(Integer peakHourUsage) {
         this.peakHourUsage = peakHourUsage;
     }
 
-    public Integer getEquipmentQuantity() {
-        return equipmentQuantity;
-    }
-
-    public void setEquipmentQuantity(Integer equipmentQuantity) {
-        this.equipmentQuantity = equipmentQuantity;
-    }
-
-    public String getPropertyType() {
-        return propertyType;
-    }
-
-    public void setPropertyType(String propertyType) {
-        this.propertyType = propertyType;
-    }
-
-    public Double getHighConsumptionHours() {
+    public BigDecimal getHighConsumptionHours() {
         return highConsumptionHours;
     }
 
-    public void setHighConsumptionHours(Double highConsumptionHours) {
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
         this.highConsumptionHours = highConsumptionHours;
     }
 
-    public String getHighestConsumptionCategory() {
-        return highestConsumptionCategory;
+    public BigDecimal getEstimatedMonthlyCost() {
+        return estimatedMonthlyCost;
     }
 
-    public void setHighestConsumptionCategory(String highestConsumptionCategory) {
-        this.highestConsumptionCategory = highestConsumptionCategory;
-    }
-
-    public Double getRefrigerationWatts() {
-        return refrigerationWatts;
-    }
-
-    public void setRefrigerationWatts(Double refrigerationWatts) {
-        this.refrigerationWatts = refrigerationWatts;
-    }
-
-    public Double getHeatingWatts() {
-        return heatingWatts;
-    }
-
-    public void setHeatingWatts(Double heatingWatts) {
-        this.heatingWatts = heatingWatts;
-    }
-
-    public Double getAirConditioningWatts() {
-        return airConditioningWatts;
-    }
-
-    public void setAirConditioningWatts(Double airConditioningWatts) {
-        this.airConditioningWatts = airConditioningWatts;
-    }
-
-    public Double getLightingWatts() {
-        return lightingWatts;
-    }
-
-    public void setLightingWatts(Double lightingWatts) {
-        this.lightingWatts = lightingWatts;
+    public void setEstimatedMonthlyCost(BigDecimal estimatedMonthlyCost) {
+        this.estimatedMonthlyCost = estimatedMonthlyCost;
     }
 
     public String getCategory() {
@@ -172,36 +124,20 @@ public class EnergyAnalysisEntity {
         this.category = category;
     }
 
-    public Double getProbability() {
+    public BigDecimal getProbability() {
         return probability;
     }
 
-    public void setProbability(Double probability) {
+    public void setProbability(BigDecimal probability) {
         this.probability = probability;
     }
 
-    public Double getEstimatedMonthlyCost() {
-        return estimatedMonthlyCost;
+    public String getStatus() {
+        return status;
     }
 
-    public void setEstimatedMonthlyCost(Double estimatedMonthlyCost) {
-        this.estimatedMonthlyCost = estimatedMonthlyCost;
-    }
-
-    public List<String> getRecommendations() {
-        return recommendations;
-    }
-
-    public void setRecommendations(List<String> recommendations) {
-        this.recommendations = recommendations;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -210,5 +146,13 @@ public class EnergyAnalysisEntity {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

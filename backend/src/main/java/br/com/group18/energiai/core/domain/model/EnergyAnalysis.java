@@ -1,45 +1,38 @@
 package br.com.group18.energiai.core.domain.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+/** Energy analysis and its recommendations, persisted in two related tables. */
 public class EnergyAnalysis {
 
     private Long id;
-    private Double consumptionKwh;
+    private Long propertyId;
+    private BigDecimal consumptionKwh;
     private Boolean peakHourUsage;
-    private Integer equipmentQuantity;
-    private String propertyType;
-    private Double highConsumptionHours;
-    private String highestConsumptionCategory;
-    private Double refrigerationWatts;
-    private Double heatingWatts;
-    private Double airConditioningWatts;
-    private Double lightingWatts;
+    private BigDecimal highConsumptionHours;
+    private BigDecimal estimatedMonthlyCost;
     private String category;
-    private Double probability;
-    private Double estimatedMonthlyCost;
-    private List<String> recommendations;
-    private String source;
-    private Long userId;
+    private BigDecimal probability;
+    private String status;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private List<String> recommendations = new ArrayList<>();
 
     public EnergyAnalysis() {}
 
     public EnergyAnalysis(
-            Long userId,
-            Double consumptionKwh,
+            Long propertyId,
+            BigDecimal consumptionKwh,
             Boolean peakHourUsage,
-            Integer equipmentQuantity,
-            String propertyType,
-            Double highConsumptionHours) {
-        this.userId = userId;
+            BigDecimal highConsumptionHours) {
+        this.propertyId = propertyId;
         this.consumptionKwh = consumptionKwh;
         this.peakHourUsage = peakHourUsage;
-        this.equipmentQuantity = equipmentQuantity;
-        this.propertyType = propertyType;
         this.highConsumptionHours = highConsumptionHours;
-        this.createdAt = LocalDateTime.now();
+        this.status = "PENDENTE";
     }
 
     public Long getId() {
@@ -50,11 +43,19 @@ public class EnergyAnalysis {
         this.id = id;
     }
 
-    public Double getConsumptionKwh() {
+    public Long getPropertyId() {
+        return propertyId;
+    }
+
+    public void setPropertyId(Long propertyId) {
+        this.propertyId = propertyId;
+    }
+
+    public BigDecimal getConsumptionKwh() {
         return consumptionKwh;
     }
 
-    public void setConsumptionKwh(Double consumptionKwh) {
+    public void setConsumptionKwh(BigDecimal consumptionKwh) {
         this.consumptionKwh = consumptionKwh;
     }
 
@@ -66,68 +67,20 @@ public class EnergyAnalysis {
         this.peakHourUsage = peakHourUsage;
     }
 
-    public Integer getEquipmentQuantity() {
-        return equipmentQuantity;
-    }
-
-    public void setEquipmentQuantity(Integer equipmentQuantity) {
-        this.equipmentQuantity = equipmentQuantity;
-    }
-
-    public String getPropertyType() {
-        return propertyType;
-    }
-
-    public void setPropertyType(String propertyType) {
-        this.propertyType = propertyType;
-    }
-
-    public Double getHighConsumptionHours() {
+    public BigDecimal getHighConsumptionHours() {
         return highConsumptionHours;
     }
 
-    public void setHighConsumptionHours(Double highConsumptionHours) {
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
         this.highConsumptionHours = highConsumptionHours;
     }
 
-    public String getHighestConsumptionCategory() {
-        return highestConsumptionCategory;
+    public BigDecimal getEstimatedMonthlyCost() {
+        return estimatedMonthlyCost;
     }
 
-    public void setHighestConsumptionCategory(String highestConsumptionCategory) {
-        this.highestConsumptionCategory = highestConsumptionCategory;
-    }
-
-    public Double getRefrigerationWatts() {
-        return refrigerationWatts;
-    }
-
-    public void setRefrigerationWatts(Double refrigerationWatts) {
-        this.refrigerationWatts = refrigerationWatts;
-    }
-
-    public Double getHeatingWatts() {
-        return heatingWatts;
-    }
-
-    public void setHeatingWatts(Double heatingWatts) {
-        this.heatingWatts = heatingWatts;
-    }
-
-    public Double getAirConditioningWatts() {
-        return airConditioningWatts;
-    }
-
-    public void setAirConditioningWatts(Double airConditioningWatts) {
-        this.airConditioningWatts = airConditioningWatts;
-    }
-
-    public Double getLightingWatts() {
-        return lightingWatts;
-    }
-
-    public void setLightingWatts(Double lightingWatts) {
-        this.lightingWatts = lightingWatts;
+    public void setEstimatedMonthlyCost(BigDecimal estimatedMonthlyCost) {
+        this.estimatedMonthlyCost = estimatedMonthlyCost;
     }
 
     public String getCategory() {
@@ -138,44 +91,20 @@ public class EnergyAnalysis {
         this.category = category;
     }
 
-    public Double getProbability() {
+    public BigDecimal getProbability() {
         return probability;
     }
 
-    public void setProbability(Double probability) {
+    public void setProbability(BigDecimal probability) {
         this.probability = probability;
     }
 
-    public Double getEstimatedMonthlyCost() {
-        return estimatedMonthlyCost;
+    public String getStatus() {
+        return status;
     }
 
-    public void setEstimatedMonthlyCost(Double estimatedMonthlyCost) {
-        this.estimatedMonthlyCost = estimatedMonthlyCost;
-    }
-
-    public List<String> getRecommendations() {
-        return recommendations;
-    }
-
-    public void setRecommendations(List<String> recommendations) {
-        this.recommendations = recommendations;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -184,5 +113,21 @@ public class EnergyAnalysis {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<String> getRecommendations() {
+        return List.copyOf(recommendations);
+    }
+
+    public void setRecommendations(List<String> recommendations) {
+        this.recommendations = recommendations == null ? new ArrayList<>() : new ArrayList<>(recommendations);
     }
 }

@@ -30,11 +30,8 @@ public class MlServiceClient {
                     .retrieve()
                     .bodyToMono(MlPredictResponse.class)
                     .block(Duration.ofSeconds(45));
-        } catch (Exception e) {
-            log.warn(
-                    "ML Service indisponível — timeout de 45s excedido ou conexão recusada em {}: {}",
-                    mlServiceUrl,
-                    e.getMessage());
+        } catch (Exception exception) {
+            log.warn("ML Service indisponível em {}: {}", mlServiceUrl, exception.getMessage());
             return null;
         }
     }
@@ -45,7 +42,6 @@ public class MlServiceClient {
             int equipment_quantity,
             String property_type,
             double high_consumption_hours,
-            String highest_consumption_category,
             DailyConsumptionDistribution daily_consumption_distribution) {}
 
     public record DailyConsumptionDistribution(
@@ -54,5 +50,5 @@ public class MlServiceClient {
             @com.fasterxml.jackson.annotation.JsonProperty("AIR_CONDITIONING_WATTS") double AIR_CONDITIONING_WATTS,
             @com.fasterxml.jackson.annotation.JsonProperty("LIGHTING_WATTS") double LIGHTING_WATTS) {}
 
-    public record MlPredictResponse(String category, double probability, List<String> recommendations, String source) {}
+    public record MlPredictResponse(String category, double probability, List<String> recommendations) {}
 }

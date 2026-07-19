@@ -1,28 +1,26 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
-import br.com.group18.energiai.application.services.ApplianceAggregationService;
-import br.com.group18.energiai.core.domain.model.ApplianceItem;
-import br.com.group18.energiai.core.domain.model.ApplianceType;
+import br.com.group18.energiai.application.exception.ResourceNotFoundException;
+import br.com.group18.energiai.application.services.PropertyService;
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
+import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.ports.in.GenerateAnalysisUseCase;
 import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,45 +28,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AnalysisController {
 
-    private static final Logger log = LoggerFactory.getLogger(AnalysisController.class);
     private final GenerateAnalysisUseCase generateAnalysisUseCase;
     private final AnalysisRepositoryPort analysisRepository;
-    private final ApplianceAggregationService aggregationService;
+    private final PropertyService propertyService;
     private final double co2EmissionFactor;
 
     public AnalysisController(
             GenerateAnalysisUseCase generateAnalysisUseCase,
             AnalysisRepositoryPort analysisRepository,
-            ApplianceAggregationService aggregationService) {
+            PropertyService propertyService,
+            @Value("${CO2_EMISSION_FACTOR:0.096}") double co2EmissionFactor) {
         this.generateAnalysisUseCase = generateAnalysisUseCase;
         this.analysisRepository = analysisRepository;
-        this.aggregationService = aggregationService;
-        double factor = 0.096;
-        try {
-            factor = Double.parseDouble(System.getenv().getOrDefault("CO2_EMISSION_FACTOR", "0.096"));
-        } catch (Exception e) {
-            log.error("Invalid CO2_EMISSION_FACTOR, using default: {}", e.getMessage());
-        }
-        this.co2EmissionFactor = factor;
-    }
-
-    private AnalysisResponseDTO toResponse(EnergyAnalysis r) {
-        AnalysisResponseDTO dto = new AnalysisResponseDTO();
-        dto.setId(r.getId());
-        dto.setCategory(r.getCategory());
-        dto.setProbability(r.getProbability());
-        dto.setRecommendations(r.getRecommendations());
-        dto.setEstimatedMonthlyCost(r.getEstimatedMonthlyCost());
-        dto.setSource(r.getSource());
-        dto.setCreatedAt(r.getCreatedAt());
-        dto.setHighestConsumptionCategory(r.getHighestConsumptionCategory());
-        dto.setRefrigerationWatts(r.getRefrigerationWatts());
-        dto.setHeatingWatts(r.getHeatingWatts());
-        dto.setAirConditioningWatts(r.getAirConditioningWatts());
-        dto.setLightingWatts(r.getLightingWatts());
-        dto.setConsumptionKwh(r.getConsumptionKwh());
-        dto.setTotalEquipment(r.getEquipmentQuantity());
-        return dto;
+        this.propertyService = propertyService;
+        this.co2EmissionFactor = co2EmissionFactor;
     }
 
     @PostMapping("/energy-analysis")
@@ -79,81 +52,15 @@ public class AnalysisController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Double consumptionKwh = request.getConsumptionKwh();
-        Integer equipmentQuantity = request.getEquipmentQuantity();
-        if (equipmentQuantity == null) equipmentQuantity = 0;
-        String highestConsumptionCategory = request.getHighestConsumptionCategory();
-        Double refrigeration = request.getRefrigerationWatts();
-        Double heating = request.getHeatingWatts();
-        Double airConditioning = request.getAirConditioningWatts();
-        Double lighting = request.getLightingWatts();
-
-        // If the user provided specific appliances, calculate automatically
-        if (request.getAppliances() != null && !request.getAppliances().isEmpty()) {
-            List<ApplianceItem> items = request.getAppliances().stream()
-                    .map(a -> {
-                        ApplianceType type = ApplianceType.valueOf(a.getType());
-                        return new ApplianceItem(type, a.getQuantity());
-                    })
-                    .collect(Collectors.toList());
-
-            var agg = aggregationService.aggregate(items);
-
-            consumptionKwh = agg.calculatedConsumptionKwh();
-            equipmentQuantity = agg.totalEquipment();
-            highestConsumptionCategory = agg.highestConsumptionCategory();
-            refrigeration = agg.consumptionDistribution().getOrDefault("REFRIGERATION_WATTS", 0.0);
-            heating = agg.consumptionDistribution().getOrDefault("HEATING_WATTS", 0.0);
-            airConditioning = agg.consumptionDistribution().getOrDefault("AIR_CONDITIONING_WATTS", 0.0);
-            lighting = agg.consumptionDistribution().getOrDefault("LIGHTING_WATTS", 0.0);
-        } else {
-            // Fallback: use manual fields
-            if (request.getDailyConsumptionDistribution() != null) {
-                var dist = request.getDailyConsumptionDistribution();
-                if (dist.getRefrigerationWatts() != null) refrigeration = dist.getRefrigerationWatts();
-                if (dist.getHeatingWatts() != null) heating = dist.getHeatingWatts();
-                if (dist.getAirConditioningWatts() != null) airConditioning = dist.getAirConditioningWatts();
-                if (dist.getLightingWatts() != null) lighting = dist.getLightingWatts();
-            }
-        }
-
+        Property property = propertyService.getOwned(request.getPropertyId(), userId);
         EnergyAnalysis result = generateAnalysisUseCase.execute(
-                userId,
-                consumptionKwh,
+                property,
+                propertyService.listAppliances(property.getId(), userId),
+                request.getConsumptionKwh(),
                 request.getPeakHourUsage(),
-                equipmentQuantity,
-                request.getPropertyType(),
-                request.getHighConsumptionHours(),
-                highestConsumptionCategory,
-                refrigeration,
-                heating,
-                airConditioning,
-                lighting);
-
+                request.getHighConsumptionHours());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(result));
     }
-
-    @GetMapping("/appliances/types")
-    public ResponseEntity<List<ApplianceTypeDTO>> listApplianceTypes() {
-        List<ApplianceTypeDTO> types = Arrays.stream(ApplianceType.values())
-                .map(t -> new ApplianceTypeDTO(
-                        t.name(),
-                        t.getDisplayName(),
-                        t.getMlCategory(),
-                        t.getDistributionField(),
-                        t.getPowerWatts(),
-                        t.getDailyUsageHours()))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(types);
-    }
-
-    public record ApplianceTypeDTO(
-            String id,
-            String name,
-            @JsonProperty("mlCategory") String mlCategory,
-            @JsonProperty("distributionField") String distributionField,
-            @JsonProperty("powerWatts") double powerWatts,
-            @JsonProperty("dailyUsageHours") double dailyUsageHours) {}
 
     @GetMapping("/analyses")
     public ResponseEntity<List<AnalysisResponseDTO>> list(HttpServletRequest httpRequest) {
@@ -161,10 +68,21 @@ public class AnalysisController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        List<AnalysisResponseDTO> list = analysisRepository.listByUserId(userId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(analysesForUser(userId).stream().map(this::toResponse).toList());
+    }
+
+    @GetMapping("/analyses/{analysisId}")
+    public ResponseEntity<AnalysisResponseDTO> getById(
+            @PathVariable Long analysisId, HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        EnergyAnalysis analysis = analysisRepository
+                .findById(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Análise não encontrada."));
+        propertyService.getOwned(analysis.getPropertyId(), userId);
+        return ResponseEntity.ok(toResponse(analysis));
     }
 
     @GetMapping("/dashboard")
@@ -173,52 +91,74 @@ public class AnalysisController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        List<EnergyAnalysis> all = analysisRepository.listByUserId(userId);
-        if (all.isEmpty()) {
+
+        List<EnergyAnalysis> analyses = analysesForUser(userId);
+        if (analyses.isEmpty()) {
             return ResponseEntity.ok(new DashboardDTO(0, 0.0, 0.0, 0.0, List.of()));
         }
 
-        int totalAnalyses = all.size();
-        double averageConsumptionKwh = all.stream()
-                .mapToDouble(EnergyAnalysis::getConsumptionKwh)
+        double averageConsumptionKwh = analyses.stream()
+                .map(EnergyAnalysis::getConsumptionKwh)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(value -> value.doubleValue())
                 .average()
                 .orElse(0.0);
-        double totalEstimatedCost = all.stream()
-                .mapToDouble(EnergyAnalysis::getEstimatedMonthlyCost)
+        double totalEstimatedCost = analyses.stream()
+                .map(EnergyAnalysis::getEstimatedMonthlyCost)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(value -> value.doubleValue())
                 .sum();
-        double totalCo2EmissionKg = all.stream()
-                .mapToDouble(a -> a.getConsumptionKwh() * co2EmissionFactor)
+        double totalCo2EmissionKg = analyses.stream()
+                .map(EnergyAnalysis::getConsumptionKwh)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(value -> value.doubleValue() * co2EmissionFactor)
                 .sum();
 
-        TreeMap<YearMonth, Double> consumptionByYearMonth = all.stream()
-                .filter(a -> a.getCreatedAt() != null)
+        TreeMap<YearMonth, Double> consumptionByMonth = analyses.stream()
+                .filter(analysis -> analysis.getCreatedAt() != null)
                 .collect(Collectors.groupingBy(
-                        a -> YearMonth.from(a.getCreatedAt()),
+                        analysis -> YearMonth.from(analysis.getCreatedAt()),
                         TreeMap::new,
-                        Collectors.summingDouble(EnergyAnalysis::getConsumptionKwh)));
-
-        List<MonthlyConsumptionDTO> monthlyConsumption = consumptionByYearMonth.entrySet().stream()
-                .map(entry -> {
-                    String monthName = entry.getKey().getMonth().getDisplayName(TextStyle.SHORT, Locale.of("pt", "BR"));
-                    monthName = monthName.replace(".", "");
-                    if (monthName.length() > 0) {
-                        monthName = monthName.substring(0, 1).toUpperCase() + monthName.substring(1);
-                    }
-                    return new MonthlyConsumptionDTO(monthName, entry.getValue());
-                })
-                .collect(Collectors.toList());
+                        Collectors.summingDouble(analysis -> analysis.getConsumptionKwh().doubleValue())));
+        List<MonthlyConsumptionDTO> monthlyConsumption = consumptionByMonth.entrySet().stream()
+                .map(entry -> new MonthlyConsumptionDTO(
+                        entry.getKey().getMonth().getDisplayName(TextStyle.SHORT, Locale.of("pt", "BR"))
+                                + "/"
+                                + entry.getKey().getYear(),
+                        entry.getValue()))
+                .toList();
 
         return ResponseEntity.ok(new DashboardDTO(
-                totalAnalyses, averageConsumptionKwh, totalEstimatedCost, totalCo2EmissionKg, monthlyConsumption));
+                analyses.size(), averageConsumptionKwh, totalEstimatedCost, totalCo2EmissionKg, monthlyConsumption));
+    }
+
+    private List<EnergyAnalysis> analysesForUser(Long userId) {
+        List<Long> propertyIds = propertyService.listByUserId(userId).stream().map(Property::getId).toList();
+        return analysisRepository.listByPropertyIds(propertyIds);
+    }
+
+    private AnalysisResponseDTO toResponse(EnergyAnalysis analysis) {
+        return new AnalysisResponseDTO(
+                analysis.getId(),
+                analysis.getPropertyId(),
+                analysis.getConsumptionKwh(),
+                analysis.getPeakHourUsage(),
+                analysis.getHighConsumptionHours(),
+                analysis.getEstimatedMonthlyCost(),
+                analysis.getCategory(),
+                analysis.getProbability(),
+                analysis.getStatus(),
+                analysis.getRecommendations(),
+                analysis.getCreatedAt(),
+                analysis.getUpdatedAt());
     }
 
     public record DashboardDTO(
-            @JsonProperty("totalAnalyses") int totalAnalyses,
-            @JsonProperty("averageConsumptionKwh") double averageConsumptionKwh,
-            @JsonProperty("totalEstimatedCost") double totalEstimatedCost,
-            @JsonProperty("totalCo2EmissionKg") double totalCo2EmissionKg,
-            @JsonProperty("monthlyConsumption") List<MonthlyConsumptionDTO> monthlyConsumption) {}
+            int totalAnalyses,
+            double averageConsumptionKwh,
+            double totalEstimatedCost,
+            double totalCo2EmissionKg,
+            List<MonthlyConsumptionDTO> monthlyConsumption) {}
 
-    public record MonthlyConsumptionDTO(
-            @JsonProperty("month") String month, @JsonProperty("consumptionKwh") double consumptionKwh) {}
+    public record MonthlyConsumptionDTO(String month, double consumptionKwh) {}
 }

@@ -1,91 +1,109 @@
 package br.com.group18.energiai.application.services;
 
+import br.com.group18.energiai.application.exception.InvalidRequestException;
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
+import br.com.group18.energiai.core.domain.model.Property;
+import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.core.ports.in.GenerateAnalysisUseCase;
 import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient;
 import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.Locale;
+import org.springframework.stereotype.Service;
 
-/**
- * Service that coordinates energy analysis by delegating to the ML Service.
- *
- * The ML Service is the single source of truth for classification logic,
- * including its own rule-based fallback when the model is unavailable.
- * No rule-based logic is duplicated here.
- */
+@Service
 public class EnergyAnalysisService implements GenerateAnalysisUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(EnergyAnalysisService.class);
-
-    private static final double KWH_TARIFF = Double.parseDouble(System.getenv().getOrDefault("KWH_TARIFF", "0.75"));
+    private static final BigDecimal KWH_TARIFF =
+            new BigDecimal(System.getenv().getOrDefault("KWH_TARIFF", "0.75"));
 
     private final AnalysisRepositoryPort repository;
     private final MlServiceClient mlServiceClient;
+    private final ApplianceAggregationService aggregationService;
 
-    public EnergyAnalysisService(AnalysisRepositoryPort repository, MlServiceClient mlServiceClient) {
+    public EnergyAnalysisService(
+            AnalysisRepositoryPort repository,
+            MlServiceClient mlServiceClient,
+            ApplianceAggregationService aggregationService) {
         this.repository = repository;
         this.mlServiceClient = mlServiceClient;
+        this.aggregationService = aggregationService;
     }
 
     @Override
     public EnergyAnalysis execute(
-            Long userId,
-            Double consumptionKwh,
+            Property property,
+            List<PropertyAppliance> appliances,
+            BigDecimal consumptionKwh,
             Boolean peakHourUsage,
-            Integer equipmentQuantity,
-            String propertyType,
-            Double highConsumptionHours,
-            String highestConsumptionCategory,
-            Double refrigerationWatts,
-            Double heatingWatts,
-            Double airConditioningWatts,
-            Double lightingWatts) {
-        EnergyAnalysis analysis = new EnergyAnalysis(
-                userId, consumptionKwh, peakHourUsage, equipmentQuantity, propertyType, highConsumptionHours);
-        analysis.setHighestConsumptionCategory(highestConsumptionCategory);
-        analysis.setRefrigerationWatts(refrigerationWatts);
-        analysis.setHeatingWatts(heatingWatts);
-        analysis.setAirConditioningWatts(airConditioningWatts);
-        analysis.setLightingWatts(lightingWatts);
+            BigDecimal highConsumptionHours) {
+        if (!property.isActive()) {
+            throw new InvalidRequestException("A propriedade está inativa e não pode receber análises.");
+        }
 
-        var mlRequest = new MlServiceClient.MlPredictRequest(
-                consumptionKwh,
+        EnergyAnalysis analysis = repository.save(new EnergyAnalysis(
+                property.getId(),
+                scale(consumptionKwh),
                 peakHourUsage,
-                equipmentQuantity,
-                propertyType,
-                highConsumptionHours,
-                highestConsumptionCategory,
-                new MlServiceClient.DailyConsumptionDistribution(
-                        refrigerationWatts != null ? refrigerationWatts : 0.0,
-                        heatingWatts != null ? heatingWatts : 0.0,
-                        airConditioningWatts != null ? airConditioningWatts : 0.0,
-                        lightingWatts != null ? lightingWatts : 0.0));
+                scale(highConsumptionHours)));
+        ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
-        var mlResponse = mlServiceClient.predict(mlRequest);
+        try {
+            MlServiceClient.MlPredictResponse mlResponse = mlServiceClient.predict(new MlServiceClient.MlPredictRequest(
+                    analysis.getConsumptionKwh().doubleValue(),
+                    analysis.getPeakHourUsage(),
+                    aggregation.totalEquipment(),
+                    property.getPropertyType(),
+                    analysis.getHighConsumptionHours().doubleValue(),
+                    new MlServiceClient.DailyConsumptionDistribution(
+                            aggregation.refrigerationWatts(),
+                            aggregation.heatingWatts(),
+                            aggregation.airConditioningWatts(),
+                            aggregation.lightingWatts())));
 
-        if (mlResponse == null) {
-            throw new MlServiceUnavailableException(
-                    "Serviço de análise temporariamente indisponível. Tente novamente em instantes.");
+            if (mlResponse == null) {
+                throw new MlServiceUnavailableException(
+                        "Serviço de análise temporariamente indisponível. Tente novamente em instantes.");
+            }
+
+            analysis.setCategory(normalizeCategory(mlResponse.category()));
+            analysis.setProbability(normalizeProbability(mlResponse.probability()));
+            analysis.setRecommendations(mlResponse.recommendations());
+            analysis.setEstimatedMonthlyCost(
+                    analysis.getConsumptionKwh().multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP));
+            analysis.setStatus("FINALIZADO");
+            return repository.save(analysis);
+        } catch (RuntimeException exception) {
+            analysis.setStatus("FALHA");
+            repository.save(analysis);
+            throw exception;
+        }
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new MlServiceUnavailableException("O serviço de análise retornou uma categoria vazia.");
         }
 
-        log.info(
-                "Resposta do ML Service: {} (confiança: {}, origem: {})",
-                mlResponse.category(),
-                mlResponse.probability(),
-                mlResponse.source());
+        String catNormalizada = category.strip().toUpperCase(Locale.ROOT);
 
-        if (mlResponse.source().contains("groq")) {
-            log.info("Confiança abaixo de 80% — Groq acionado");
+        return switch (catNormalizada) {
+            case "EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO" -> catNormalizada;
+            default -> throw new MlServiceUnavailableException("Categoria inválida recebida do ML: " + category);
+        };
+    }
+
+    private BigDecimal normalizeProbability(double probability) {
+        if (Double.isNaN(probability) || Double.isInfinite(probability) || probability < 0 || probability > 1) {
+            throw new MlServiceUnavailableException("O serviço de análise retornou uma probabilidade inválida.");
         }
+        return BigDecimal.valueOf(probability).setScale(2, RoundingMode.HALF_UP);
+    }
 
-        analysis.setCategory(mlResponse.category());
-        analysis.setProbability(mlResponse.probability());
-        analysis.setRecommendations(mlResponse.recommendations());
-        analysis.setSource(mlResponse.source());
-        analysis.setEstimatedMonthlyCost(consumptionKwh * KWH_TARIFF);
-
-        return repository.save(analysis);
+    private BigDecimal scale(BigDecimal value) {
+        return value.setScale(2, RoundingMode.HALF_UP);
     }
 }

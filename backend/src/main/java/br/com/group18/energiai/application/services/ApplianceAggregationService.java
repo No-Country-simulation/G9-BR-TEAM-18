@@ -1,107 +1,78 @@
 package br.com.group18.energiai.application.services;
 
-import br.com.group18.energiai.core.domain.model.ApplianceItem;
-import br.com.group18.energiai.core.domain.model.ApplianceType;
-import java.util.Collections;
-import java.util.HashMap;
+import br.com.group18.energiai.core.domain.model.PropertyAppliance;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 
-/**
- * Service that aggregates a list of appliances selected by the user into the features expected by
- * the ML Service.
- */
+/** Builds the inventory-derived features expected by the ML service. */
 @Service
 public class ApplianceAggregationService {
 
-    /** Aggregates the appliances and returns a map with all calculated features */
-    public AggregationResult aggregate(List<ApplianceItem> appliances) {
-        if (appliances == null || appliances.isEmpty()) {
-            return new AggregationResult(
-                    Collections.emptyMap(),
-                    "Outros",
-                    Map.of(
-                            "REFRIGERATION_WATTS",
-                            0.0,
-                            "HEATING_WATTS",
-                            0.0,
-                            "AIR_CONDITIONING_WATTS",
-                            0.0,
-                            "LIGHTING_WATTS",
-                            0.0),
-                    0,
-                    0.0);
-        }
+    public AggregationResult aggregate(List<PropertyAppliance> appliances) {
+        List<PropertyAppliance> inventory = appliances == null ? List.of() : appliances;
+        BigDecimal refrigerationWatts = BigDecimal.ZERO;
+        BigDecimal heatingWatts = BigDecimal.ZERO;
+        BigDecimal airConditioningWatts = BigDecimal.ZERO;
+        BigDecimal lightingWatts = BigDecimal.ZERO;
+        int totalEquipment = 0;
 
-        // 1. Total equipment count
-        int totalEquipment =
-                appliances.stream().mapToInt(ApplianceItem::getQuantity).sum();
-
-        // 2. Estimated monthly consumption (kWh)
-        double monthlyConsumptionKwh = appliances.stream()
-                .mapToDouble(ApplianceItem::getMonthlyConsumptionKwh)
-                .sum();
-
-        // 3. Group total power by ML category (7 categories)
-        Map<String, Double> powerByMlCategory = new HashMap<>();
-        for (String cat : ApplianceType.getMlCategories()) {
-            powerByMlCategory.put(cat, 0.0);
-        }
-        for (ApplianceItem item : appliances) {
-            String cat = item.getType().getMlCategory();
-            double total = powerByMlCategory.getOrDefault(cat, 0.0) + item.getTotalPowerWatts();
-            powerByMlCategory.put(cat, total);
-        }
-
-        // 4. Highest consumption category (ML)
-        String highestConsumptionCategory = Collections.max(powerByMlCategory.entrySet(), Map.Entry.comparingByValue())
-                .getKey();
-
-        // 5. Group total power by distribution field (4 fields)
-        Map<String, Double> powerByDistribution = new HashMap<>();
-        powerByDistribution.put("REFRIGERATION_WATTS", 0.0);
-        powerByDistribution.put("HEATING_WATTS", 0.0);
-        powerByDistribution.put("AIR_CONDITIONING_WATTS", 0.0);
-        powerByDistribution.put("LIGHTING_WATTS", 0.0);
-
-        for (ApplianceItem item : appliances) {
-            String field = item.getType().getDistributionField();
-            if (!"NONE".equals(field) && powerByDistribution.containsKey(field)) {
-                double total = powerByDistribution.get(field) + item.getTotalPowerWatts();
-                powerByDistribution.put(field, total);
+        for (PropertyAppliance propertyAppliance : inventory) {
+            int quantity = propertyAppliance.getQuantity() == null ? 0 : propertyAppliance.getQuantity();
+            totalEquipment += quantity;
+            BigDecimal watts = propertyAppliance.getTotalPowerWatts();
+            switch (distributionFor(propertyAppliance)) {
+                case REFRIGERATION -> refrigerationWatts = refrigerationWatts.add(watts);
+                case HEATING -> heatingWatts = heatingWatts.add(watts);
+                case AIR_CONDITIONING -> airConditioningWatts = airConditioningWatts.add(watts);
+                case LIGHTING -> lightingWatts = lightingWatts.add(watts);
+                case OTHER -> {
+                    // Categories outside the ML distribution are still counted as equipment.
+                }
             }
         }
 
-        // 6. Complete feature map
-        Map<String, Double> features = new HashMap<>();
-        features.put("equipment_quantity", (double) totalEquipment);
-        features.put("consumption_kwh_estimated", Math.round(monthlyConsumptionKwh * 100.0) / 100.0);
-        for (Map.Entry<String, Double> entry : powerByMlCategory.entrySet()) {
-            features.put("cat_potencia_" + entry.getKey().toLowerCase(), entry.getValue());
-        }
-        for (Map.Entry<String, Double> entry : powerByDistribution.entrySet()) {
-            features.put(entry.getKey(), entry.getValue());
-        }
-
         return new AggregationResult(
-                features,
-                highestConsumptionCategory,
-                powerByDistribution,
                 totalEquipment,
-                Math.round(monthlyConsumptionKwh * 100.0) / 100.0);
+                refrigerationWatts.doubleValue(),
+                heatingWatts.doubleValue(),
+                airConditioningWatts.doubleValue(),
+                lightingWatts.doubleValue());
     }
 
-    /** Aggregation result */
-    public record AggregationResult(
-            Map<String, Double> allFeatures,
-            String highestConsumptionCategory,
-            Map<String, Double> consumptionDistribution,
-            int totalEquipment,
-            double calculatedConsumptionKwh) {
-        public AggregationResult {
-            allFeatures = Map.copyOf(allFeatures);
-            consumptionDistribution = Map.copyOf(consumptionDistribution);
+    private Distribution distributionFor(PropertyAppliance propertyAppliance) {
+        if (propertyAppliance.getAppliance() == null
+                || propertyAppliance.getAppliance().getApplianceCategory() == null) {
+            return Distribution.OTHER;
         }
+        String category = propertyAppliance
+                .getAppliance()
+                .getApplianceCategory()
+                .strip()
+                .toUpperCase(Locale.ROOT);
+        return switch (category) {
+            case "REFRIGERACAO", "REFRIGERAÇÃO", "REFRIGERATION" -> Distribution.REFRIGERATION;
+            case "AQUECIMENTO", "HEATING" -> Distribution.HEATING;
+            case "CLIMATIZACAO", "CLIMATIZAÇÃO", "AR_CONDICIONADO", "AIR_CONDITIONING" ->
+                    Distribution.AIR_CONDITIONING;
+            case "ILUMINACAO", "ILUMINAÇÃO", "LIGHTING" -> Distribution.LIGHTING;
+            default -> Distribution.OTHER;
+        };
     }
+
+    private enum Distribution {
+        REFRIGERATION,
+        HEATING,
+        AIR_CONDITIONING,
+        LIGHTING,
+        OTHER
+    }
+
+    public record AggregationResult(
+            int totalEquipment,
+            double refrigerationWatts,
+            double heatingWatts,
+            double airConditioningWatts,
+            double lightingWatts) {}
 }
