@@ -8,10 +8,11 @@ public class LoginRequestDTO {
 
     @NotBlank
     @Email
+    @Size(max = 255)
     private String email;
 
     @NotBlank
-    @Size(min = 6)
+    @Size(min = 6, max = 255)
     private String password;
 
     public String getEmail() {
