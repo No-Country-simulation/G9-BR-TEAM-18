@@ -131,13 +131,13 @@ PPH_CATEGORY_KWH_COLUMNS = {
 def _assign_region_property(region, counter):
     """Assign property type based on region with proportional distribution."""
     distribution = {
-        "Norte": ["Casa", "Rural", "Outro", "Casa", "Casa"],
-        "Nordeste": ["Casa", "Casa", "Rural", "Apartamento", "Outro"],
-        "Centro-Oeste": ["Casa", "Rural", "Outro", "Casa", "Comercial"],
+        "Norte": ["Casa", "Casa", "Casa", "Apartamento", "Comercial"],
+        "Nordeste": ["Casa", "Casa", "Apartamento", "Apartamento", "Comercial"],
+        "Centro-Oeste": ["Casa", "Casa", "Apartamento", "Casa", "Comercial"],
         "Sudeste": ["Apartamento", "Casa", "Apartamento", "Casa", "Comercial"],
-        "Sul": ["Casa", "Casa", "Apartamento", "Rural", "Outro"],
+        "Sul": ["Casa", "Casa", "Apartamento", "Apartamento", "Comercial"],
     }
-    options = distribution.get(region, ["Casa", "Outro"])
+    options = distribution.get(region, ["Casa", "Apartamento"])
     return options[counter % len(options)]
 
 
