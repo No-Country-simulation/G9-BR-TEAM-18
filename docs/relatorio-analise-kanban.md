@@ -104,6 +104,7 @@ Cada card recebe um ID no formato:
 | B018 | Backend (Endpoints/Services) - Testes de integração do novo domínio | #35 | ADR-0008 |
 | I008 | Infraestrutura/Base - ADR do redesign Property e migração Oracle | #36 | ADR-0009 |
 | B019 | Backend (Endpoints/Services) - Aplicação de formatação Spotless | #37 | - |
+| M002 | Banco de dados (Migration) - Redução de escopo dos imóveis e junção dos datasets | #38 | - |
 
 ## Pontos verificados pela análise de diffs
 
