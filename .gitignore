@@ -27,6 +27,7 @@ ml-service/__pycache__/
 ml-service/*.pyc
 ml-service/.env
 **/__pycache__/
+ml-service/*.joblib
 
 # --- Node / Frontend ---
 frontend/node_modules/
