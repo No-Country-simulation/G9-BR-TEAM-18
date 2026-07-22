@@ -66,15 +66,12 @@ PPH_CSV = os.path.join(DATA_DIR, "pph-data-complete.csv")
 CATEGORIES = ["Excelente", "Bom", "Mediano", "Ruim", "Critico"]
 MAP_CATEGORY_UPPER = {c.upper(): c for c in CATEGORIES}
 
-PROPERTY_TYPES = ["Casa", "Apartamento", "Comercial", "Industria", "Rural", "Outro"]
+PROPERTY_TYPES = ["Casa", "Apartamento", "Comercial"]
 
 BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250,
     "Apartamento": 150,
     "Comercial": 500,
-    "Industria": 800,
-    "Rural": 300,
-    "Outro": 250,
 }
 
 N_SYNTHETIC = int(os.getenv("N_SYNTHETIC", "2000"))

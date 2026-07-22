@@ -3,10 +3,7 @@ import pandas as pd
 BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250,
     "Apartamento": 150,
-    "Comercial": 500,
-    "Industria": 800,
-    "Rural": 300,
-    "Outro": 250,
+    "Comercial": 500
 }
 
 HIGHEST_CONSUMPTION_CATEGORIES = [
