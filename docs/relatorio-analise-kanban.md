@@ -107,17 +107,17 @@ Cada card recebe um ID no formato:
 | M002 | Banco de dados (Migration) - Redução de escopo dos imóveis e junção dos datasets | #38 | - |
 | | | | |
 | **Cards adicionados (Done)** | | | |
-| F002 | Frontend (Telas/Componentes) - Catálogo de aparelhos extraído para módulo compartilhado | - | ADR-0011 |
-| F003 | Frontend (Telas/Componentes) - Funções CRUD expandidas na api.ts | - | ADR-0011 |
-| F004 | Frontend (Telas/Componentes) - Página de perfil (/profile) com catálogo visual e persistência | - | ADR-0011 |
-| F005 | Frontend (Telas/Componentes) - Análise automática com reescrita do AnalysisPage | - | ADR-0011 |
-| F006 | Frontend (Telas/Componentes) - Dashboard aprimorado com última análise e tendência | - | ADR-0011 |
-| I009 | Infraestrutura/Base - ADRs 0010 e 0011 (revogação JWT e perfil) | - | ADR-0010, ADR-0011 |
+| F002 | Frontend (Telas/Componentes) - Catálogo de aparelhos extraído para módulo compartilhado | #44 | ADR-0011 |
+| F003 | Frontend (Telas/Componentes) - Funções CRUD expandidas na api.ts | #45 | ADR-0011 |
+| F004 | Frontend (Telas/Componentes) - Página de perfil (/profile) com catálogo visual e persistência | #46 | ADR-0011 |
+| F005 | Frontend (Telas/Componentes) - Análise automática com reescrita do AnalysisPage | #47 | ADR-0011 |
+| F006 | Frontend (Telas/Componentes) - Dashboard aprimorado com última análise e tendência | #48 | ADR-0011 |
+| I009 | Infraestrutura/Base - ADRs 0010 e 0011 (revogação JWT e perfil) | #49 | ADR-0010, ADR-0011 |
 | --- | **Cards adicionados (Ready)** | | |
-| M003 | Banco de Dados (Migration) - Migration V3 tb_token_blacklist | - | ADR-0010 |
-| B020 | Backend (Endpoints/Services) - Token blacklist repository (ports + adapters + JPA) | - | ADR-0010 |
-| B021 | Backend (Endpoints/Services) - Logout com invalidação JWT + job cleanup | - | ADR-0010 |
-| B022 | Backend (Endpoints/Services) - Troca de SHA-256 para BCrypt no hash de senha | - | ADR-0010 |
+| M003 | Banco de Dados (Migration) - Migration V3 tb_token_blacklist | #50 | ADR-0010 |
+| B020 | Backend (Endpoints/Services) - Token blacklist repository (ports + adapters + JPA) | #51 | ADR-0010 |
+| B021 | Backend (Endpoints/Services) - Logout com invalidação JWT + job cleanup | #52 | ADR-0010 |
+| B022 | Backend (Endpoints/Services) - Troca de SHA-256 para BCrypt no hash de senha | #53 | ADR-0010 |
 
 ## Pontos verificados pela análise de diffs
 
