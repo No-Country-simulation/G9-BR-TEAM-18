@@ -27,6 +27,7 @@ export default function Navbar() {
   const links = user
     ? [
         { to: "/dashboard", label: "Dashboard" },
+        { to: "/profile", label: "Perfil" },
         { to: "/analysis", label: "Analisar" },
         { to: "/history", label: "Histórico" },
       ]

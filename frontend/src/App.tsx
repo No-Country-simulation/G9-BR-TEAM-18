@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import AnalysisPage from "./pages/AnalysisPage";
+import ProfilePage from "./pages/ProfilePage";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
@@ -17,8 +18,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 export default function App() {
   // Warm up the backend on first load to reduce cold start delay
   useEffect(() => {
-    // Usa a raiz (/) em vez de /swagger-ui.html — mais leve, sem depender do SpringDoc
-    fetch(`${API_URL}/`, { mode: "no-cors" }).catch(() => {});
+    fetch(`${API_URL}/auth/me`, { mode: "no-cors" }).catch(() => {});
   }, []);
 
   return (
@@ -50,6 +50,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <History />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <ProfilePage />
             </PrivateRoute>
           }
         />
