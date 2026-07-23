@@ -591,34 +591,35 @@ print(f"  % above 90%: {pct_above_90:.1%}")
 # SAVE
 # =========================================================================
 
-joblib.dump(calibrated_pipeline, MODEL_PATH)
+joblib.dump(calibrated_pipeline, MODEL_PATH, compress=3)
 print(f"\nModel saved to '{MODEL_PATH}'")
 print(f"Size: {os.path.getsize(MODEL_PATH) / 1024 / 1024:.1f} MB")
 
 print()
 print("=" * 60)
-print("TEST WITH ALL PROPERTY TYPES")
+print("TEST WITH ALL PROPERTY TYPES AND CATEGORIES")
 print("=" * 60)
 for tipo in PROPERTY_TYPES:
-    teste = pd.DataFrame(
-        [
-            {
-                "consumption_kwh": 400.0,
-                "peak_hour_usage": False,
-                "equipment_quantity": 10,
-                "property_type": tipo,
-                "high_consumption_hours": 5.0,
-                "highest_consumption_category": "Refrigeracao",
-                "refrigeration_watts": 1500.0,
-                "heating_watts": 0.0,
-                "air_conditioning_watts": 0.0,
-                "lighting_watts": 0.0,
-            }
-        ]
-    )
-    pred = calibrated_pipeline.predict(teste)[0]
-    proba = calibrated_pipeline.predict_proba(teste).max()
-    print(f"  {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
+    for categoria_consumo in HIGHEST_CONSUMPTION_CATEGORIES:
+        teste = pd.DataFrame(
+            [
+                {
+                    "consumption_kwh": 400.0,
+                    "peak_hour_usage": False,
+                    "equipment_quantity": 10,
+                    "property_type": tipo,
+                    "high_consumption_hours": 5.0,
+                    "highest_consumption_category": categoria_consumo,
+                    "refrigeration_watts": 1500.0,
+                    "heating_watts": 0.0,
+                    "air_conditioning_watts": 0.0,
+                    "lighting_watts": 0.0,
+                }
+            ]
+        )
+        pred = calibrated_pipeline.predict(teste)[0]
+        proba = calibrated_pipeline.predict_proba(teste).max()
+        print(f"  {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
 
 print()
 print("Tip: for the next cycle, run this script again —")
