@@ -104,9 +104,6 @@ BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250.0,
     "Apartamento": 150.0,
     "Comercial": 500.0,
-    "Industria": 800.0,
-    "Rural": 300.0,
-    "Outro": 250.0,
 }
 
 
@@ -124,6 +121,7 @@ class PredictRequest(BaseModel):
     property_type: str
     high_consumption_hours: float
     highest_consumption_category: str | None = "Outros"
+    highest_consumption_products: list[str] | None = None
     daily_consumption_distribution: ConsumptionDistribution | None = None
 
 
