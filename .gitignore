@@ -12,6 +12,7 @@ Thumbs.db
 .project
 .classpath
 .factorypath
+AGENTS.md
 
 # --- Java / Spring Boot ---
 backend/target/
@@ -40,6 +41,7 @@ docker-data/
 # --- Misc ---
 *.log
 .env
+test-persistencia.sh
 
 # Keep .env.example tracked
 !.env.example
