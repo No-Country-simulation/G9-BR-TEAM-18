@@ -12,7 +12,7 @@ Thumbs.db
 .project
 .classpath
 .factorypath
-# AGENTS.md is intentionally tracked - do not ignore
+AGENTS.md
 
 # --- Java / Spring Boot ---
 backend/target/
