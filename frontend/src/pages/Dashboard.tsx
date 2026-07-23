@@ -1,24 +1,50 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { fetchDashboard } from "../services/api";
-import type { DashboardData } from "../types";
+import { fetchDashboard, listAnalyses } from "../services/api";
+import type { DashboardData, AnalysisHistory } from "../types";
+import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { BarChart3, Zap, DollarSign, Leaf, TrendingUp, History } from "lucide-react";
+import {
+  BarChart3,
+  Zap,
+  DollarSign,
+  Leaf,
+  TrendingUp,
+  History,
+  UserCog,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastAnalysis, setLastAnalysis] = useState<AnalysisHistory | null>(null);
+  const [trend, setTrend] = useState<"up" | "down" | "stable" | null>(null);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    fetchDashboard()
-      .then(setData)
+    Promise.all([fetchDashboard(), listAnalyses()])
+      .then(([dash, analyses]) => {
+        setData(dash);
+        if (analyses.length > 0) {
+          const latest = analyses[analyses.length - 1];
+          setLastAnalysis(latest);
+          if (analyses.length >= 2) {
+            const prev = analyses[analyses.length - 2];
+            if (latest.consumption_kwh > prev.consumption_kwh) setTrend("up");
+            else if (latest.consumption_kwh < prev.consumption_kwh) setTrend("down");
+            else setTrend("stable");
+          }
+        }
+      })
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
@@ -45,10 +71,17 @@ export default function Dashboard() {
           <BarChart3 size={28} /> Dashboard
         </h1>
         <div className="history-empty">
-          <p>Nenhuma análise encontrada. Faça sua primeira análise para começar!</p>
-          <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
-            Fazer análise
-          </button>
+          <p>Nenhuma análise encontrada. Configure seu perfil e faça a primeira análise!</p>
+          <div
+            style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "1rem" }}
+          >
+            <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--secondary">
+              <UserCog size={18} /> Criar Perfil
+            </button>
+            <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+              Fazer análise
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -64,10 +97,53 @@ export default function Dashboard() {
           <button onClick={() => navigate("/history")} className="dash-btn dash-btn--secondary">
             <History size={18} /> Histórico
           </button>
-          <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
-            Nova análise
-          </button>
         </div>
+      </div>
+
+      {lastAnalysis && (
+        <div className="dash-last-analysis">
+          <div className="dash-last-header">
+            <span className="dash-last-label">Última Análise</span>
+            <span className="dash-last-date">
+              {new Date(lastAnalysis.created_at).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="dash-last-body">
+            <span
+              className="dash-last-badge"
+              style={{
+                backgroundColor:
+                  CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
+                  "#6b7280",
+              }}
+            >
+              {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
+                lastAnalysis.category}
+            </span>
+            <span className="dash-last-consumo">{lastAnalysis.consumption_kwh.toFixed(0)} kWh</span>
+            {trend && (
+              <span className={`dash-trend dash-trend--${trend}`}>
+                {trend === "up" && <ArrowUp size={16} />}
+                {trend === "down" && <ArrowDown size={16} />}
+                {trend === "stable" && <Minus size={16} />}
+                {trend === "up" ? "Subiu" : trend === "down" ? "Caiu" : "Estável"}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="dash-actions-row">
+        <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--secondary">
+          <UserCog size={18} /> Meu Perfil
+        </button>
+        <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+          <BarChart3 size={18} /> Nova análise
+        </button>
       </div>
 
       <div className="dash-grid">
