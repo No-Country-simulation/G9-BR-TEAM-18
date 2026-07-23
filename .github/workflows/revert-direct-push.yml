@@ -1,0 +1,57 @@
+name: revert-direct-push
+
+on:
+  push:
+    branches:
+      - main
+      - homolog
+
+jobs:
+  enforce-protection:
+    if: github.event_name == 'push' && github.event.head_commit.message != 'Initial commit' && !startsWith(github.event.head_commit.message, 'chore: merge')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if push is a merge commit
+        id: check_merge
+        run: |
+          COMMIT_COUNT=$(git rev-list --count --merges ${{ github.event.before }}..${{ github.event.after }} 2>/dev/null || echo 0)
+          PARENTS=$(git cat-file -p ${{ github.event.after }} 2>/dev/null | grep "^parent " | wc -l || echo 0)
+          echo "Commit parents: $PARENTS"
+          echo "Merge commits in range: $COMMIT_COUNT"
+          echo "is_merge=$([ "$PARENTS" -gt 1 ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
+      - name: Reject direct push
+        if: steps.check_merge.outputs.is_merge == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          COMMITTER: ${{ github.event.head_commit.committer.name }}
+        run: |
+          echo "❌ Push direto detectado em $BRANCH por $COMMITTER"
+          echo ""
+          echo "Apenas merges de PR são permitidos em $BRANCH."
+          echo "Criando Issue de alerta..."
+
+          gh issue create \
+            --title "🚫 Push direto detectado em $BRANCH" \
+            --label "tipo/fix" \
+            --body "**Branch:** $BRANCH
+          **Autor:** $COMMITTER
+          **Commit:** ${{ github.event.after }}
+          **Mensagem:** ${{ github.event.head_commit.message }}
+
+          Push direto em $BRANCH não é permitido. Crie um PR a partir da branch correta:
+          - **dev** → **homolog** (para features)
+          - **homolog** → **main** (para releases)
+
+          Se este push foi acidental, reverta manualmente ou feche esta Issue após correção."
+
+          exit 1
