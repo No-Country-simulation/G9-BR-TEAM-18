@@ -51,10 +51,10 @@ Cada card recebe um ID no formato:
 ## Dados da análise
 
 | Métrica | Valor |
-|---|---|
+|---|---|---|
 | Total de branches analisadas | 4 (dev, homolog, main, NOTEBOOK-UPDATES) |
 | Total de commits analisados | 198 |
-| Período do histórico | 2026-07-06 a 2026-07-19 |
+| Período do histórico | 2026-07-06 a 2026-07-23 |
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
@@ -62,12 +62,12 @@ Cada card recebe um ID no formato:
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 31 | | Backend (B) | 19 |
-| In review | 0 | | Infraestrutura (I) | 8 |
-| In progress | 0 | | Frontend (F) | 1 |
-| Ready | 0 | | Banco de Dados (M) | 1 |
+| Done | 38 | | Backend (B) | 22 |
+| In review | 0 | | Infraestrutura (I) | 9 |
+| In progress | 0 | | Frontend (F) | 6 |
+| Ready | 4 | | Banco de Dados (M) | 3 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **31** | | **Total** | **31** |
+| **Total** | **42** | | **Total** | **42** |
 
 ## Lista completa de cards
 
@@ -105,6 +105,19 @@ Cada card recebe um ID no formato:
 | I008 | Infraestrutura/Base - ADR do redesign Property e migração Oracle | #36 | ADR-0009 |
 | B019 | Backend (Endpoints/Services) - Aplicação de formatação Spotless | #37 | - |
 | M002 | Banco de dados (Migration) - Redução de escopo dos imóveis e junção dos datasets | #38 | - |
+| | | | |
+| **Cards adicionados (Done)** | | | |
+| F002 | Frontend (Telas/Componentes) - Catálogo de aparelhos extraído para módulo compartilhado | - | ADR-0011 |
+| F003 | Frontend (Telas/Componentes) - Funções CRUD expandidas na api.ts | - | ADR-0011 |
+| F004 | Frontend (Telas/Componentes) - Página de perfil (/profile) com catálogo visual e persistência | - | ADR-0011 |
+| F005 | Frontend (Telas/Componentes) - Análise automática com reescrita do AnalysisPage | - | ADR-0011 |
+| F006 | Frontend (Telas/Componentes) - Dashboard aprimorado com última análise e tendência | - | ADR-0011 |
+| I009 | Infraestrutura/Base - ADRs 0010 e 0011 (revogação JWT e perfil) | - | ADR-0010, ADR-0011 |
+| --- | **Cards adicionados (Ready)** | | |
+| M003 | Banco de Dados (Migration) - Migration V3 tb_token_blacklist | - | ADR-0010 |
+| B020 | Backend (Endpoints/Services) - Token blacklist repository (ports + adapters + JPA) | - | ADR-0010 |
+| B021 | Backend (Endpoints/Services) - Logout com invalidação JWT + job cleanup | - | ADR-0010 |
+| B022 | Backend (Endpoints/Services) - Troca de SHA-256 para BCrypt no hash de senha | - | ADR-0010 |
 
 ## Pontos verificados pela análise de diffs
 
