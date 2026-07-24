@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
 import br.com.group18.energiai.application.services.PropertyService;
+import br.com.group18.energiai.application.services.PropertyService.ApplianceQuantity;
 import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyApplianceRequestDTO;
@@ -122,6 +123,20 @@ public class PropertyController {
         }
         return ResponseEntity.ok(toResponse(
                 propertyService.addOrUpdateAppliance(propertyId, userId, applianceId, request.getQuantity())));
+    }
+
+    @PutMapping("/{propertyId}/appliances/batch")
+    public ResponseEntity<List<PropertyApplianceResponseDTO>> batchUpdateAppliances(
+            @PathVariable Long propertyId,
+            @RequestBody List<ApplianceQuantity> items,
+            HttpServletRequest httpRequest) {
+        Long userId = authenticatedUser(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(propertyService.batchUpdateAppliances(propertyId, userId, items).stream()
+                .map(this::toResponse)
+                .toList());
     }
 
     @DeleteMapping("/{propertyId}/appliances/{applianceId}")

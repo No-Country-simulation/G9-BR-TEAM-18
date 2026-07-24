@@ -164,6 +164,25 @@ export async function removeApplianceFromProperty(
   }
 }
 
+/**
+ * Atualiza todos os aparelhos de uma propriedade em uma única chamada.
+ * Remove aparelhos não listados, adiciona/atualiza os informados.
+ */
+export async function batchUpdateAppliances(
+  propertyId: number,
+  items: Array<{ applianceId: number; quantity: number }>,
+): Promise<PropertyAppliance[]> {
+  const response = await authFetch(`/properties/${propertyId}/appliances/batch`, {
+    method: "PUT",
+    body: JSON.stringify(items),
+  });
+  if (!response.ok) {
+    const err: ErrorResponse = await response.json();
+    throw new ApiError(err.message ?? "Erro ao atualizar aparelhos", err.fields ?? {});
+  }
+  return response.json();
+}
+
 // --- Analysis ---
 
 export async function analyzeEnergy(

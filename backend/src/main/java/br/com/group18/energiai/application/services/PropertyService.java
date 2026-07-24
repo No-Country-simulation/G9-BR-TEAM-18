@@ -8,8 +8,10 @@ import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
 import br.com.group18.energiai.core.ports.out.PropertyApplianceRepositoryPort;
 import br.com.group18.energiai.core.ports.out.PropertyRepositoryPort;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PropertyService {
@@ -83,4 +85,40 @@ public class PropertyService {
                         new ResourceNotFoundException("Aparelho n\u00e3o est\u00e1 vinculado \u00e0 propriedade."));
         propertyApplianceRepository.delete(propertyAppliance);
     }
+
+    @Transactional
+    public List<PropertyAppliance> batchUpdateAppliances(
+            Long propertyId, Long userId, List<ApplianceQuantity> items) {
+        getOwned(propertyId, userId);
+
+        List<Long> incomingIds = items.stream()
+                .map(ApplianceQuantity::applianceId)
+                .toList();
+
+        List<PropertyAppliance> existing = propertyApplianceRepository.findByPropertyId(propertyId);
+
+        for (PropertyAppliance pa : existing) {
+            if (!incomingIds.contains(pa.getAppliance().getId())) {
+                propertyApplianceRepository.delete(pa);
+            }
+        }
+
+        List<PropertyAppliance> result = new ArrayList<>();
+        for (ApplianceQuantity item : items) {
+            Appliance appliance = applianceRepository
+                    .findById(item.applianceId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Aparelho id=" + item.applianceId() + " não encontrado."));
+
+            PropertyAppliance pa = propertyApplianceRepository
+                    .findByPropertyIdAndApplianceId(propertyId, item.applianceId())
+                    .orElseGet(() -> new PropertyAppliance(propertyId, appliance, item.quantity()));
+            pa.setQuantity(item.quantity());
+            result.add(propertyApplianceRepository.save(pa));
+        }
+
+        return result;
+    }
+
+    public record ApplianceQuantity(Long applianceId, Integer quantity) {}
 }
