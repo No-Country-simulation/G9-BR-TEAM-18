@@ -53,7 +53,8 @@ class AuthenticationServiceTest {
         when(userRepository.findByEmail("teste@email.com"))
                 .thenReturn(Optional.of(new User("Teste", "teste@email.com", "hash")));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> authenticationService.register("Teste 2", "teste@email.com", "senha123"));
 
         assertEquals("E-mail já cadastrado", exception.getMessage());
@@ -128,8 +129,8 @@ class AuthenticationServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPass", "$2a$10$oldHash")).thenReturn(false);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> authenticationService.resetPassword(1L, "wrongPass", "newPass"));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> authenticationService.resetPassword(1L, "wrongPass", "newPass"));
 
         assertEquals("Senha atual inválida", exception.getMessage());
     }
@@ -138,8 +139,8 @@ class AuthenticationServiceTest {
     void shouldThrowWhenResetPasswordForNonExistentUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> authenticationService.resetPassword(99L, "current", "new"));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> authenticationService.resetPassword(99L, "current", "new"));
 
         assertEquals("Usuário não encontrado", exception.getMessage());
     }

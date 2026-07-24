@@ -108,8 +108,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            User user = authenticationService.resetPassword(
-                    userId, request.getCurrentPassword(), request.getNewPassword());
+            User user =
+                    authenticationService.resetPassword(userId, request.getCurrentPassword(), request.getNewPassword());
             createSession(user, servletResponse);
             return ResponseEntity.ok(toResponse(user));
         } catch (IllegalArgumentException e) {
