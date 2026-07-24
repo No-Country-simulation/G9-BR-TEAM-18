@@ -29,9 +29,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 43 | | Backend (B) | 24 |
-| In review | 0 | | Infraestrutura (I) | 10 |
-| In progress | 0 | | Frontend (F) | 6 |
-| Ready | 0 | | Banco de Dados (M) | 3 |
+| Done | 53 | | Backend (B) | 30 |
+| In review | 0 | | Infraestrutura (I) | 14 |
+| In progress | 0 | | Frontend (F) | 7 |
+| Ready | 0 | | Banco de Dados (M) | 4 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **43** | | **Total** | **45** |
+| **Total** | **53** | | **Total** | **57** |

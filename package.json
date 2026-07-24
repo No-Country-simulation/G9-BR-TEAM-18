@@ -16,11 +16,11 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@cspell/dict-pt-br": "^1.0.24",
+    "cspell": "^8.14.0",
     "husky": "^9.1.0",
     "lint-staged": "^15.2.0",
-    "markdownlint-cli2": "^0.14.0",
-    "cspell": "^8.14.0",
-    "@cspell/dict-pt-br": "^1.0.0"
+    "markdownlint-cli2": "^0.14.0"
   },
   "lint-staged": {
     "backend/**/*.java": [

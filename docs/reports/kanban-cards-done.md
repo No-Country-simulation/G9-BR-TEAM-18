@@ -44,5 +44,13 @@
 | B020 | Backend (Endpoints/Services) - Token blacklist repository (ports + adapters + JPA) | #51 | ADR-0010 |
 | B021 | Backend (Endpoints/Services) - Logout com invalidação JWT + job cleanup | #52 | ADR-0010 |
 | B022 | Backend (Endpoints/Services) - Troca de SHA-256 para BCrypt no hash de senha | #53 | ADR-0010 |
-| B023 | Backend (Endpoints/Services) - Forced password reset with current password verification | - | ADR-0012 |
-| I010 | Infraestrutura/Base - ADR-0012 (forced password reset) | - | ADR-0012 |
+| B023 | Backend (Endpoints/Services) - Forced password reset with current password verification | #56 | ADR-0012 |
+| I010 | Infraestrutura/Base - ADR-0012 (forced password reset) | #57 | ADR-0012 |
+| F007 | Frontend (Telas/Componentes) - Centralizar PROPERTY_TYPES em types/index.ts | #58 | ADR-0018 |
+| B026 | Backend (Endpoints/Services) - Validar propertyType com enum TipoImovel | #59 | ADR-0018 |
+| M004 | Banco de Dados (Migration) - Migration V6 normalize property type | #60 | ADR-0018 |
+| B027 | Backend (Endpoints/Services) - Integration tests for property type validation | #61 | ADR-0018 |
+| I011 | Infraestrutura/Base - ADR-0018 (normalizacao tipos imovel) | #62 | ADR-0018 |
+| B024 | Backend (Endpoints/Services) - Admin reset password endpoint | #63 | ADR-0019 |
+| B025 | Backend (Endpoints/Services) - Integration tests for password reset and admin reset | #64 | ADR-0019 |
+| I012 | Infraestrutura/Base - ADR-0019 (admin password reset) | #65 | ADR-0019 |

@@ -5,6 +5,9 @@
   "import": ["@cspell/dict-pt-br/cspell-ext.json"],
 
   "words": [
+    "imovel",
+    "Imovel",
+    "normalizacao",
     "EnergIAI",
     "energiai",
     "energi",
