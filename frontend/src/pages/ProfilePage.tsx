@@ -10,7 +10,13 @@ import type {
   Regularity,
   AnalysisResponse,
 } from "../types";
-import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, REGULARITY_OPTIONS } from "../types";
+import {
+  ApiError,
+  CATEGORY_COLORS,
+  CATEGORY_DISPLAY,
+  PROPERTY_TYPES,
+  REGULARITY_OPTIONS,
+} from "../types";
 import {
   listProperties,
   createProperty,
@@ -23,15 +29,6 @@ import {
   listAnalyses,
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
-
-const PROPERTY_TYPES: PropertyType[] = [
-  "Casa",
-  "Apartamento",
-  "Comercial",
-  "Industria",
-  "Rural",
-  "Outro",
-];
 
 const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
   Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
@@ -75,7 +72,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   const [property, setProperty] = useState<PropertyResponse | null>(null);
-  const [propertyType, setPropertyType] = useState<PropertyType>("Casa");
+  const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
   const [savedAppliances, setSavedAppliances] = useState<PropertyAppliance[]>([]);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);

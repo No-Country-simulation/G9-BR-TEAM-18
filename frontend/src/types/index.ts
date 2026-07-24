@@ -86,7 +86,9 @@ export const CATEGORY_COLORS: Record<EfficiencyClassification, string> = {
   CRITICO: "#ef4444",
 };
 
-export type PropertyType = "Casa" | "Apartamento" | "Comercial" | "Industria" | "Rural" | "Outro";
+export const PROPERTY_TYPES = ["RESIDENCIAL", "COMERCIAL"] as const;
+
+export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
 export interface ErrorResponse {
   timestamp: string;

@@ -6,6 +6,7 @@ import {
   CATEGORY_COLORS,
   CATEGORY_DISPLAY,
   HIGHEST_CONSUMPTION_CATEGORIES,
+  PROPERTY_TYPES,
 } from "../types";
 import {
   analyzeEnergy,
@@ -14,15 +15,6 @@ import {
   addApplianceToProperty,
 } from "../services/api";
 import { APPLIANCE_FALLBACK } from "../data/appliances";
-
-const PROPERTY_TYPES: PropertyType[] = [
-  "Casa",
-  "Apartamento",
-  "Comercial",
-  "Industria",
-  "Rural",
-  "Outro",
-];
 
 const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
   Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
@@ -80,7 +72,7 @@ export default function AnalysisForm() {
 
   // --- Form state (todos os campos do ML Service) ---
   const [form, setForm] = useState({
-    property_type: "Casa" as PropertyType,
+    property_type: "RESIDENCIAL" as PropertyType,
     consumption_kwh: 300,
     high_consumption_hours: 6,
     peak_hour_usage: false,
