@@ -10,7 +10,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 **URL:** <https://github.com/orgs/No-Country-simulation/projects/448>
 
 **Configuração do board:**
-
 - Campo Status: single select com 5 opções (Backlog, Ready, In progress, In review, Done)
 - Labels de módulo (`modulo/*`) e tipo (`tipo/*`) mantidas como classificação complementar
 - Labels adicionais por card: escopo (MVP/Opcional), tamanho (S/M/L), prioridade (High/Medium/Low)
@@ -18,8 +17,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 ## Convenção de IDs dos cards
 
 Cada card recebe um ID no formato:
-
-```text
+```
 {PREFIXO}{NNN} {Categoria} - {descrição curta da entrega}
 ```
 
@@ -34,14 +32,12 @@ Cada card recebe um ID no formato:
 | Q | Queries/Views | Notebooks, consultas, relatórios de dados, modelos de ML |
 
 ### Regras práticas
-
 - A numeração é sequencial e contínua dentro de cada prefixo, seguindo a ordem cronológica das entregas (ex: M001, M002, M003).
 - O prefixo e a categoria devem refletir o domínio principal da entrega, não detalhes secundários (ex: um endpoint novo no backend é `B`, mesmo que toque o banco).
 - Se uma entrega tiver componentes em múltiplas categorias, escolha o prefixo do domínio dominante.
 - A descrição é curta e começa com letra maiúscula (ex: "Expansão de 3 para 5 categorias de eficiência").
 
 ### Exemplos
-
 | ID completo | Explicação |
 |---|---|
 | `M001 Banco de Dados (Migration) - Migration inicial` | Primeira migration do projeto (prefixo M, sequência 001) |
@@ -51,7 +47,7 @@ Cada card recebe um ID no formato:
 ## Dados da análise
 
 | Métrica | Valor |
-|---|---|---|
+|---|---|
 | Total de branches analisadas | 4 (dev, homolog, main, NOTEBOOK-UPDATES) |
 | Total de commits analisados | 198 |
 | Período do histórico | 2026-07-06 a 2026-07-23 |
@@ -62,12 +58,12 @@ Cada card recebe um ID no formato:
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 38 | | Backend (B) | 22 |
-| In review | 0 | | Infraestrutura (I) | 9 |
+| Done | 43 | | Backend (B) | 24 |
+| In review | 0 | | Infraestrutura (I) | 10 |
 | In progress | 0 | | Frontend (F) | 6 |
-| Ready | 4 | | Banco de Dados (M) | 3 |
+| Ready | 0 | | Banco de Dados (M) | 3 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **42** | | **Total** | **42** |
+| **Total** | **43** | | **Total** | **45** |
 
 ## Lista completa de cards
 
@@ -111,10 +107,12 @@ Cada card recebe um ID no formato:
 | F005 | Frontend (Telas/Componentes) - Análise automática com reescrita do AnalysisPage | #47 | ADR-0011 |
 | F006 | Frontend (Telas/Componentes) - Dashboard aprimorado com última análise e tendência | #48 | ADR-0011 |
 | I009 | Infraestrutura/Base - ADRs 0010 e 0011 (revogação JWT e perfil) | #49 | ADR-0010, ADR-0011 |
-| M003 | Banco de Dados (Migration) - Migration V3 tb_token_blacklist | #50 | ADR-0010 |
+| M003 | Banco de Dados (Migration) - Migration V4 tb_token_blacklist | #50 | ADR-0010 |
 | B020 | Backend (Endpoints/Services) - Token blacklist repository (ports + adapters + JPA) | #51 | ADR-0010 |
 | B021 | Backend (Endpoints/Services) - Logout com invalidação JWT + job cleanup | #52 | ADR-0010 |
 | B022 | Backend (Endpoints/Services) - Troca de SHA-256 para BCrypt no hash de senha | #53 | ADR-0010 |
+| B023 | Backend (Endpoints/Services) - Forced password reset with current password verification | - | ADR-0012 |
+| I010 | Infraestrutura/Base - ADR-0012 (forced password reset) | - | ADR-0012 |
 
 ## Pontos verificados pela análise de diffs
 
