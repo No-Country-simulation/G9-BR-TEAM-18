@@ -6,130 +6,213 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 
 ### Endpoint: Registro do usuário
 
-#### Identificação
-
-| Campo | Valor |
-|---|---|
-| Método | `POST` |
-| Rota | `/auth/register` |
-
-#### Contrato de entrada
+**`POST /auth/register`**
 
 ```json
-{
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "password": "senha123"
-}
+// Request
+{ "name": "João Silva", "email": "joao@email.com", "password": "senha123" }
+
+// Response 201 Created
+{ "id": 12, "name": "João Silva", "email": "joao@email.com", "passwordResetRequired": false }
 ```
-
-#### Contrato de saída
-
-```json
-{
-  "id": 12,
-  "name": "João Silva",
-  "email": "joao@email.com"
-}
-```
-
-**Status:** `201 Created`
 
 ### Endpoint: Login do usuário
 
-#### Identificação
-
-| Campo | Valor |
-|---|---|
-| Método | `POST` |
-| Rota | `/auth/login` |
-
-#### Contrato de entrada
+**`POST /auth/login`**
 
 ```json
-{
-  "email": "joao@email.com",
-  "password": "senha123"
-}
+// Request
+{ "email": "joao@email.com", "password": "senha123" }
+
+// Response 200 OK
+{ "id": 12, "name": "João Silva", "email": "joao@email.com", "passwordResetRequired": false }
 ```
 
-#### Contrato de saída
+**Nota:** A sessão é gerenciada via cookie `SESSION_TOKEN` (httpOnly, Secure).
+
+### Endpoint: Dados do usuário logado
+
+**`GET /auth/me`**
 
 ```json
-{
-  "id": 12,
-  "name": "João Silva",
-  "email": "joao@email.com"
-}
+// Response 200 OK
+{ "id": 12, "name": "João Silva", "email": "joao@email.com", "passwordResetRequired": false }
 ```
 
-**Status:** `200 OK`
+### Endpoint: Logout
+
+**`POST /auth/logout`** — Invalida o token JWT atual e limpa o cookie de sessão.
+
+### Endpoint: Redefinir senha
+
+**`POST /auth/reset-password`**
+
+```json
+// Request
+{ "currentPassword": "senha123", "newPassword": "novaSenha456" }
+
+// Response 200 OK
+{ "id": 12, "name": "João Silva", "email": "joao@email.com" }
+```
 
 ### Endpoint: Geração da análise energética
 
-#### Identificação
-
-| Campo | Valor |
-|---|---|
-| Método | `POST` |
-| Rota | `/energy-analysis` |
-
-#### Contrato de entrada
+**`POST /energy-analysis`**
 
 ```json
+// Request (201 Created)
 {
+  "property_id": 1,
   "consumption_kwh": 420.0,
   "peak_hour_usage": true,
-  "equipment_quantity": 10,
-  "property_type": "CASA",
   "high_consumption_hours": 8.5
 }
-```
 
-#### Contrato de saída
-
-```json
+// Response 201 Created
 {
   "id": 501,
-  "consumption_kwh": 420.0,
-  "peak_hour_usage": true,
-  "high_consumption_hours": 8.5,
-  "estimated_monthly_cost": 315.00,
-  "category": "ALTO",
-  "probability": 0.8125,
+  "propertyId": 1,
+  "consumptionKwh": 420.0,
+  "peakHourUsage": true,
+  "highConsumptionHours": 8.5,
+  "estimatedMonthlyCost": 315.00,
+  "category": "MEDIANO",
+  "probability": 0.78,
+  "status": "FINALIZADO",
+  "source": "model",
   "recommendations": [
-    "Reduzir o uso de ar-condicionado",
-    "Trocar lâmpadas",
-    "Evitar banhos em horario de pico"
+    "Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h).",
+    "Considere substituir equipamentos antigos por modelos mais eficientes.",
+    "Distribua o uso de equipamentos ao longo do dia para reduzir o horário de alto consumo."
   ],
-  "created_at": "2026-07-13T21:30:00"
+  "createdAt": "2026-07-24T10:30:00",
+  "updatedAt": "2026-07-24T10:30:05"
 }
 ```
 
-**Status:** `201 Created`
+**Categorias válidas:** `EXCELENTE`, `BOM`, `MEDIANO`, `RUIM`, `CRITICO`
+
+**Valores de `source`:** `model` (classificador treinado), `model+groq` (com fallback LLM), `rule-based` (fallback por regras).
+
+### Endpoint: Simulação de análise (não persiste)
+
+**`POST /energy-analysis/simulate`**
+
+Mesma entrada/saída de `/energy-analysis`, porém **não persiste o resultado** no banco de dados.
+O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`.
+
+Útil para testes de cenários "e se" sem poluir o histórico.
+
+### Endpoint: Listar análises do usuário
+
+**`GET /analyses`** — Retorna todas as análises do usuário autenticado, ordenadas por data.
+
+### Endpoint: Buscar análise por ID
+
+**`GET /analyses/{analysisId}`** — Retorna uma análise específica, validando que pertence ao usuário.
+
+### Endpoint: Dashboard
+
+**`GET /dashboard`**
+
+```json
+// Response 200 OK
+{
+  "totalAnalyses": 5,
+  "averageConsumptionKwh": 320.5,
+  "totalEstimatedCost": 1200.00,
+  "totalCo2EmissionKg": 30.72,
+  "monthlyConsumption": [
+    { "month": "jun/2026", "consumptionKwh": 350.0 },
+    { "month": "jul/2026", "consumptionKwh": 420.0 }
+  ]
+}
+```
+
+### Endpoint: Categorias válidas (schema discovery)
+
+**`GET /energy-analysis/categories`**
+
+```json
+// Response 200 OK
+["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"]
+```
+
+### Endpoint: CRUD de imóveis (properties)
+
+**`POST /properties`** — Criar imóvel
+**`GET /properties`** — Listar imóveis
+**`PUT /properties/{id}`** — Atualizar imóvel
+**`DELETE /properties/{id}`** — Excluir imóvel
+
+```json
+// POST /properties Request (alias é o nome do imóvel)
+{
+  "alias": "Minha Casa",
+  "propertyType": "RESIDENCIAL",
+  "address": "Rua Exemplo, 123",
+  "residentCount": 4,
+  "areaSqm": 80.0,
+  "active": true
+}
+
+// Response
+{
+  "id": 1,
+  "alias": "Minha Casa",
+  "propertyType": "RESIDENCIAL",
+  "active": true,
+  "address": "Rua Exemplo, 123",
+  "residentCount": 4,
+  "areaSqm": 80.0
+}
+```
+
+**Tipos de imóvel válidos:** `RESIDENCIAL`, `COMERCIAL`
+
+### Endpoint: Aparelhos do imóvel
+
+**`GET /appliances`** — Lista o catálogo de aparelhos disponíveis.
+
+**`GET /properties/{id}/appliances`** — Lista os aparelhos vinculados a um imóvel.
+
+**`POST /properties/{id}/appliances`** — Vincula um aparelho.
+
+**`PUT /properties/{id}/appliances/{applianceId}`** — Atualiza quantidade.
+
+**`PUT /properties/{id}/appliances/batch`** — Atualiza todos os aparelhos de uma vez:
+
+```json
+// Request
+[
+  { "applianceId": 1, "quantity": 2 },
+  { "applianceId": 5, "quantity": 1 }
+]
+```
+
+Aparelhos não listados são removidos do imóvel.
+
+**`DELETE /properties/{id}/appliances/{applianceId}`** — Remove um aparelho do imóvel.
+
+---
 
 ## Parte 2: Contrato interno (backend com ML Service)
 
-Este contrato define a comunicação entre o backend Java e a API Python de predição. O Java atua como agregador, agrupando o inventário de equipamentos por categorias de consumo antes de enviar ao modelo preditivo.
+Comunicação entre o backend Java e a API Python de predição.
 
-### Endpoint: Predição (servidor Python)
+### Endpoint: Predição
 
-#### Identificação
-
-| Campo | Valor |
-|---|---|
-| Método | `POST` |
-| Rota sugerida | `/predict` |
-
-#### Contrato de entrada (enviado pelo Java)
+**`POST /predict`**
 
 ```json
+// Request (enviado pelo backend)
 {
   "consumption_kwh": 420.0,
   "peak_hour_usage": true,
   "equipment_quantity": 10,
-  "property_type": "CASA",
+  "property_type": "RESIDENCIAL",
   "high_consumption_hours": 8.5,
+  "highest_consumption_category": "Climatizacao",
   "daily_consumption_distribution": {
     "REFRIGERATION_WATTS": 1500.0,
     "HEATING_WATTS": 7500.0,
@@ -137,22 +220,41 @@ Este contrato define a comunicação entre o backend Java e a API Python de pred
     "LIGHTING_WATTS": 800.0
   }
 }
-```
 
-#### Contrato de saída (devolvido pelo Python)
-
-```json
+// Response 200 OK
 {
-  "category": "ALTO",
-  "probability": 0.8125,
+  "category": "MEDIANO",
+  "probability": 0.78,
   "recommendations": [
-    "Reduzir o uso de ar-condicionado",
-    "Trocar lâmpadas",
-    "Evitar banhos em horario de pico"
-  ]
+    "Reduzir o uso de ar-condicionado ou ajustar a temperatura para 23°C.",
+    "Evitar banhos longos ou com o chuveiro elétrico na potência máxima.",
+    "Avalie a real necessidade de todos os equipamentos ligados simultaneamente."
+  ],
+  "source": "model"
 }
 ```
 
-**Status:** `200 OK`
+### Endpoint: Predição simulada (sem log de treinamento)
+
+**`POST /predict/simulate`** — Mesma entrada/saída de `/predict`, porém **não armazena** os dados no log de treinamento (`treino_feedback.jsonl`).
+
+### Endpoint: Schema descoberta
+
+**`GET /predict-schema`** — Retorna o schema JSON do `PredictRequest` para validação dinâmica.
+
+### Endpoint: Categorias válidas
+
+**`GET /categories`**
+
+```json
+// Response
+{ "categories": ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"] }
+```
+
+### Endpoint: Status
+
+**`GET /status`** — Retorna status do modelo, Groq disponível e limites de taxa.
+
+---
 
 > **Nota:** Consulte a [arquitetura do projeto](./arquitetura.md) para entender como as camadas se integram, o [guia de execução](./guia-execucao.md) para instruções de deploy, e o [glossário do projeto](./glossario.md) para definição dos termos de domínio.

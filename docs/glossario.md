@@ -24,6 +24,14 @@ Definição dos termos de domínio utilizados na documentação do EnergiIA. Est
 | ADR | Architecture Decision Record: documento que registra uma decisão arquitetural significativa, seu contexto e consequências |
 | Adaptador | Componente da camada de infraestrutura que traduz estímulos externos em chamadas ao núcleo do sistema (padrão Ports and Adapters) |
 | Arquitetura Hexagonal | Padrão arquitetural que isola as regras de negócio (domínio) das dependências tecnológicas externas através de portas e adaptadores |
+| Domínio | Camada central do sistema que contém as entidades de negócio e regras |
+| AnalysisMapper | Componente da ACL que traduz o envelope genérico do ML Service em objetos de domínio validados |
+| Anti-Corruption Layer (ACL) | Camada que isola o domínio das variações do ML Service, usando envelope genérico e chaves configuráveis |
+| MlResult | Objeto de valor do domínio que representa o resultado completo da análise: categoria, probabilidade, recomendações e origem (source) |
+| MlSchemaDiscovery | Componente que descobre dinamicamente o schema predict-schema e categorias válidas no startup do backend |
+| Schema Discovery | Processo de descobrimento automático dos schemas do ML Service (/predict-schema, /categories) para evitar hardcoded |
+| Simulação | Endpoint /energy-analysis/simulate que executa a análise sem persistir, usado para testes de cenários |
+| Source | Campo que indica a origem da classificação: model (modelo treinado), model+groq (com LLM), rule-based (regras de negócio) |
 | Domínio | Camada central do sistema que contém as entidades de negócio e regras, sem dependência de frameworks ou infraestrutura |
 | DTO | Data Transfer Object: objeto utilizado para transferir dados entre camadas, especialmente na comunicação HTTP |
 | Fallback | Mecanismo de degradação gradual que define uma alternativa quando o método principal falha (ML > Groq > regras) |
