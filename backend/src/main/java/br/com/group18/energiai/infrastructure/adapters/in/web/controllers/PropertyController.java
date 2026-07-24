@@ -40,7 +40,8 @@ public class PropertyController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Property property = propertyService.create(
-                userId, request.getAlias(), request.getPropertyType().name());
+                userId, request.getAlias(), request.getPropertyType().name(),
+                request.getAddress(), request.getResidentCount(), request.getAreaSqm());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(property));
     }
 
@@ -69,7 +70,10 @@ public class PropertyController {
                 userId,
                 request.getAlias(),
                 request.getPropertyType().name(),
-                request.isActive())));
+                request.isActive(),
+                request.getAddress(),
+                request.getResidentCount(),
+                request.getAreaSqm())));
     }
 
     @DeleteMapping("/{propertyId}")
@@ -156,7 +160,8 @@ public class PropertyController {
 
     private PropertyResponseDTO toResponse(Property property) {
         return new PropertyResponseDTO(
-                property.getId(), property.getAlias(), property.getPropertyType(), property.isActive());
+                property.getId(), property.getAlias(), property.getPropertyType(), property.isActive(),
+                property.getAddress(), property.getResidentCount(), property.getAreaSqm());
     }
 
     private PropertyApplianceResponseDTO toResponse(PropertyAppliance propertyAppliance) {

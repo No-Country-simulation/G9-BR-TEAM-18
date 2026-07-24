@@ -13,6 +13,12 @@ public class PropertyRequestDTO {
 
     private boolean active = true;
 
+    private String address;
+
+    private Integer residentCount;
+
+    private Double areaSqm;
+
     public String getAlias() {
         return alias;
     }
@@ -35,5 +41,29 @@ public class PropertyRequestDTO {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Integer getResidentCount() {
+        return residentCount;
+    }
+
+    public void setResidentCount(Integer residentCount) {
+        this.residentCount = residentCount;
+    }
+
+    public Double getAreaSqm() {
+        return areaSqm;
+    }
+
+    public void setAreaSqm(Double areaSqm) {
+        this.areaSqm = areaSqm;
     }
 }

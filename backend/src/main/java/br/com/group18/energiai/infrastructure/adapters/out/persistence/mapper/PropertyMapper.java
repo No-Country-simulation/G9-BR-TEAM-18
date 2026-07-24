@@ -14,6 +14,9 @@ public class PropertyMapper {
         entity.setAlias(domain.getAlias());
         entity.setPropertyType(domain.getPropertyType());
         entity.setActive(domain.isActive() ? 1 : 0);
+        entity.setAddress(domain.getAddress());
+        entity.setResidentCount(domain.getResidentCount());
+        entity.setAreaSqm(domain.getAreaSqm());
         return entity;
     }
 
@@ -21,6 +24,9 @@ public class PropertyMapper {
         Property domain = new Property(entity.getUserId(), entity.getAlias(), entity.getPropertyType());
         domain.setId(entity.getId());
         domain.setActive(!Integer.valueOf(0).equals(entity.getActive()));
+        domain.setAddress(entity.getAddress());
+        domain.setResidentCount(entity.getResidentCount());
+        domain.setAreaSqm(entity.getAreaSqm());
         return domain;
     }
 }

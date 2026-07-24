@@ -29,8 +29,13 @@ public class PropertyService {
         this.propertyApplianceRepository = propertyApplianceRepository;
     }
 
-    public Property create(Long userId, String alias, String propertyType) {
-        return propertyRepository.save(new Property(userId, alias, propertyType));
+    public Property create(Long userId, String alias, String propertyType,
+            String address, Integer residentCount, Double areaSqm) {
+        Property property = new Property(userId, alias, propertyType);
+        property.setAddress(address);
+        property.setResidentCount(residentCount);
+        property.setAreaSqm(areaSqm);
+        return propertyRepository.save(property);
     }
 
     public List<Property> listByUserId(Long userId) {
@@ -47,11 +52,15 @@ public class PropertyService {
         return property;
     }
 
-    public Property update(Long propertyId, Long userId, String alias, String propertyType, boolean active) {
+    public Property update(Long propertyId, Long userId, String alias, String propertyType, boolean active,
+            String address, Integer residentCount, Double areaSqm) {
         Property property = getOwned(propertyId, userId);
         property.setAlias(alias);
         property.setPropertyType(propertyType);
         property.setActive(active);
+        property.setAddress(address);
+        property.setResidentCount(residentCount);
+        property.setAreaSqm(areaSqm);
         return propertyRepository.save(property);
     }
 

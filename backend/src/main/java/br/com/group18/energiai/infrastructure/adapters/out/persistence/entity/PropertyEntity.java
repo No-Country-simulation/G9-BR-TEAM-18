@@ -27,6 +27,15 @@ public class PropertyEntity {
     @Column(precision = 1, scale = 0)
     private Integer active;
 
+    @Column(length = 255)
+    private String address;
+
+    @Column(name = "resident_count")
+    private Integer residentCount;
+
+    @Column(name = "area_sqm")
+    private Double areaSqm;
+
     public Long getId() {
         return id;
     }
@@ -65,5 +74,29 @@ public class PropertyEntity {
 
     public void setActive(Integer active) {
         this.active = active;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Integer getResidentCount() {
+        return residentCount;
+    }
+
+    public void setResidentCount(Integer residentCount) {
+        this.residentCount = residentCount;
+    }
+
+    public Double getAreaSqm() {
+        return areaSqm;
+    }
+
+    public void setAreaSqm(Double areaSqm) {
+        this.areaSqm = areaSqm;
     }
 }
