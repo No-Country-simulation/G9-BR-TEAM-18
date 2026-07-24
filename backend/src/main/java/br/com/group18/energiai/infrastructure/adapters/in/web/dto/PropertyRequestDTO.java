@@ -1,17 +1,15 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import br.com.group18.energiai.core.domain.model.TipoImovel;
+import jakarta.validation.constraints.NotNull;
 
 public class PropertyRequestDTO {
 
-    @NotBlank
-    @Size(max = 100)
+    @NotNull
     private String alias;
 
-    @NotBlank
-    @Size(max = 50)
-    private String propertyType;
+    @NotNull
+    private TipoImovel propertyType;
 
     private boolean active = true;
 
@@ -23,11 +21,11 @@ public class PropertyRequestDTO {
         this.alias = alias;
     }
 
-    public String getPropertyType() {
+    public TipoImovel getPropertyType() {
         return propertyType;
     }
 
-    public void setPropertyType(String propertyType) {
+    public void setPropertyType(TipoImovel propertyType) {
         this.propertyType = propertyType;
     }
 
