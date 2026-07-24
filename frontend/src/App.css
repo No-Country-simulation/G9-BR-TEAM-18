@@ -1,28 +1,28 @@
 :root {
-  --bg-base: #0B0E14;
-  --bg-surface: #151A24;
-  --bg-surface-alt: #1E2530;
-  --ink: #0A0A0A;
-  --text-primary: #F4F1E8;
-  --text-secondary: #A9AFBC;
-  --accent-green: #C6FF3D;
-  --accent-cyan: #29E7CD;
-  --accent-magenta: #FF4FA3;
-  --accent-mustard: #F2C230;
-  --state-error: #FF3B3B;
-  --state-error-bg: #3A0D0D;
-  --state-success: #C6FF3D;
-  --state-success-bg: #1A2A00;
+  --bg-base: #0b0e14;
+  --bg-surface: #151a24;
+  --bg-surface-alt: #1e2530;
+  --ink: #0a0a0a;
+  --text-primary: #f4f1e8;
+  --text-secondary: #a9afbc;
+  --accent-green: #c6ff3d;
+  --accent-cyan: #29e7cd;
+  --accent-magenta: #ff4fa3;
+  --accent-mustard: #f2c230;
+  --state-error: #ff3b3b;
+  --state-error-bg: #3a0d0d;
+  --state-success: #c6ff3d;
+  --state-success-bg: #1a2a00;
   --radius: 12px;
   --radius-sm: 8px;
   --radius-xs: 4px;
   --shadow-hard: 4px 4px 0 var(--ink);
   --shadow-hard-lg: 6px 6px 0 var(--ink);
   --shadow-hard-sm: 2px 2px 0 var(--ink);
-  --font-display: 'Anton', sans-serif;
-  --font-accent: 'Bangers', cursive;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-display: "Anton", sans-serif;
+  --font-accent: "Bangers", cursive;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Space Mono", monospace;
   --font-size-h1: clamp(2.5rem, 5vw, 4.5rem);
   --font-size-h2: clamp(2rem, 4vw, 3rem);
   --font-size-h3: clamp(1.5rem, 2.5vw, 2rem);
@@ -51,21 +51,21 @@
   --font: var(--font-body);
 }
 
-[data-theme='light'] {
-  --bg-base: #F4F1E8;
-  --bg-surface: #FFFFFF;
-  --bg-surface-alt: #E8E4D8;
-  --ink: #1A1A1A;
-  --text-primary: #1A1A1A;
-  --text-secondary: #4A4440;
-  --accent-green: #5AA00F;
-  --accent-cyan: #0FAF9A;
-  --accent-magenta: #D42D7A;
-  --accent-mustard: #C4921A;
-  --state-error: #D42D2D;
-  --state-error-bg: #FDE8E8;
-  --state-success: #4A8C0D;
-  --state-success-bg: #E8F5D8;
+[data-theme="light"] {
+  --bg-base: #f4f1e8;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #e8e4d8;
+  --ink: #1a1a1a;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4440;
+  --accent-green: #5aa00f;
+  --accent-cyan: #0faf9a;
+  --accent-magenta: #d42d7a;
+  --accent-mustard: #c4921a;
+  --state-error: #d42d2d;
+  --state-error-bg: #fde8e8;
+  --state-success: #4a8c0d;
+  --state-success-bg: #e8f5d8;
   --shadow-hard: 4px 4px 0 var(--ink);
   --shadow-hard-lg: 6px 6px 0 var(--ink);
   --shadow-hard-sm: 2px 2px 0 var(--ink);
@@ -108,7 +108,9 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  transition: background 0.4s, color 0.4s;
+  transition:
+    background 0.4s,
+    color 0.4s;
 }
 
 a {
@@ -117,7 +119,7 @@ a {
 }
 
 body::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -139,11 +141,11 @@ body::after {
 }
 
 .section-divider::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%)
-    0 0 / 16px 16px;
+  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 / 16px
+    16px;
   opacity: 0.08;
 }
 
@@ -157,7 +159,7 @@ body::after {
 }
 
 .halftone-bg::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background-image: radial-gradient(circle, var(--ink) 1px, transparent 1px);
@@ -222,7 +224,9 @@ body::after {
 }
 
 @keyframes blinkCursor {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 
 .navbar-logo-icon {
@@ -376,8 +380,14 @@ body::after {
 }
 
 @keyframes heroGlow {
-  0% { opacity: 0.5; transform: scale(1); }
-  100% { opacity: 1; transform: scale(1.05); }
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 .hero-shapes {
@@ -423,18 +433,33 @@ body::after {
 }
 
 @keyframes floatA {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(40px, 30px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(40px, 30px);
+  }
 }
 
 @keyframes floatB {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-30px, -40px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, -40px);
+  }
 }
 
 @keyframes floatC {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, -20px);
+  }
 }
 
 .hero-content {
@@ -479,7 +504,7 @@ body::after {
 }
 
 .hero-highlight::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 6px;
   left: -4px;
@@ -518,8 +543,14 @@ body::after {
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Buttons ─── */
@@ -706,11 +737,13 @@ body::after {
 .appliance-card.selected {
   border-color: var(--accent-green);
   background: var(--bg-surface-alt);
-  box-shadow: inset 0 0 0 1px var(--accent-green), var(--shadow-hard-sm);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-green),
+    var(--shadow-hard-sm);
 }
 
 .appliance-card.selected::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   top: -8px;
   right: -8px;
@@ -942,7 +975,9 @@ body::after {
 
 .appliance-search:focus-within {
   border-color: var(--accent-cyan);
-  box-shadow: inset var(--shadow-hard-sm), 0 0 0 3px rgba(41, 231, 205, 0.15);
+  box-shadow:
+    inset var(--shadow-hard-sm),
+    0 0 0 3px rgba(41, 231, 205, 0.15);
 }
 
 .appliance-search .search-icon {
@@ -1118,14 +1153,14 @@ body::after {
 }
 
 .demo-section::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: 0;
   right: 0;
   height: 4px;
-  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%)
-    0 0 / 20px 20px;
+  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 / 20px
+    20px;
   z-index: 1;
 }
 
@@ -1202,10 +1237,10 @@ body::after {
   font-family: var(--font-body);
 }
 
-.form-group input[type='text'],
-.form-group input[type='email'],
-.form-group input[type='password'],
-.form-group input[type='number'],
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
 .form-group select {
   width: 100%;
   padding: 0.7rem 0.85rem;
@@ -1214,7 +1249,9 @@ body::after {
   font-size: 0.925rem;
   background: var(--bg-surface);
   color: var(--text-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   outline: none;
   font-family: var(--font-body);
 }
@@ -1222,10 +1259,12 @@ body::after {
 .form-group input:focus,
 .form-group select:focus {
   border-color: var(--accent-cyan);
-  box-shadow: inset 0 0 0 1px var(--accent-cyan), var(--shadow-hard-sm);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-cyan),
+    var(--shadow-hard-sm);
 }
 
-.form-group input[type='checkbox'] {
+.form-group input[type="checkbox"] {
   width: 1.125rem;
   height: 1.125rem;
   accent-color: var(--accent-green);
@@ -1238,7 +1277,7 @@ body::after {
   gap: 1rem;
 }
 
-.input-with-range input[type='range'] {
+.input-with-range input[type="range"] {
   flex: 1;
   accent-color: var(--accent-cyan);
   height: 6px;
@@ -1434,14 +1473,14 @@ body::after {
 }
 
 .features::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: 0;
   right: 0;
   height: 4px;
-  background: repeating-conic-gradient(var(--accent-magenta) 0% 25%, var(--ink) 0% 50%)
-    0 0 / 20px 20px;
+  background: repeating-conic-gradient(var(--accent-magenta) 0% 25%, var(--ink) 0% 50%) 0 0 / 20px
+    20px;
   z-index: 1;
 }
 
@@ -1501,7 +1540,7 @@ body::after {
 }
 
 .feature-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1667,7 +1706,7 @@ body::after {
 }
 
 .auth-page::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background:
@@ -2088,12 +2127,24 @@ body::after {
 }
 
 @keyframes glitchShift {
-  0% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 /* ─── Profile Page ─── */

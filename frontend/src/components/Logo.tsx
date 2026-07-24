@@ -1,6 +1,6 @@
 interface LogoProps {
-  size?: number
-  className?: string
+  size?: number;
+  className?: string;
 }
 
 export default function Logo({ size = 40, className }: LogoProps) {
@@ -41,15 +41,10 @@ export default function Logo({ size = 40, className }: LogoProps) {
       />
 
       {/* Inner bolt highlight */}
-      <path
-        d="M72,24 L46,55 L54,55 L40,85 L57,64 L50,64 Z"
-        fill="rgba(255,255,255,0.25)"
-      />
+      <path d="M72,24 L46,55 L54,55 L40,85 L57,64 L50,64 Z" fill="rgba(255,255,255,0.25)" />
 
       {/* Energy spark at strike point */}
       <circle cx="95" cy="72" r="5" fill="#FF4FA3" stroke="#0A0A0A" strokeWidth="3" />
     </svg>
-  )
+  );
 }
-
-

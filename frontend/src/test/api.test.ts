@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   analyzeEnergy,
   login,
@@ -11,211 +11,221 @@ import {
   listPropertyAppliances,
   removeApplianceFromProperty,
   listAppliances,
-} from '../services/api'
+} from "../services/api";
 
-const API_URL = 'http://localhost:8080'
-const mockFetch = vi.fn()
-globalThis.fetch = mockFetch
+const API_URL = "http://localhost:8080";
+const mockFetch = vi.fn();
+globalThis.fetch = mockFetch;
 
 function mockResponse(ok: boolean, data: unknown) {
-  return { ok, json: () => Promise.resolve(data), headers: new Headers() } as Response
+  return { ok, json: () => Promise.resolve(data), headers: new Headers() } as Response;
 }
 
-describe('analyzeEnergy', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("analyzeEnergy", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('sends authenticated POST and returns response', async () => {
-    const data = { category: 'BOM', probability: 0.85, recommendations: [], estimated_monthly_cost: 75 }
-    mockFetch.mockResolvedValueOnce(mockResponse(true, data))
+  it("sends authenticated POST and returns response", async () => {
+    const data = {
+      category: "BOM",
+      probability: 0.85,
+      recommendations: [],
+      estimated_monthly_cost: 75,
+    };
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data));
 
-    const result = await analyzeEnergy(1, 100, false, 2)
+    const result = await analyzeEnergy(1, 100, false, 2);
 
-    expect(result).toEqual(data)
-  })
+    expect(result).toEqual(data);
+  });
 
-  it('throws ApiError on validation error', async () => {
-    const errorBody = { message: 'validation failed', fields: { consumption_kwh: 'must be positive' } }
-    mockFetch.mockResolvedValueOnce(mockResponse(false, errorBody))
+  it("throws ApiError on validation error", async () => {
+    const errorBody = {
+      message: "validation failed",
+      fields: { consumption_kwh: "must be positive" },
+    };
+    mockFetch.mockResolvedValueOnce(mockResponse(false, errorBody));
 
-    await expect(analyzeEnergy(1, -1, false, 2)).rejects.toThrow('validation failed')
-  })
-})
+    await expect(analyzeEnergy(1, -1, false, 2)).rejects.toThrow("validation failed");
+  });
+});
 
-describe('login', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("login", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('sends POST to /auth/login', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, { id: '1', name: 'Teste', email: 'test@test.com' }))
+  it("sends POST to /auth/login", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, { id: "1", name: "Teste", email: "test@test.com" }),
+    );
 
-    await login('test@test.com', '123456')
+    await login("test@test.com", "123456");
 
     expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email: 'test@test.com', password: '123456' }),
-    })
-  })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: "test@test.com", password: "123456" }),
+    });
+  });
 
-  it('throws error when login fails', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'Credenciais inválidas' }))
+  it("throws error when login fails", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "Credenciais inválidas" }));
 
-    await expect(login('x@x.com', 'wrong')).rejects.toThrow('Credenciais inválidas')
-  })
+    await expect(login("x@x.com", "wrong")).rejects.toThrow("Credenciais inválidas");
+  });
 
-  it('uses default message when server does not return message', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, {}))
+  it("uses default message when server does not return message", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, {}));
 
-    await expect(login('x@x.com', 'wrong')).rejects.toThrow('Erro ao fazer login')
-  })
-})
+    await expect(login("x@x.com", "wrong")).rejects.toThrow("Erro ao fazer login");
+  });
+});
 
-describe('register', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("register", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('throws error when registration fails', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'Email já existe' }))
+  it("throws error when registration fails", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "Email já existe" }));
 
-    await expect(register('A', 'a@a.com', '123')).rejects.toThrow('Email já existe')
-  })
-})
+    await expect(register("A", "a@a.com", "123")).rejects.toThrow("Email já existe");
+  });
+});
 
-describe('listAnalyses', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("listAnalyses", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('returns empty array when response is not ok', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, []))
+  it("returns empty array when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []));
 
-    const result = await listAnalyses()
-    expect(result).toEqual([])
-  })
-})
+    const result = await listAnalyses();
+    expect(result).toEqual([]);
+  });
+});
 
-describe('fetchDashboard', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("fetchDashboard", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('returns zeroed data when response is not ok', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, {}))
+  it("returns zeroed data when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, {}));
 
-    const result = await fetchDashboard()
+    const result = await fetchDashboard();
     expect(result).toEqual({
       totalAnalyses: 0,
       averageConsumptionKwh: 0,
       totalEstimatedCost: 0,
       totalCo2EmissionKg: 0,
       monthlyConsumption: [],
-    })
-  })
-})
+    });
+  });
+});
 
-describe('createProperty', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("createProperty", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('sends POST to /properties and returns property', async () => {
-    const data = { id: 1, alias: 'Casa', property_type: 'Casa', active: true }
-    mockFetch.mockResolvedValueOnce(mockResponse(true, data))
+  it("sends POST to /properties and returns property", async () => {
+    const data = { id: 1, alias: "Casa", property_type: "Casa", active: true };
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data));
 
-    const result = await createProperty('Casa', 'Casa')
+    const result = await createProperty("Casa", "Casa");
 
-    expect(result).toEqual(data)
+    expect(result).toEqual(data);
     expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ alias: 'Casa', property_type: 'Casa' }),
-    })
-  })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ alias: "Casa", property_type: "Casa" }),
+    });
+  });
 
-  it('throws ApiError on failure', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'erro' }))
+  it("throws ApiError on failure", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "erro" }));
 
-    await expect(createProperty('Casa', 'Casa')).rejects.toThrow('erro')
-  })
-})
+    await expect(createProperty("Casa", "Casa")).rejects.toThrow("erro");
+  });
+});
 
-describe('listProperties', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("listProperties", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('returns empty array when response is not ok', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, []))
+  it("returns empty array when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []));
 
-    const result = await listProperties()
-    expect(result).toEqual([])
-  })
+    const result = await listProperties();
+    expect(result).toEqual([]);
+  });
 
-  it('returns properties on success', async () => {
-    const data = [{ id: 1, alias: 'Casa', property_type: 'Casa', active: true }]
-    mockFetch.mockResolvedValueOnce(mockResponse(true, data))
+  it("returns properties on success", async () => {
+    const data = [{ id: 1, alias: "Casa", property_type: "Casa", active: true }];
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data));
 
-    const result = await listProperties()
-    expect(result).toEqual(data)
-  })
-})
+    const result = await listProperties();
+    expect(result).toEqual(data);
+  });
+});
 
-describe('addApplianceToProperty', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("addApplianceToProperty", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('sends POST to property appliances endpoint', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, {}))
+  it("sends POST to property appliances endpoint", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
 
-    await addApplianceToProperty(1, 2, 3)
+    await addApplianceToProperty(1, 2, 3);
 
     expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ appliance_id: 2, quantity: 3 }),
-    })
-  })
+    });
+  });
 
-  it('throws ApiError on failure', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'error', fields: {} }))
+  it("throws ApiError on failure", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "error", fields: {} }));
 
-    await expect(addApplianceToProperty(1, 2, 3)).rejects.toThrow('error')
-  })
-})
+    await expect(addApplianceToProperty(1, 2, 3)).rejects.toThrow("error");
+  });
+});
 
-describe('listPropertyAppliances', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("listPropertyAppliances", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('returns empty array when response is not ok', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, []))
+  it("returns empty array when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []));
 
-    const result = await listPropertyAppliances(1)
-    expect(result).toEqual([])
-  })
-})
+    const result = await listPropertyAppliances(1);
+    expect(result).toEqual([]);
+  });
+});
 
-describe('removeApplianceFromProperty', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("removeApplianceFromProperty", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('sends DELETE request', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, {}))
+  it("sends DELETE request", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
 
-    await removeApplianceFromProperty(1, 2)
+    await removeApplianceFromProperty(1, 2);
 
     expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances/2`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    })
-  })
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+  });
 
-  it('throws ApiError on failure', async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'error', fields: {} }))
+  it("throws ApiError on failure", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "error", fields: {} }));
 
-    await expect(removeApplianceFromProperty(1, 2)).rejects.toThrow('error')
-  })
-})
+    await expect(removeApplianceFromProperty(1, 2)).rejects.toThrow("error");
+  });
+});
 
-describe('listAppliances', () => {
-  beforeEach(() => vi.clearAllMocks())
+describe("listAppliances", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('returns fallback on network error', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('network'))
+  it("returns fallback on network error", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("network"));
 
-    const result = await listAppliances()
-    expect(Array.isArray(result)).toBe(true)
-    expect(result.length).toBeGreaterThan(0)
-  })
-})
+    const result = await listAppliances();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+  });
+});

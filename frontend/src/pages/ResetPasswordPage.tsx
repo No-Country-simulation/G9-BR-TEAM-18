@@ -1,39 +1,39 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Lock } from 'lucide-react'
-import { useAuth } from '../context/useAuth'
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { Lock } from "lucide-react";
+import { useAuth } from "../context/useAuth";
 
 export default function ResetPasswordPage() {
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const { resetPassword } = useAuth()
-  const navigate = useNavigate()
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { resetPassword } = useAuth();
+  const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (newPassword !== confirmPassword) {
-      setError('As novas senhas não conferem')
-      return
+      setError("As novas senhas não conferem");
+      return;
     }
 
     if (newPassword.length < 6) {
-      setError('A nova senha deve ter no mínimo 6 caracteres')
-      return
+      setError("A nova senha deve ter no mínimo 6 caracteres");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      await resetPassword(currentPassword, newPassword)
-      navigate('/')
+      await resetPassword(currentPassword, newPassword);
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao redefinir senha')
+      setError(err instanceof Error ? err.message : "Erro ao redefinir senha");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
         </div>
 
         {error && (
-          <div className="result-error" style={{ marginBottom: '1rem' }}>
+          <div className="result-error" style={{ marginBottom: "1rem" }}>
             <p className="error-title">{error}</p>
           </div>
         )}
@@ -89,10 +89,10 @@ export default function ResetPasswordPage() {
             />
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Redefinindo...' : 'Redefinir Senha'}
+            {loading ? "Redefinindo..." : "Redefinir Senha"}
           </button>
         </form>
       </div>
     </main>
-  )
+  );
 }
