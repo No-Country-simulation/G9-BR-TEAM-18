@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
 import br.com.group18.energiai.application.exception.ResourceNotFoundException;
+import br.com.group18.energiai.application.services.EnergyAnalysisService;
 import br.com.group18.energiai.application.services.PropertyService;
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
 import br.com.group18.energiai.core.domain.model.Property;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnalysisController {
 
     private final GenerateAnalysisUseCase generateAnalysisUseCase;
+    private final EnergyAnalysisService energyAnalysisService;
     private final AnalysisRepositoryPort analysisRepository;
     private final PropertyService propertyService;
     private final MlSchemaRegistry mlSchemaRegistry;
@@ -37,11 +39,13 @@ public class AnalysisController {
 
     public AnalysisController(
             GenerateAnalysisUseCase generateAnalysisUseCase,
+            EnergyAnalysisService energyAnalysisService,
             AnalysisRepositoryPort analysisRepository,
             PropertyService propertyService,
             MlSchemaRegistry mlSchemaRegistry,
             @Value("${CO2_EMISSION_FACTOR}") double co2EmissionFactor) {
         this.generateAnalysisUseCase = generateAnalysisUseCase;
+        this.energyAnalysisService = energyAnalysisService;
         this.analysisRepository = analysisRepository;
         this.propertyService = propertyService;
         this.mlSchemaRegistry = mlSchemaRegistry;
@@ -65,6 +69,25 @@ public class AnalysisController {
                 request.getHighConsumptionHours(),
                 request.getHighestConsumptionCategory());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(result));
+    }
+
+    @PostMapping("/energy-analysis/simulate")
+    public ResponseEntity<AnalysisResponseDTO> simulate(
+            @Valid @RequestBody AnalysisRequestDTO request, HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Property property = propertyService.getOwned(request.getPropertyId(), userId);
+        AnalysisResponseDTO result = energyAnalysisService.simulate(
+                property,
+                propertyService.listAppliances(property.getId(), userId),
+                request.getConsumptionKwh(),
+                request.getPeakHourUsage(),
+                request.getHighConsumptionHours(),
+                request.getHighestConsumptionCategory());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/analyses")

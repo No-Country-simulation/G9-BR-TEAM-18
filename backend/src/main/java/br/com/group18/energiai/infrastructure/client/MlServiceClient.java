@@ -54,6 +54,33 @@ public class MlServiceClient {
     }
 
     /**
+     * Sends a prediction request to the ML Service's /predict/simulate endpoint.
+     * Unlike /predict, this does NOT store training data on the ML side.
+     */
+    public MlEnvelope predictSimulate(MlEnvelope request) {
+        try {
+            Map<String, Object> responseBody = webClient
+                    .post()
+                    .uri("/predict/simulate")
+                    .bodyValue(request.body())
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block(Duration.ofSeconds(45));
+
+            if (responseBody == null) {
+                log.warn("ML Service /predict/simulate retornou corpo vazio em {}", mlServiceUrl);
+                return null;
+            }
+
+            return new MlEnvelope(responseBody);
+
+        } catch (Exception exception) {
+            log.warn("ML Service /predict/simulate indisponível em {}: {}", mlServiceUrl, exception.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Fetches the JSON schema of the ML Service's PredictRequest model.
      *
      * @return the schema as a Map, or empty Map if unavailable

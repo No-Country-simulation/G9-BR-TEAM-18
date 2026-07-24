@@ -7,6 +7,7 @@ import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.core.ports.in.GenerateAnalysisUseCase;
 import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
 import br.com.group18.energiai.infrastructure.client.AnalysisMapper;
 import br.com.group18.energiai.infrastructure.client.MlEnvelope;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient;
@@ -80,8 +81,66 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         }
     }
 
+    /**
+     * Executa a mesma lógica de análise mas sem persistir o resultado.
+     * Usado para simulações e testes de cenários.
+     */
+    public AnalysisResponseDTO simulate(
+            Property property,
+            List<PropertyAppliance> appliances,
+            BigDecimal consumptionKwh,
+            Boolean peakHourUsage,
+            BigDecimal highConsumptionHours,
+            String highestConsumptionCategory) {
+        ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
+
+        MlEnvelope request = buildMlRequest(consumptionKwh.doubleValue(),
+                Boolean.TRUE.equals(peakHourUsage),
+                aggregation.totalEquipment(), property.getPropertyType(),
+                highConsumptionHours.doubleValue(), aggregation, highestConsumptionCategory);
+        MlEnvelope response = mlServiceClient.predictSimulate(request);
+
+        if (response == null) {
+            throw new MlServiceUnavailableException(
+                    "Serviço de análise temporariamente indisponível. Tente novamente em instantes.");
+        }
+
+        MlResult mlResult = analysisMapper.toMlResult(response);
+        BigDecimal estimatedCost = consumptionKwh.multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP);
+
+        return new AnalysisResponseDTO(
+                null,
+                property.getId(),
+                scale(consumptionKwh),
+                peakHourUsage,
+                scale(highConsumptionHours),
+                estimatedCost,
+                mlResult.category(),
+                BigDecimal.valueOf(mlResult.probability()).setScale(2, RoundingMode.HALF_UP),
+                "SIMULADO",
+                mlResult.source(),
+                mlResult.recommendations(),
+                null,
+                null);
+    }
+
     private MlEnvelope buildMlRequest(
             EnergyAnalysis analysis, Property property, ApplianceAggregationService.AggregationResult aggregation,
+            String highestConsumptionCategory) {
+        return buildMlRequest(
+                analysis.getConsumptionKwh().doubleValue(),
+                analysis.getPeakHourUsage(),
+                aggregation.totalEquipment(),
+                property.getPropertyType(),
+                analysis.getHighConsumptionHours().doubleValue(),
+                aggregation,
+                highestConsumptionCategory);
+    }
+
+    private MlEnvelope buildMlRequest(
+            double consumptionKwh, boolean peakHourUsage, int equipmentQuantity,
+            String propertyType, double highConsumptionHours,
+            ApplianceAggregationService.AggregationResult aggregation,
             String highestConsumptionCategory) {
         Map<String, Object> dist = Map.of(
                 "REFRIGERATION_WATTS", aggregation.refrigerationWatts(),
@@ -90,11 +149,11 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 "LIGHTING_WATTS", aggregation.lightingWatts());
 
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
-        body.put("consumption_kwh", analysis.getConsumptionKwh().doubleValue());
-        body.put("peak_hour_usage", analysis.getPeakHourUsage());
-        body.put("equipment_quantity", aggregation.totalEquipment());
-        body.put("property_type", property.getPropertyType());
-        body.put("high_consumption_hours", analysis.getHighConsumptionHours().doubleValue());
+        body.put("consumption_kwh", consumptionKwh);
+        body.put("peak_hour_usage", peakHourUsage);
+        body.put("equipment_quantity", equipmentQuantity);
+        body.put("property_type", propertyType);
+        body.put("high_consumption_hours", highConsumptionHours);
         body.put("daily_consumption_distribution", dist);
 
         if (highestConsumptionCategory != null && !highestConsumptionCategory.isBlank()) {
