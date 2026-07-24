@@ -20,7 +20,7 @@ def _fill_distribution(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def normalize_category(cat):
+def normalize_category(cat: object) -> str:
     if not isinstance(cat, str):
         return "Outros"
     cat_lower = cat.strip().lower()

@@ -34,7 +34,7 @@ from features import HIGHEST_CONSUMPTION_CATEGORIES, feature_engineering, normal
 warnings.filterwarnings("ignore")
 
 
-def normalize_category_label(cat):
+def normalize_category_label(cat: object) -> str:
     if not isinstance(cat, str):
         return "Mediano"
     cat_lower = cat.strip().lower()
@@ -128,7 +128,7 @@ PPH_CATEGORY_KWH_COLUMNS = {
 }
 
 
-def _assign_region_property(region, counter):
+def _assign_region_property(region: str, counter: int) -> str:
     """Assign property type based on region with proportional distribution."""
     distribution = {
         "Norte": ["Casa", "Casa", "Casa", "Apartamento", "Comercial"],
@@ -141,7 +141,7 @@ def _assign_region_property(region, counter):
     return options[counter % len(options)]
 
 
-def _estimate_high_consumption_hours(kwh, equipment_qty):
+def _estimate_high_consumption_hours(kwh: float, equipment_qty: int) -> float:
     """Estimate high consumption hours based on consumption per equipment."""
     consumption_per_unit = kwh / max(equipment_qty, 1)
     if consumption_per_unit > 40:
@@ -152,7 +152,7 @@ def _estimate_high_consumption_hours(kwh, equipment_qty):
         return 3.0
 
 
-def _infer_peak_usage(row):
+def _infer_peak_usage(row: pd.Series) -> int:
     """Infer peak hour usage from multiple habit columns."""
     peak_indicators = [
         "habito_evita_standby",
@@ -171,7 +171,7 @@ def _infer_peak_usage(row):
     return 0
 
 
-def generate_record(client_id):
+def generate_record(client_id: int) -> dict:
     property_type = random.choice(PROPERTY_TYPES)
     equipment_quantity = random.randint(1, 25)
     high_consumption_hours = round(random.uniform(0, 12), 1)
@@ -209,7 +209,7 @@ def generate_record(client_id):
     }
 
 
-def calculate_inefficiency_index(df):
+def calculate_inefficiency_index(df: pd.DataFrame) -> pd.Series:
     consumption_relative = df["consumption_kwh"] / df["property_type"].map(BASE_CONSUMPTION_BY_TYPE)
     consumption_norm = (consumption_relative / consumption_relative.max()).clip(0, 1)
     equip_norm = (df["equipment_quantity"] / df["equipment_quantity"].max()).clip(0, 1)
@@ -218,7 +218,7 @@ def calculate_inefficiency_index(df):
     return 0.40 * consumption_norm + 0.25 * pico_norm + 0.20 * equip_norm + 0.15 * hours_norm
 
 
-def load_labeled_csv(path):
+def load_labeled_csv(path: str) -> pd.DataFrame:
     if not os.path.exists(path):
         print("  File not found.")
         return pd.DataFrame()
@@ -242,7 +242,7 @@ def load_labeled_csv(path):
     return df[FEATURE_COLUMNS + ["category"]]
 
 
-def load_pph_data(path, rotuled_path=ROTULED_CSV):
+def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
     """Load PPH 2019 survey data and convert to training format.
 
     The PPH dataset contains real Brazilian household energy consumption
@@ -364,7 +364,7 @@ def load_pph_data(path, rotuled_path=ROTULED_CSV):
     return result
 
 
-def load_feedback(path):
+def load_feedback(path: str) -> pd.DataFrame:
     if not os.path.exists(path):
         print("  No feedback file found.")
         return pd.DataFrame()
@@ -402,7 +402,7 @@ def load_feedback(path):
     return pd.DataFrame(records)
 
 
-def generate_synthetic(n, seed_offset=0):
+def generate_synthetic(n: int, seed_offset: int = 0) -> pd.DataFrame:
     regs = [generate_record(i + seed_offset) for i in range(n)]
     df = pd.DataFrame(regs)
     df["peak_hour_usage"] = df["peak_hour_usage"].astype(int)
