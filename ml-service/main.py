@@ -47,6 +47,12 @@ except Exception as e:
     print(f"[EnergiAI]   Traceback: {traceback.format_exc()}")
 
 # -------------------------------------------------------------
+# VALID EFFICIENCY CATEGORIES
+# -------------------------------------------------------------
+
+VALID_CATEGORIES = ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"]
+
+# -------------------------------------------------------------
 # GROQ (fallback when confidence < 80%)
 # -------------------------------------------------------------
 
@@ -378,6 +384,18 @@ def predict_consumption(data: PredictRequest) -> PredictResponse:
         recommendations=recommendations,
         source=source,
     )
+
+
+@app.get("/predict-schema")
+def predict_schema() -> dict:
+    """Retorna o schema JSON do PredictRequest para descoberta dinâmica pelo backend."""
+    return PredictRequest.model_json_schema()
+
+
+@app.get("/categories")
+def categories() -> dict:
+    """Retorna a lista de categorias de eficiência energética válidas."""
+    return {"categories": VALID_CATEGORIES}
 
 
 @app.get("/status")
