@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  passwordResetRequired?: boolean;
 }
 
 /** Categorias de maior consumo (ML Service) — sem acentos para consistência com o modelo */

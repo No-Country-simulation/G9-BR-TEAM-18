@@ -1,12 +1,12 @@
 package br.com.group18.energiai.core.domain.model;
 
-/** User persisted in {@code tb_user}. Password is always stored as a hash. */
 public class User {
 
     private Long id;
     private String name;
     private String email;
     private String passwordHash;
+    private boolean passwordResetRequired;
 
     public User() {}
 
@@ -46,5 +46,13 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public boolean isPasswordResetRequired() {
+        return passwordResetRequired;
+    }
+
+    public void setPasswordResetRequired(boolean passwordResetRequired) {
+        this.passwordResetRequired = passwordResetRequired;
     }
 }

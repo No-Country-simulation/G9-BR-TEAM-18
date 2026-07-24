@@ -21,9 +21,11 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    /** Hash persisted in the {@code password} column defined by the Oracle schema. */
     @Column(name = "password", nullable = false, length = 255)
     private String passwordHash;
+
+    @Column(name = "password_reset_required", nullable = false)
+    private Integer passwordResetRequired = 0;
 
     public Long getId() {
         return id;
@@ -55,5 +57,13 @@ public class UserEntity {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public Integer getPasswordResetRequired() {
+        return passwordResetRequired;
+    }
+
+    public void setPasswordResetRequired(Integer passwordResetRequired) {
+        this.passwordResetRequired = passwordResetRequired;
     }
 }

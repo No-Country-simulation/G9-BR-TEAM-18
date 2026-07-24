@@ -2,14 +2,18 @@ package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
+import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ResetPasswordRequestDTO;
 import br.com.group18.energiai.infrastructure.config.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,16 +33,19 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
+    private final TokenBlacklistRepositoryPort blacklistRepository;
     private final int sessionMaxAge;
     private final boolean sessionSecure;
 
     public AuthController(
             AuthenticationService authenticationService,
             JwtService jwtService,
+            TokenBlacklistRepositoryPort blacklistRepository,
             @Value("${SESSION_MAX_AGE_SECONDS:604800}") int sessionMaxAge,
             @Value("${SESSION_SECURE:false}") boolean sessionSecure) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
+        this.blacklistRepository = blacklistRepository;
         this.sessionMaxAge = sessionMaxAge;
         this.sessionSecure = sessionSecure;
     }
@@ -71,7 +78,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = extractToken(request);
+        if (token != null) {
+            Date expiration = jwtService.getExpiration(token);
+            if (expiration != null) {
+                String tokenHash = jwtService.hashToken(token);
+                blacklistRepository.save(
+                        tokenHash,
+                        expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            }
+        }
         Cookie cookie = new Cookie("SESSION_TOKEN", "");
         cookie.setPath("/");
         cookie.setMaxAge(0);
@@ -79,6 +96,27 @@ public class AuthController {
         cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         response.addCookie(cookie);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @Valid @RequestBody ResetPasswordRequestDTO request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
+        Long userId = getUserId(servletRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            User user = authenticationService.resetPassword(
+                    userId, request.getCurrentPassword(), request.getNewPassword());
+            createSession(user, servletResponse);
+            return ResponseEntity.ok(toResponse(user));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+        }
     }
 
     @GetMapping("/me")
@@ -113,6 +151,20 @@ public class AuthController {
     }
 
     private LoginResponseDTO toResponse(User user) {
-        return new LoginResponseDTO(user.getId(), user.getName(), user.getEmail());
+        LoginResponseDTO dto = new LoginResponseDTO(user.getId(), user.getName(), user.getEmail());
+        dto.setPasswordResetRequired(user.isPasswordResetRequired());
+        return dto;
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("SESSION_TOKEN".equals(c.getName())) {
+                    return c.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

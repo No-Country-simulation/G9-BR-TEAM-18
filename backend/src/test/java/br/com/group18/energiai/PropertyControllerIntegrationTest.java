@@ -53,7 +53,7 @@ class PropertyControllerIntegrationTest {
                 """
             {
                 "alias": "Casa de Campo",
-                "property_type": "Casa",
+                "property_type": "RESIDENCIAL",
                 "active": true
             }
             """;
@@ -71,7 +71,7 @@ class PropertyControllerIntegrationTest {
                 """
             {
                 "alias": "Apartamento",
-                "property_type": "Apartamento",
+                "property_type": "RESIDENCIAL",
                 "active": true
             }
             """;

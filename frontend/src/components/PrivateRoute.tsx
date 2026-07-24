@@ -1,8 +1,9 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
     return (
@@ -14,6 +15,10 @@ export default function PrivateRoute({ children }: { children: React.ReactNode }
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (user.passwordResetRequired && location.pathname !== '/reset-password') {
+    return <Navigate to="/reset-password" replace />
   }
 
   return <>{children}</>

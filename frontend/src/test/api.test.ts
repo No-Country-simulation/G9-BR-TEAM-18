@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { analyzeEnergy, login, register, listAnalyses, fetchDashboard } from '../services/api'
+import {
+  analyzeEnergy,
+  login,
+  register,
+  listAnalyses,
+  fetchDashboard,
+  createProperty,
+  listProperties,
+  addApplianceToProperty,
+  listPropertyAppliances,
+  removeApplianceFromProperty,
+  listAppliances,
+} from '../services/api'
 
 const API_URL = 'http://localhost:8080'
 const mockFetch = vi.fn()
@@ -16,11 +28,16 @@ describe('analyzeEnergy', () => {
     const data = { category: 'BOM', probability: 0.85, recommendations: [], estimated_monthly_cost: 75 }
     mockFetch.mockResolvedValueOnce(mockResponse(true, data))
 
-    const result = await analyzeEnergy({
-      consumption_kwh: 100, peak_hour_usage: false, equipment_quantity: 3, property_type: 'Casa', high_consumption_hours: 2,
-    })
+    const result = await analyzeEnergy(1, 100, false, 2)
 
     expect(result).toEqual(data)
+  })
+
+  it('throws ApiError on validation error', async () => {
+    const errorBody = { message: 'validation failed', fields: { consumption_kwh: 'must be positive' } }
+    mockFetch.mockResolvedValueOnce(mockResponse(false, errorBody))
+
+    await expect(analyzeEnergy(1, -1, false, 2)).rejects.toThrow('validation failed')
   })
 })
 
@@ -88,5 +105,117 @@ describe('fetchDashboard', () => {
       totalCo2EmissionKg: 0,
       monthlyConsumption: [],
     })
+  })
+})
+
+describe('createProperty', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('sends POST to /properties and returns property', async () => {
+    const data = { id: 1, alias: 'Casa', property_type: 'Casa', active: true }
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data))
+
+    const result = await createProperty('Casa', 'Casa')
+
+    expect(result).toEqual(data)
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ alias: 'Casa', property_type: 'Casa' }),
+    })
+  })
+
+  it('throws ApiError on failure', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'erro' }))
+
+    await expect(createProperty('Casa', 'Casa')).rejects.toThrow('erro')
+  })
+})
+
+describe('listProperties', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('returns empty array when response is not ok', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []))
+
+    const result = await listProperties()
+    expect(result).toEqual([])
+  })
+
+  it('returns properties on success', async () => {
+    const data = [{ id: 1, alias: 'Casa', property_type: 'Casa', active: true }]
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data))
+
+    const result = await listProperties()
+    expect(result).toEqual(data)
+  })
+})
+
+describe('addApplianceToProperty', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('sends POST to property appliances endpoint', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}))
+
+    await addApplianceToProperty(1, 2, 3)
+
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ appliance_id: 2, quantity: 3 }),
+    })
+  })
+
+  it('throws ApiError on failure', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'error', fields: {} }))
+
+    await expect(addApplianceToProperty(1, 2, 3)).rejects.toThrow('error')
+  })
+})
+
+describe('listPropertyAppliances', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('returns empty array when response is not ok', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []))
+
+    const result = await listPropertyAppliances(1)
+    expect(result).toEqual([])
+  })
+})
+
+describe('removeApplianceFromProperty', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('sends DELETE request', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}))
+
+    await removeApplianceFromProperty(1, 2)
+
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances/2`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+  })
+
+  it('throws ApiError on failure', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: 'error', fields: {} }))
+
+    await expect(removeApplianceFromProperty(1, 2)).rejects.toThrow('error')
+  })
+})
+
+describe('listAppliances', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('returns fallback on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('network'))
+
+    const result = await listAppliances()
+    expect(Array.isArray(result)).toBe(true)
+    expect(result.length).toBeGreaterThan(0)
   })
 })

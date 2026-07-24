@@ -19,8 +19,8 @@ export default function Login() {
     setError(null)
     setFieldErrors(null)
     try {
-      await login(email, password)
-      navigate('/')
+      const needsReset = await login(email, password)
+      navigate(needsReset ? '/reset-password' : '/')
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)

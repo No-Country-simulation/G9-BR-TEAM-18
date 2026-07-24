@@ -6,17 +6,19 @@ const STORAGE_KEY = 'energiai_user'
 interface AuthContextValue {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<boolean>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
+  resetPassword: (currentPassword: string, newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
-  login: async () => {},
+  login: async () => false,
   register: async () => {},
   logout: () => {},
+  resetPassword: async () => {},
 })
 
 function restoreSession(): User | null {
@@ -53,9 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(err.message ?? 'Erro ao fazer login')
     }
     const data = await response.json()
-    const u: User = { id: data.id, name: data.name, email: data.email }
+    const u: User = { id: data.id, name: data.name, email: data.email, passwordResetRequired: data.password_reset_required }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
     setUser(u)
+    return data.password_reset_required === true
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
@@ -74,13 +77,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [login])
 
   const logout = useCallback(() => {
+    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+    fetch(`${url}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {})
     document.cookie = 'SESSION_TOKEN=; Path=/; Max-Age=0'
     localStorage.removeItem(STORAGE_KEY)
     setUser(null)
   }, [])
 
+  const resetPassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+    const response = await fetch(`${url}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    })
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.message ?? 'Erro ao redefinir senha')
+    }
+    const data = await response.json()
+    const u: User = { id: data.id, name: data.name, email: data.email, passwordResetRequired: false }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
+    setUser(u)
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword }}>
       {children}
     </AuthContext.Provider>
   )
