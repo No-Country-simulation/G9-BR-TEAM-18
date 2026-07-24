@@ -1,10 +1,11 @@
 package br.com.group18.energiai.infrastructure.client;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,34 +22,33 @@ public class MlServiceClient {
         this.webClient = WebClient.builder().baseUrl(mlServiceUrl).build();
     }
 
-    public MlPredictResponse predict(MlPredictRequest request) {
+    /**
+     * Sends a prediction request to the ML Service and returns a generic envelope.
+     * The envelope decouples the backend from the ML Service's exact JSON schema.
+     *
+     * @param request the request data as a generic envelope
+     * @return the response as a generic envelope, or {@code null} if the ML Service is unavailable
+     */
+    public MlEnvelope predict(MlEnvelope request) {
         try {
-            return webClient
+            Map<String, Object> responseBody = webClient
                     .post()
                     .uri("/predict")
-                    .bodyValue(request)
+                    .bodyValue(request.body())
                     .retrieve()
-                    .bodyToMono(MlPredictResponse.class)
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block(Duration.ofSeconds(45));
+
+            if (responseBody == null) {
+                log.warn("ML Service retornou corpo vazio em {}", mlServiceUrl);
+                return null;
+            }
+
+            return new MlEnvelope(responseBody);
+
         } catch (Exception exception) {
             log.warn("ML Service indisponível em {}: {}", mlServiceUrl, exception.getMessage());
             return null;
         }
     }
-
-    public record MlPredictRequest(
-            double consumption_kwh,
-            boolean peak_hour_usage,
-            int equipment_quantity,
-            String property_type,
-            double high_consumption_hours,
-            DailyConsumptionDistribution daily_consumption_distribution) {}
-
-    public record DailyConsumptionDistribution(
-            @com.fasterxml.jackson.annotation.JsonProperty("REFRIGERATION_WATTS") double REFRIGERATION_WATTS,
-            @com.fasterxml.jackson.annotation.JsonProperty("HEATING_WATTS") double HEATING_WATTS,
-            @com.fasterxml.jackson.annotation.JsonProperty("AIR_CONDITIONING_WATTS") double AIR_CONDITIONING_WATTS,
-            @com.fasterxml.jackson.annotation.JsonProperty("LIGHTING_WATTS") double LIGHTING_WATTS) {}
-
-    public record MlPredictResponse(String category, double probability, List<String> recommendations) {}
 }

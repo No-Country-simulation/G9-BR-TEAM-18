@@ -6,10 +6,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.group18.energiai.infrastructure.client.MlEnvelope;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -85,9 +87,14 @@ class DatabasePopulationIntegrationTest {
                         .content(applianceBody))
                 .andExpect(status().isCreated());
 
-        MlServiceClient.MlPredictResponse mockResponse = new MlServiceClient.MlPredictResponse(
-                "CRITICO", 0.88, List.of("Troque as lâmpadas por LED", "Desligue a geladeira à noite (brincadeira)"));
-        when(mlServiceClient.predict(any())).thenReturn(mockResponse);
+        Map<String, Object> mockResponseBody = Map.of(
+                "category",
+                "CRITICO",
+                "probability",
+                0.88,
+                "recommendations",
+                List.of("Troque as lâmpadas por LED", "Desligue a geladeira à noite (brincadeira)"));
+        when(mlServiceClient.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(mockResponseBody));
 
         String analysisBody =
                 """
