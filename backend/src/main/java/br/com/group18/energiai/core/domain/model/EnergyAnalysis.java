@@ -1,5 +1,6 @@
 package br.com.group18.energiai.core.domain.model;
 
+import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class EnergyAnalysis {
     private Boolean peakHourUsage;
     private BigDecimal highConsumptionHours;
     private BigDecimal estimatedMonthlyCost;
-    private String category;
+    private EfficiencyCategory category;
     private BigDecimal probability;
     private String status;
     private LocalDateTime createdAt;
@@ -80,11 +81,11 @@ public class EnergyAnalysis {
         this.estimatedMonthlyCost = estimatedMonthlyCost;
     }
 
-    public String getCategory() {
+    public EfficiencyCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(EfficiencyCategory category) {
         this.category = category;
     }
 

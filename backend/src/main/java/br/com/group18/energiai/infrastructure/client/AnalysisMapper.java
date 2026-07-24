@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.client;
 
 import br.com.group18.energiai.core.domain.model.MlResult;
+import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class AnalysisMapper {
                 recommendations);
 
         try {
-            return new MlResult(category, probability, recommendations);
+            return new MlResult(new EfficiencyCategory(category), probability, recommendations);
         } catch (IllegalArgumentException e) {
             throw new MlServiceUnavailableException("Resposta inválida do serviço de análise: " + e.getMessage());
         }

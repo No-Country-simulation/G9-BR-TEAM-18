@@ -63,7 +63,7 @@ class EnergyAnalysisServiceTest {
                 property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"));
 
         assertNotNull(result);
-        assertEquals("EXCELENTE", result.getCategory());
+        assertEquals("EXCELENTE", result.getCategory().value());
         assertEquals("FINALIZADO", result.getStatus());
         assertEquals(new BigDecimal("108.00"), result.getConsumptionKwh());
     }

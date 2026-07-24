@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.out.persistence.mapper;
 
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
+import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import br.com.group18.energiai.infrastructure.adapters.out.persistence.entity.EnergyAnalysisEntity;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class EnergyAnalysisMapper {
         entity.setConsumptionKwh(domain.getConsumptionKwh());
         entity.setPeakHourUsage(Boolean.TRUE.equals(domain.getPeakHourUsage()) ? 1 : 0);
         entity.setHighConsumptionHours(domain.getHighConsumptionHours());
-        entity.setCategory(domain.getCategory());
+        entity.setCategory(domain.getCategory() != null ? domain.getCategory().value() : null);
         entity.setProbability(domain.getProbability());
         entity.setEstimatedMonthlyCost(domain.getEstimatedMonthlyCost());
         entity.setStatus(domain.getStatus());
@@ -38,7 +39,7 @@ public class EnergyAnalysisMapper {
                 Integer.valueOf(1).equals(entity.getPeakHourUsage()),
                 entity.getHighConsumptionHours());
         domain.setId(entity.getId());
-        domain.setCategory(entity.getCategory());
+        domain.setCategory(entity.getCategory() != null ? new EfficiencyCategory(entity.getCategory()) : null);
         domain.setProbability(entity.getProbability());
         domain.setEstimatedMonthlyCost(entity.getEstimatedMonthlyCost());
         domain.setStatus(entity.getStatus());
