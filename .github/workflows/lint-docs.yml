@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - run: npm install @cspell/dict-pt-br
       - run: npx markdownlint-cli2 "**/*.md" "#node_modules" "#target" "#dist" "#.git" "#ml-service/data"
       - run: npx cspell $(git ls-files "*.md")
       - run: node scripts/check-forbidden-chars.mjs $(git ls-files "*.md")

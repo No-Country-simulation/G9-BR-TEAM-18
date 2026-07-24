@@ -38,7 +38,8 @@ public class PropertyController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Property property = propertyService.create(userId, request.getAlias(), request.getPropertyType());
+        Property property = propertyService.create(
+                userId, request.getAlias(), request.getPropertyType().name());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(property));
     }
 
@@ -63,7 +64,11 @@ public class PropertyController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(toResponse(propertyService.update(
-                propertyId, userId, request.getAlias(), request.getPropertyType(), request.isActive())));
+                propertyId,
+                userId,
+                request.getAlias(),
+                request.getPropertyType().name(),
+                request.isActive())));
     }
 
     @DeleteMapping("/{propertyId}")

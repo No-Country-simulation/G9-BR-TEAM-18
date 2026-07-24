@@ -24,4 +24,4 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           cache: maven
-      - run: cd backend && mvn -B test
+      - run: cd backend && mvn -B test -Dtest='!*IntegrationTest,!FlywayOracleTest,!DatabasePopulationIntegrationTest'

@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { ArrowUp } from "lucide-react";
 
 export default function ScrollToTop() {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     function onScroll() {
-      setVisible(window.scrollY > 400)
+      setVisible(window.scrollY > 400);
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  if (!visible) return null
+  if (!visible) return null;
 
   return (
     <button
@@ -27,5 +27,5 @@ export default function ScrollToTop() {
     >
       <ArrowUp size={22} />
     </button>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { listAnalyses } from "../services/api";
 import type { AnalysisHistory } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";

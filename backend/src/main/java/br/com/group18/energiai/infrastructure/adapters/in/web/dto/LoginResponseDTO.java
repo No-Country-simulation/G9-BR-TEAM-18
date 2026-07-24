@@ -5,6 +5,7 @@ public class LoginResponseDTO {
     private Long id;
     private String name;
     private String email;
+    private boolean passwordResetRequired;
 
     public LoginResponseDTO() {}
 
@@ -36,5 +37,13 @@ public class LoginResponseDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isPasswordResetRequired() {
+        return passwordResetRequired;
+    }
+
+    public void setPasswordResetRequired(boolean passwordResetRequired) {
+        this.passwordResetRequired = passwordResetRequired;
     }
 }

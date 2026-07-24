@@ -90,7 +90,7 @@ def _groq_can_call() -> bool:
     return True
 
 
-def _groq_register_call():
+def _groq_register_call() -> None:
     global _groq_calls_today
     _groq_call_times.append(time.time())
     _groq_calls_today += 1
@@ -104,9 +104,6 @@ BASE_CONSUMPTION_BY_TYPE = {
     "Casa": 250.0,
     "Apartamento": 150.0,
     "Comercial": 500.0,
-    "Industria": 800.0,
-    "Rural": 300.0,
-    "Outro": 250.0,
 }
 
 
@@ -124,6 +121,7 @@ class PredictRequest(BaseModel):
     property_type: str
     high_consumption_hours: float
     highest_consumption_category: str | None = "Outros"
+    highest_consumption_products: list[str] | None = None
     daily_consumption_distribution: ConsumptionDistribution | None = None
 
 
@@ -237,6 +235,7 @@ Dados do imóvel:
 Responda APENAS com as 3 recomendações, uma por linha, sem numeração,
 sem introdução e sem comentários adicionais."""
 
+    assert groq_client is not None
     response = groq_client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[
@@ -274,7 +273,7 @@ def _store_for_training(
     probability: float,
     recommendations: list[str],
     source: str,
-):
+) -> None:
     dc = data.daily_consumption_distribution or ConsumptionDistribution()
     record = {
         "timestamp": datetime.now(UTC).isoformat(),
@@ -310,7 +309,7 @@ def _store_for_training(
 
 
 @app.post("/predict", response_model=PredictResponse)
-def predict_consumption(data: PredictRequest):
+def predict_consumption(data: PredictRequest) -> PredictResponse:
     category = ""
     probability = 0.0
     source = ""
@@ -382,7 +381,7 @@ def predict_consumption(data: PredictRequest):
 
 
 @app.get("/status")
-def status():
+def status() -> StatusResponse:
     agora = time.time()
     calls_per_minute = sum(1 for t in _groq_call_times if agora - t < 60)
     return StatusResponse(

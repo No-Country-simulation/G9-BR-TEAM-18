@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, Sun, Moon, LogOut } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
-import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/useTheme";
+import { useAuth } from "../context/useAuth";
 import Logo from "./Logo";
 
 const FULL_NAME = "EnergiIA";

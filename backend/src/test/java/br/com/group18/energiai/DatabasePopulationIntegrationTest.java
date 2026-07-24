@@ -57,7 +57,7 @@ class DatabasePopulationIntegrationTest {
                 """
                 {
                     "alias": "Apartamento UCB",
-                    "property_type": "Apartamento",
+                    "property_type": "RESIDENCIAL",
                     "active": true
                 }
                 """;

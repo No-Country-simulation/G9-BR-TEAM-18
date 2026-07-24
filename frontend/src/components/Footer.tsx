@@ -1,4 +1,4 @@
-import Logo from './Logo'
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
@@ -18,8 +18,20 @@ export default function Footer() {
           </div>
           <div className="footer-col">
             <h4>Projeto</h4>
-            <a href="https://github.com/No-Country-simulation/G9-BR-TEAM-18" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="https://github.com/No-Country-simulation/G9-BR-TEAM-18/blob/main/README.md" target="_blank" rel="noopener noreferrer">Documentação</a>
+            <a
+              href="https://github.com/No-Country-simulation/G9-BR-TEAM-18"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://github.com/No-Country-simulation/G9-BR-TEAM-18/blob/main/README.md"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Documentação
+            </a>
           </div>
         </div>
       </div>
@@ -27,5 +39,5 @@ export default function Footer() {
         <p>&copy; {new Date().getFullYear()} EnergiIA. Equipe G9-BR-TEAM-18.</p>
       </div>
     </footer>
-  )
+  );
 }

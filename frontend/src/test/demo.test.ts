@@ -6,14 +6,6 @@ globalThis.fetch = mockFetch;
 
 const API_URL = "http://localhost:8080";
 
-const requestBody = {
-  consumption_kwh: 200,
-  peak_hour_usage: false,
-  equipment_quantity: 8,
-  property_type: "Casa" as const,
-  high_consumption_hours: 4,
-};
-
 describe("analyzeEnergy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,12 +24,17 @@ describe("analyzeEnergy", () => {
       json: () => Promise.resolve(responseData),
     });
 
-    const result = await analyzeEnergy(requestBody);
+    const result = await analyzeEnergy(1, 200, false, 4);
 
     expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/energy-analysis`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        property_id: 1,
+        consumption_kwh: 200,
+        peak_hour_usage: false,
+        high_consumption_hours: 4,
+      }),
       credentials: "include",
     });
 
@@ -55,7 +52,7 @@ describe("analyzeEnergy", () => {
       json: () => Promise.resolve(errorBody),
     });
 
-    await expect(analyzeEnergy(requestBody)).rejects.toThrow("Erro de validação");
+    await expect(analyzeEnergy(1, 200, false, 4)).rejects.toThrow("Erro de validação");
   });
 
   it("uses default message when server does not return message", async () => {
@@ -64,7 +61,7 @@ describe("analyzeEnergy", () => {
       json: () => Promise.resolve({ fields: {} }),
     });
 
-    await expect(analyzeEnergy(requestBody)).rejects.toThrow("Erro ao analisar consumo");
+    await expect(analyzeEnergy(1, 200, false, 4)).rejects.toThrow("Erro ao analisar consumo");
   });
 
   it("makes request with credentials include", async () => {
@@ -73,7 +70,7 @@ describe("analyzeEnergy", () => {
       json: () => Promise.resolve({ category: "EFICIENTE" }),
     });
 
-    await analyzeEnergy({ ...requestBody, consumption_kwh: 100 });
+    await analyzeEnergy(1, 100, true, 6);
 
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/energy-analysis"),

@@ -1,10 +1,6 @@
 import pandas as pd
 
-BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250,
-    "Apartamento": 150,
-    "Comercial": 500
-}
+BASE_CONSUMPTION_BY_TYPE = {"Casa": 250, "Apartamento": 150, "Comercial": 500}
 
 HIGHEST_CONSUMPTION_CATEGORIES = [
     "Refrigeracao",
@@ -24,7 +20,7 @@ def _fill_distribution(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def normalize_category(cat):
+def normalize_category(cat: object) -> str:
     if not isinstance(cat, str):
         return "Outros"
     cat_lower = cat.strip().lower()

@@ -7,6 +7,7 @@ Aceito
 ## Contexto
 
 Durante o desenvolvimento do módulo de análise energética, dois problemas técnicos precisavam ser resolvidos para a evolução do sistema:
+
 1. **Banco de Dados de Produção:** O sistema estava usando PostgreSQL, mas a homologação para o ambiente de produção exigia compatibilidade com o Oracle Cloud Infrastructure (OCI). O Oracle exige sintaxes específicas e não possui tipo lógico (`boolean`) nativo.
 2. **Imprecisão Numérica:** Os campos de energia (watts, kWh) e custos operavam com o tipo `Double`. Cálculos financeiros e de potência com ponto flutuante sofriam de imprecisão nativa, exigindo tratamentos manuais de arredondamento.
 3. **Falta de Rastreabilidade:** O serviço enviava dados para a IA em Python, mas se a requisição falhasse, o histórico daquela tentativa de análise era completamente perdido.

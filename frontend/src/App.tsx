@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import AnalysisPage from "./pages/AnalysisPage";
 import ProfilePage from "./pages/ProfilePage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
@@ -29,6 +30,14 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/reset-password"
+          element={
+            <PrivateRoute>
+              <ResetPasswordPage />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

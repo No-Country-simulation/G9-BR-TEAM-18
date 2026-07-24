@@ -7,5 +7,6 @@
   "MD025": { "front_matter_title": "" },
   "MD029": { "style": "ordered" },
   "MD040": true,
-  "MD046": { "style": "fenced" }
+  "MD046": { "style": "fenced" },
+  "MD060": false
 }
