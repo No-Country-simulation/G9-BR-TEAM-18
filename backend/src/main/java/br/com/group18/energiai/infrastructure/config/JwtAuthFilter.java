@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.config;
 
+import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,9 +16,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     static final String USER_ID_ATTR = "auth.userId";
 
     private final JwtService jwtService;
+    private final TokenBlacklistRepositoryPort blacklistRepository;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, TokenBlacklistRepositoryPort blacklistRepository) {
         this.jwtService = jwtService;
+        this.blacklistRepository = blacklistRepository;
     }
 
     @Override
@@ -25,9 +28,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = extractToken(request);
         if (token != null) {
-            Long userId = jwtService.validateAndGetUserId(token);
-            if (userId != null) {
-                request.setAttribute(USER_ID_ATTR, userId);
+            String tokenHash = jwtService.hashToken(token);
+            if (!blacklistRepository.existsByTokenHash(tokenHash)) {
+                Long userId = jwtService.validateAndGetUserId(token);
+                if (userId != null) {
+                    request.setAttribute(USER_ID_ATTR, userId);
+                }
             }
         }
         chain.doFilter(request, response);
