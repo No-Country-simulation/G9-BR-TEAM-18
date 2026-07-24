@@ -21,16 +21,19 @@ Adicionalmente, logs de suporte e depuração no filtro de autenticação e no s
 Decidimos introduzir um endpoint administrativo de reset de senha e logs estruturados no backend:
 
 ### 1. Novo DTO e Endpoint Administrativo
+
 - Criação de `AdminResetPasswordRequestDTO` contendo apenas `@NotBlank` e `@Size(min = 6, max = 255)` no campo `newPassword`.
 - Adicionado endpoint `POST /auth/admin/reset-password/{userId}` no `AuthController` que recebe o ID do usuário alvo e a nova senha.
 - O endpoint invoca `AuthenticationService.adminResetPassword()`, que gera o hash BCrypt para a nova senha, define a flag `passwordResetRequired` como `false` e persiste as alterações.
 - O endpoint administrativo gera e anexa um novo cookie de sessão (`SESSION_TOKEN`) para o usuário afetado.
 
 ### 2. Logs Temporários de Auditoria e Diagnóstico
+
 - **JwtAuthFilter**: Log estruturado de nível `debug` rastreando a URI requisitada, a presença ou ausência de token de sessão e o `userId` associado.
 - **AuthenticationService**: Log estruturado de nível `info` registrando o tipo de hash utilizado (BCrypt ou SHA-256 legado) e a validade da senha atual submetida.
 
 ### 3. Testes de Integração
+
 - Adicionados testes em `AuthControllerIntegrationTest.java` para validar:
   - O sucesso do reset pelo administrador (`shouldAdminResetPassword`).
   - O bloqueio de logins com a senha antiga após o reset administrativo.

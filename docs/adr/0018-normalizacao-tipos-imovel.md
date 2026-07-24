@@ -24,19 +24,23 @@ validava os dados na entrada da requisição, gerando erros de integridade
 Decidimos implementar uma validação e normalização estrita de `property_type` de ponta a ponta:
 
 ### 1. Frontend
+
 - Criação e centralização do array `PROPERTY_TYPES = ["RESIDENCIAL", "COMERCIAL"] as const` e do tipo `PropertyType` em `types/index.ts`.
 - Atualização do `AnalysisForm.tsx` e `ProfilePage.tsx` para importar os tipos centralizados e utilizar `"RESIDENCIAL"` como valor padrão.
 
 ### 2. Backend
+
 - Introdução do enum `TipoImovel` (`RESIDENCIAL`, `COMERCIAL`) na camada do core.
 - Atualização do DTO `PropertyRequestDTO` para receber `TipoImovel` diretamente, garantindo que o parser do Jackson valide a entrada.
 - Adicionado tratamento global em `GlobalExceptionHandler` para a exceção `HttpMessageNotReadableException`, retornando o código de erro `400 Bad Request` com mensagem customizada e clara caso o valor enviado seja inválido.
 - Conversão explícita de `TipoImovel.name()` no `PropertyController` ao chamar os serviços de criação e atualização de propriedades.
 
 ### 3. Banco de Dados (Migration V6 Oracle)
+
 - Criação da migration `V6__normalize_property_type.sql` para normalizar registros legados com caixa mista ou minúscula para maiúsculas antes de qualquer validação.
 
 ### 4. Testes de Integração
+
 - Adicionados testes em `PropertyControllerIntegrationTest.java` para garantir que o tipo `"Casa"` retorne `400 Bad Request` e tipos válidos em caixa alta retornem `201 Created`.
 
 ## Alternativas consideradas
