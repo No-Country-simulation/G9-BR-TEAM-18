@@ -43,8 +43,8 @@ public class AuthController {
             AuthenticationService authenticationService,
             JwtService jwtService,
             TokenBlacklistRepositoryPort blacklistRepository,
-            @Value("${SESSION_MAX_AGE_SECONDS:604800}") int sessionMaxAge,
-            @Value("${SESSION_SECURE:false}") boolean sessionSecure) {
+            @Value("${SESSION_MAX_AGE_SECONDS}") int sessionMaxAge,
+            @Value("${SESSION_SECURE}") boolean sessionSecure) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
         this.blacklistRepository = blacklistRepository;

@@ -19,9 +19,7 @@ public class JwtService {
     private final SecretKey key;
     private final long expirationMs;
 
-    public JwtService(
-            @Value("${JWT_SECRET:default-dev-secret-key-change-in-production-32chars!}") String secret,
-            @Value("${JWT_EXPIRATION_MS:604800000}") long expirationMs) {
+    public JwtService(@Value("${JWT_SECRET}") String secret, @Value("${JWT_EXPIRATION_MS}") long expirationMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
     }

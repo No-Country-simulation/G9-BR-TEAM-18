@@ -22,9 +22,9 @@ public class AnalysisMapper {
     private final String recommendationsKey;
 
     public AnalysisMapper(
-            @Value("${ml.output.field.category:category}") String categoryKey,
-            @Value("${ml.output.field.probability:probability}") String probabilityKey,
-            @Value("${ml.output.field.recommendations:recommendations}") String recommendationsKey) {
+            @Value("${ML_OUTPUT_FIELD_CATEGORY}") String categoryKey,
+            @Value("${ML_OUTPUT_FIELD_PROBABILITY}") String probabilityKey,
+            @Value("${ML_OUTPUT_FIELD_RECOMMENDATIONS}") String recommendationsKey) {
         this.categoryKey = categoryKey;
         this.probabilityKey = probabilityKey;
         this.recommendationsKey = recommendationsKey;

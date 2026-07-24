@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,15 +17,20 @@ public class MlSchemaRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(MlSchemaRegistry.class);
 
-    private static final List<String> DEFAULT_CATEGORIES = List.of("EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO");
+    private final List<String> defaultCategories;
 
     private volatile Map<String, Object> schema = Map.of();
-    private volatile List<String> categories = DEFAULT_CATEGORIES;
+    private volatile List<String> categories;
+
+    public MlSchemaRegistry(@Value("${ML_DEFAULT_CATEGORIES}") List<String> defaultCategories) {
+        this.defaultCategories = List.copyOf(defaultCategories);
+        this.categories = this.defaultCategories;
+    }
 
     public void register(Map<String, Object> schema, List<String> categories) {
         this.schema = schema == null ? Map.of() : Collections.unmodifiableMap(schema);
         this.categories = categories == null || categories.isEmpty()
-                ? DEFAULT_CATEGORIES
+                ? defaultCategories
                 : Collections.unmodifiableList(categories);
         log.info(
                 "Schema Discovery: registered {} schema fields and {} categories",

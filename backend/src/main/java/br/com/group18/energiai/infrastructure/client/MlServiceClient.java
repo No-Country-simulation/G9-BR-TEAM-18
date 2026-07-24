@@ -19,7 +19,7 @@ public class MlServiceClient {
     private final WebClient webClient;
     private final String mlServiceUrl;
 
-    public MlServiceClient(@Value("${ml.service.url:http://localhost:8000}") String mlServiceUrl) {
+    public MlServiceClient(@Value("${ML_SERVICE_URL}") String mlServiceUrl) {
         this.mlServiceUrl = mlServiceUrl;
         this.webClient = WebClient.builder().baseUrl(mlServiceUrl).build();
     }

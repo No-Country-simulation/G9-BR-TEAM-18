@@ -40,7 +40,7 @@ public class AnalysisController {
             AnalysisRepositoryPort analysisRepository,
             PropertyService propertyService,
             MlSchemaRegistry mlSchemaRegistry,
-            @Value("${CO2_EMISSION_FACTOR:0.096}") double co2EmissionFactor) {
+            @Value("${CO2_EMISSION_FACTOR}") double co2EmissionFactor) {
         this.generateAnalysisUseCase = generateAnalysisUseCase;
         this.analysisRepository = analysisRepository;
         this.propertyService = propertyService;
