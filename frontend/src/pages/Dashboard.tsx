@@ -16,15 +16,49 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  Target,
+  Lightbulb,
+  PiggyBank,
 } from "lucide-react";
+
+const KWH_TARIFF = 0.75;
+
+/** Calcula quanto o usuário economizaria se reduzisse X kWh */
+function savingsSimulation(currentKwh: number, reductionKwh: number) {
+  const saving = reductionKwh * KWH_TARIFF;
+  const newKwh = Math.max(0, currentKwh - reductionKwh);
+  return { saving, newKwh, reductionKwh };
+}
+
+/** Interpreta a tendência do consumo */
+function interpretTrend(analyses: AnalysisHistory[]): {
+  trend: "up" | "down" | "stable";
+  percentage: number;
+} {
+  if (analyses.length < 2) return { trend: "stable", percentage: 0 };
+  const latest = analyses[analyses.length - 1];
+  const prev = analyses[analyses.length - 2];
+  const diff = latest.consumption_kwh - prev.consumption_kwh;
+  const pct = prev.consumption_kwh > 0 ? (diff / prev.consumption_kwh) * 100 : 0;
+  if (Math.abs(pct) < 3) return { trend: "stable", percentage: 0 };
+  return { trend: pct > 0 ? "up" : "down", percentage: Math.abs(pct) };
+}
+
+const SAVINGS_PRESETS = [50, 100, 150, 200];
+const GOAL_KEY = "energiai_goal_kwh";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastAnalysis, setLastAnalysis] = useState<AnalysisHistory | null>(null);
-  const [trend, setTrend] = useState<"up" | "down" | "stable" | null>(null);
+  const [analyses, setAnalyses] = useState<AnalysisHistory[]>([]);
+  const [goalKwh, setGoalKwh] = useState<number>(() => {
+    const saved = localStorage.getItem(GOAL_KEY);
+    return saved ? Number(saved) : 0;
+  });
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState(goalKwh);
 
   useEffect(() => {
     if (!user) {
@@ -32,18 +66,9 @@ export default function Dashboard() {
       return;
     }
     Promise.all([fetchDashboard(), listAnalyses()])
-      .then(([dash, analyses]) => {
+      .then(([dash, allAnalyses]) => {
         setData(dash);
-        if (analyses.length > 0) {
-          const latest = analyses[analyses.length - 1];
-          setLastAnalysis(latest);
-          if (analyses.length >= 2) {
-            const prev = analyses[analyses.length - 2];
-            if (latest.consumption_kwh > prev.consumption_kwh) setTrend("up");
-            else if (latest.consumption_kwh < prev.consumption_kwh) setTrend("down");
-            else setTrend("stable");
-          }
-        }
+        setAnalyses(allAnalyses);
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
@@ -87,6 +112,27 @@ export default function Dashboard() {
     );
   }
 
+  const lastAnalysis = analyses.length > 0 ? analyses[analyses.length - 1] : null;
+  const trendInfo = interpretTrend(analyses);
+
+  // Últimas 2 categorias para mostrar progresso
+  const recentCategories = analyses.slice(-2).map((a) => a.category);
+  const improved =
+    analyses.length >= 2
+      ? CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY] !==
+        CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]
+      : false;
+
+  // Simulações de economia
+  const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;
+  const simulations = SAVINGS_PRESETS.map((r) => ({
+    ...savingsSimulation(currentKwh, r),
+    label: `${r} kWh/mês`,
+  }));
+
+  // Progresso da meta
+  const goalProgress = goalKwh > 0 ? Math.min(100, (currentKwh / goalKwh) * 100) : 0;
+
   return (
     <div className="dash-page">
       <div className="dash-header">
@@ -100,6 +146,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* --- Última Análise + Tendência --- */}
       {lastAnalysis && (
         <div className="dash-last-analysis">
           <div className="dash-last-header">
@@ -125,15 +172,24 @@ export default function Dashboard() {
                 lastAnalysis.category}
             </span>
             <span className="dash-last-consumo">{lastAnalysis.consumption_kwh.toFixed(0)} kWh</span>
-            {trend && (
-              <span className={`dash-trend dash-trend--${trend}`}>
-                {trend === "up" && <ArrowUp size={16} />}
-                {trend === "down" && <ArrowDown size={16} />}
-                {trend === "stable" && <Minus size={16} />}
-                {trend === "up" ? "Subiu" : trend === "down" ? "Caiu" : "Estável"}
+            <span className="dash-last-custo">
+              R$ {lastAnalysis.estimated_monthly_cost.toFixed(2)}
+            </span>
+            {trendInfo.trend !== "stable" && (
+              <span className={`dash-trend dash-trend--${trendInfo.trend}`}>
+                {trendInfo.trend === "up" && <ArrowUp size={16} />}
+                {trendInfo.trend === "down" && <ArrowDown size={16} />}
+                {trendInfo.percentage.toFixed(0)}%
               </span>
             )}
           </div>
+          {improved && analyses.length >= 2 && (
+            <div className="dash-progress-msg">
+              <TrendingUp size={16} />
+              Você evoluiu de <strong>{CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY]}</strong>{" "}
+              para <strong>{CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]}</strong>!
+            </div>
+          )}
         </div>
       )}
 
@@ -146,6 +202,7 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* --- Cards de Métricas --- */}
       <div className="dash-grid">
         <div className="dash-card">
           <div className="dash-card-header">
@@ -176,7 +233,7 @@ export default function Dashboard() {
         <div className="dash-card">
           <div className="dash-card-header">
             <Leaf size={20} className="dash-card-icon" />
-            <span className="dash-card-label">CO\u2082 Total</span>
+            <span className="dash-card-label">CO₂ Total</span>
           </div>
           <p className="dash-card-value">
             {data.totalCo2EmissionKg.toFixed(2)} <span className="dash-card-unit">kg</span>
@@ -184,6 +241,133 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* --- Meta Personalizada --- */}
+      <div className="dash-section">
+        <h3>
+          <Target size={20} /> Meta de Consumo
+        </h3>
+        <div className="dash-goal-card">
+          {editingGoal ? (
+            <div className="dash-goal-edit">
+              <input
+                type="number"
+                min="0"
+                value={goalInput}
+                onChange={(e) => setGoalInput(Number(e.target.value))}
+                placeholder="Ex: 200 kWh"
+              />
+              <button
+                className="dash-btn dash-btn--primary"
+                onClick={() => {
+                  setGoalKwh(goalInput);
+                  localStorage.setItem(GOAL_KEY, String(goalInput));
+                  setEditingGoal(false);
+                }}
+              >
+                Salvar
+              </button>
+              <button
+                className="dash-btn dash-btn--secondary"
+                onClick={() => {
+                  setEditingGoal(false);
+                  setGoalInput(goalKwh);
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="dash-goal-display">
+              {goalKwh > 0 ? (
+                <>
+                  <div className="dash-goal-bar-container">
+                    <div
+                      className="dash-goal-bar"
+                      style={{
+                        width: `${Math.min(goalProgress, 100)}%`,
+                        background:
+                          goalProgress > 100
+                            ? "var(--accent-red, #ef4444)"
+                            : goalProgress > 80
+                              ? "var(--accent-yellow, #f59e0b)"
+                              : "var(--accent-green, #10b981)",
+                      }}
+                    />
+                  </div>
+                  <div className="dash-goal-stats">
+                    <span>
+                      Atual: <strong>{currentKwh.toFixed(0)} kWh</strong>
+                    </span>
+                    <span>
+                      Meta: <strong>{goalKwh} kWh</strong>
+                    </span>
+                    <span>
+                      {currentKwh <= goalKwh ? (
+                        <span className="dash-goal-met">✓ Meta atingida!</span>
+                      ) : (
+                        <span className="dash-goal-excess">
+                          Excesso: {(currentKwh - goalKwh).toFixed(0)} kWh
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    className="dash-btn dash-btn--secondary"
+                    onClick={() => {
+                      setEditingGoal(true);
+                      setGoalInput(goalKwh);
+                    }}
+                    style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}
+                  >
+                    Alterar meta
+                  </button>
+                </>
+              ) : (
+                <div className="dash-goal-empty">
+                  <p>Defina uma meta mensal de consumo para acompanhar seu progresso.</p>
+                  <button
+                    className="dash-btn dash-btn--primary"
+                    onClick={() => {
+                      setEditingGoal(true);
+                      setGoalInput(Math.round(currentKwh * 0.8));
+                    }}
+                  >
+                    <Target size={16} /> Definir Meta
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* --- Simulação de Economia --- */}
+      {lastAnalysis && (
+        <div className="dash-section">
+          <h3>
+            <PiggyBank size={20} /> Simule sua Economia
+          </h3>
+          <p className="dash-section-subtitle">
+            Veja quanto você pode economizar reduzindo seu consumo mensal:
+          </p>
+          <div className="dash-simulation-grid">
+            {simulations.map((sim) => (
+              <div key={sim.reductionKwh} className="dash-simulation-card">
+                <Lightbulb size={20} className="sim-icon" />
+                <div className="sim-details">
+                  <span className="sim-reduction">Reduza {sim.reductionKwh} kWh</span>
+                  <span className="sim-consumption">
+                    Novo consumo: {sim.newKwh.toFixed(0)} kWh
+                  </span>
+                </div>
+                <span className="sim-saving">+ R$ {sim.saving.toFixed(2)}/mês</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* --- Gráfico de Consumo --- */}
       {data.monthlyConsumption.length > 0 && (
         <div className="dash-chart">
           <h3>
