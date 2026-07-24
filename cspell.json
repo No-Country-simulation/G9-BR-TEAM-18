@@ -92,7 +92,14 @@
     "Usuario",
     "Autenticacao",
     "ojdbc",
-    "ojdbc11"
+    "ojdbc11",
+    "indentação",
+    "tipada",
+    "ciclomática",
+    "healthcheck",
+    "commite",
+    "tiangolo",
+    "execucao"
   ],
   "ignorePaths": [
     "node_modules",
