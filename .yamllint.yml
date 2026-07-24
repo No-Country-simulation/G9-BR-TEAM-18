@@ -7,4 +7,6 @@ ignore: |
   .git/
 
 rules:
+  line-length: disable
+  document-start: disable
   truthy: disable
