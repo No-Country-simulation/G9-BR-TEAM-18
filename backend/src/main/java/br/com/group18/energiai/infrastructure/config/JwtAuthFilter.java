@@ -7,11 +7,15 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     static final String USER_ID_ATTR = "auth.userId";
 
@@ -27,15 +31,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String token = extractToken(request);
+        Long userId = null;
         if (token != null) {
             String tokenHash = jwtService.hashToken(token);
             if (!blacklistRepository.existsByTokenHash(tokenHash)) {
-                Long userId = jwtService.validateAndGetUserId(token);
+                userId = jwtService.validateAndGetUserId(token);
                 if (userId != null) {
                     request.setAttribute(USER_ID_ATTR, userId);
                 }
             }
         }
+        log.debug(
+                "JwtAuthFilter path={} token={} userId={}",
+                request.getRequestURI(),
+                token != null ? "present" : "absent",
+                userId);
         chain.doFilter(request, response);
     }
 
