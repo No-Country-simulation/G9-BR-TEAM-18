@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
  */
 class MlContractTest {
 
-    private final AnalysisMapper mapper = new AnalysisMapper("category", "probability", "recommendations");
+    private final AnalysisMapper mapper = new AnalysisMapper("category", "probability", "recommendations", "source");
 
     @Test
     void mlSchemaShouldContainExpectedFields() {

@@ -15,6 +15,7 @@ public record AnalysisResponseDTO(
         EfficiencyCategory category,
         BigDecimal probability,
         String status,
+        String source,
         List<String> recommendations,
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {}

@@ -44,7 +44,8 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             List<PropertyAppliance> appliances,
             BigDecimal consumptionKwh,
             Boolean peakHourUsage,
-            BigDecimal highConsumptionHours) {
+            BigDecimal highConsumptionHours,
+            String highestConsumptionCategory) {
         if (!property.isActive()) {
             throw new InvalidRequestException("A propriedade está inativa e não pode receber análises.");
         }
@@ -54,7 +55,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
         try {
-            MlEnvelope request = buildMlRequest(analysis, property, aggregation);
+            MlEnvelope request = buildMlRequest(analysis, property, aggregation, highestConsumptionCategory);
             MlEnvelope response = mlServiceClient.predict(request);
 
             if (response == null) {
@@ -67,6 +68,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             analysis.setCategory(mlResult.category());
             analysis.setProbability(BigDecimal.valueOf(mlResult.probability()).setScale(2, RoundingMode.HALF_UP));
             analysis.setRecommendations(mlResult.recommendations());
+            analysis.setSource(mlResult.source());
             analysis.setEstimatedMonthlyCost(
                     analysis.getConsumptionKwh().multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP));
             analysis.setStatus("FINALIZADO");
@@ -79,19 +81,26 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
     }
 
     private MlEnvelope buildMlRequest(
-            EnergyAnalysis analysis, Property property, ApplianceAggregationService.AggregationResult aggregation) {
-        Map<String, Object> body = Map.of(
-                "consumption_kwh", analysis.getConsumptionKwh().doubleValue(),
-                "peak_hour_usage", analysis.getPeakHourUsage(),
-                "equipment_quantity", aggregation.totalEquipment(),
-                "property_type", property.getPropertyType(),
-                "high_consumption_hours", analysis.getHighConsumptionHours().doubleValue(),
-                "daily_consumption_distribution",
-                        Map.of(
-                                "REFRIGERATION_WATTS", aggregation.refrigerationWatts(),
-                                "HEATING_WATTS", aggregation.heatingWatts(),
-                                "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
-                                "LIGHTING_WATTS", aggregation.lightingWatts()));
+            EnergyAnalysis analysis, Property property, ApplianceAggregationService.AggregationResult aggregation,
+            String highestConsumptionCategory) {
+        Map<String, Object> dist = Map.of(
+                "REFRIGERATION_WATTS", aggregation.refrigerationWatts(),
+                "HEATING_WATTS", aggregation.heatingWatts(),
+                "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
+                "LIGHTING_WATTS", aggregation.lightingWatts());
+
+        java.util.HashMap<String, Object> body = new java.util.HashMap<>();
+        body.put("consumption_kwh", analysis.getConsumptionKwh().doubleValue());
+        body.put("peak_hour_usage", analysis.getPeakHourUsage());
+        body.put("equipment_quantity", aggregation.totalEquipment());
+        body.put("property_type", property.getPropertyType());
+        body.put("high_consumption_hours", analysis.getHighConsumptionHours().doubleValue());
+        body.put("daily_consumption_distribution", dist);
+
+        if (highestConsumptionCategory != null && !highestConsumptionCategory.isBlank()) {
+            body.put("highest_consumption_category", highestConsumptionCategory);
+        }
+
         return new MlEnvelope(body);
     }
 

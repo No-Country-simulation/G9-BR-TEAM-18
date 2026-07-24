@@ -18,6 +18,7 @@ public class EnergyAnalysis {
     private EfficiencyCategory category;
     private BigDecimal probability;
     private String status;
+    private String source;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> recommendations = new ArrayList<>();
@@ -103,6 +104,14 @@ public class EnergyAnalysis {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public LocalDateTime getCreatedAt() {

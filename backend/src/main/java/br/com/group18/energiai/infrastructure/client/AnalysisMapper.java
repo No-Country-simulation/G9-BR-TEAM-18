@@ -21,14 +21,17 @@ public class AnalysisMapper {
     private final String categoryKey;
     private final String probabilityKey;
     private final String recommendationsKey;
+    private final String sourceKey;
 
     public AnalysisMapper(
             @Value("${ML_OUTPUT_FIELD_CATEGORY}") String categoryKey,
             @Value("${ML_OUTPUT_FIELD_PROBABILITY}") String probabilityKey,
-            @Value("${ML_OUTPUT_FIELD_RECOMMENDATIONS}") String recommendationsKey) {
+            @Value("${ML_OUTPUT_FIELD_RECOMMENDATIONS}") String recommendationsKey,
+            @Value("${ML_OUTPUT_FIELD_SOURCE}") String sourceKey) {
         this.categoryKey = categoryKey;
         this.probabilityKey = probabilityKey;
         this.recommendationsKey = recommendationsKey;
+        this.sourceKey = sourceKey;
     }
 
     /**
@@ -43,15 +46,17 @@ public class AnalysisMapper {
         String category = extractString(envelope, categoryKey);
         double probability = extractDouble(envelope, probabilityKey);
         List<String> recommendations = extractStringList(envelope, recommendationsKey);
+        String source = envelope.get(sourceKey) != null ? envelope.get(sourceKey).toString() : "";
 
         log.debug(
-                "Mapped ML response: category='{}', probability={}, recommendations={}",
+                "Mapped ML response: category='{}', probability={}, recommendations={}, source='{}'",
                 category,
                 probability,
-                recommendations);
+                recommendations,
+                source);
 
         try {
-            return new MlResult(new EfficiencyCategory(category), probability, recommendations);
+            return new MlResult(new EfficiencyCategory(category), probability, recommendations, source);
         } catch (IllegalArgumentException e) {
             throw new MlServiceUnavailableException("Resposta inválida do serviço de análise: " + e.getMessage());
         }

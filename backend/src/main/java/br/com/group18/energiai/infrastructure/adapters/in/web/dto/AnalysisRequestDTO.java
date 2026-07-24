@@ -29,6 +29,8 @@ public class AnalysisRequestDTO {
     @Digits(integer = 2, fraction = 2)
     private BigDecimal highConsumptionHours;
 
+    private String highestConsumptionCategory;
+
     public Long getPropertyId() {
         return propertyId;
     }
@@ -59,5 +61,13 @@ public class AnalysisRequestDTO {
 
     public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
         this.highConsumptionHours = highConsumptionHours;
+    }
+
+    public String getHighestConsumptionCategory() {
+        return highestConsumptionCategory;
+    }
+
+    public void setHighestConsumptionCategory(String highestConsumptionCategory) {
+        this.highestConsumptionCategory = highestConsumptionCategory;
     }
 }

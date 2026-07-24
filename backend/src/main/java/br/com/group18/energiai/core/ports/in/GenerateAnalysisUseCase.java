@@ -12,5 +12,6 @@ public interface GenerateAnalysisUseCase {
             List<PropertyAppliance> appliances,
             BigDecimal consumptionKwh,
             Boolean peakHourUsage,
-            BigDecimal highConsumptionHours);
+            BigDecimal highConsumptionHours,
+            String highestConsumptionCategory);
 }

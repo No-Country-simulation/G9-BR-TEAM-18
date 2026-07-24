@@ -43,6 +43,9 @@ public class EnergyAnalysisEntity {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(length = 100)
+    private String source;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -138,6 +141,14 @@ public class EnergyAnalysisEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public LocalDateTime getCreatedAt() {

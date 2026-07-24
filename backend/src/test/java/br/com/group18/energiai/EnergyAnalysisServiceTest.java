@@ -41,7 +41,7 @@ class EnergyAnalysisServiceTest {
         repoMock = mock(AnalysisRepositoryPort.class);
         mlClientMock = mock(MlServiceClient.class);
         applianceAggregationService = mock(ApplianceAggregationService.class, RETURNS_DEEP_STUBS);
-        analysisMapper = new AnalysisMapper("category", "probability", "recommendations");
+        analysisMapper = new AnalysisMapper("category", "probability", "recommendations", "source");
 
         service = new EnergyAnalysisService(repoMock, mlClientMock, applianceAggregationService, analysisMapper);
     }
@@ -56,11 +56,11 @@ class EnergyAnalysisServiceTest {
         when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Map<String, Object> responseBody =
-                Map.of("category", "EXCELENTE", "probability", 0.95, "recommendations", List.of("Ótimo consumo."));
+                Map.of("category", "EXCELENTE", "probability", 0.95, "recommendations", List.of("Ótimo consumo."), "source", "model");
         when(mlClientMock.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(responseBody));
 
         EnergyAnalysis result = service.execute(
-                property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"));
+                property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"), null);
 
         assertNotNull(result);
         assertEquals("EXCELENTE", result.getCategory().value());
@@ -84,7 +84,7 @@ class EnergyAnalysisServiceTest {
         MlServiceUnavailableException exception = assertThrows(
                 MlServiceUnavailableException.class,
                 () -> service.execute(
-                        property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5")));
+                        property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"), null));
 
         assertEquals(
                 "Serviço de análise temporariamente indisponível. Tente novamente em instantes.",

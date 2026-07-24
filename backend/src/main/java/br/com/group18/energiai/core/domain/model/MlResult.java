@@ -9,7 +9,7 @@ import java.util.Objects;
  * Domain value object representing the result of an ML Service analysis.
  * Decouples the domain from the ML Service's response schema.
  */
-public record MlResult(EfficiencyCategory category, double probability, List<String> recommendations) {
+public record MlResult(EfficiencyCategory category, double probability, List<String> recommendations, String source) {
 
     private static final double MIN_PROBABILITY = 0.0;
     private static final double MAX_PROBABILITY = 1.0;

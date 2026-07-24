@@ -23,6 +23,7 @@ public class EnergyAnalysisMapper {
         entity.setProbability(domain.getProbability());
         entity.setEstimatedMonthlyCost(domain.getEstimatedMonthlyCost());
         entity.setStatus(domain.getStatus());
+        entity.setSource(domain.getSource());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
         return entity;
@@ -43,6 +44,7 @@ public class EnergyAnalysisMapper {
         domain.setProbability(entity.getProbability());
         domain.setEstimatedMonthlyCost(entity.getEstimatedMonthlyCost());
         domain.setStatus(entity.getStatus());
+        domain.setSource(entity.getSource());
         domain.setCreatedAt(entity.getCreatedAt());
         domain.setUpdatedAt(entity.getUpdatedAt());
         return domain;

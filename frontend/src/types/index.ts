@@ -68,6 +68,20 @@ export interface AnalysisResponse {
   source?: string;
 }
 
+/** Backend response para análise com todos os campos (incluindo id, timestamps) */
+export interface AnalysisDetailResponse extends AnalysisResponse {
+  id: number;
+  property_id: number;
+  consumption_kwh: number;
+  peak_hour_usage: boolean;
+  high_consumption_hours: number;
+  estimated_monthly_cost: number;
+  status: string;
+  source?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type EfficiencyClassification = "EXCELENTE" | "BOM" | "MEDIANO" | "RUIM" | "CRITICO";
 
 export const CATEGORY_DISPLAY: Record<EfficiencyClassification, string> = {

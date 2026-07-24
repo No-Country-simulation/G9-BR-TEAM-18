@@ -62,7 +62,8 @@ public class AnalysisController {
                 propertyService.listAppliances(property.getId(), userId),
                 request.getConsumptionKwh(),
                 request.getPeakHourUsage(),
-                request.getHighConsumptionHours());
+                request.getHighConsumptionHours(),
+                request.getHighestConsumptionCategory());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(result));
     }
 
@@ -160,6 +161,7 @@ public class AnalysisController {
                 analysis.getCategory(),
                 analysis.getProbability(),
                 analysis.getStatus(),
+                analysis.getSource(),
                 analysis.getRecommendations(),
                 analysis.getCreatedAt(),
                 analysis.getUpdatedAt());
