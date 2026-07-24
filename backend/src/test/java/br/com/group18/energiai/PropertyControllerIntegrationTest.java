@@ -1,6 +1,7 @@
 package br.com.group18.energiai;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import jakarta.servlet.http.Cookie;
@@ -48,37 +49,71 @@ class PropertyControllerIntegrationTest {
     }
 
     @Test
-    void shouldCreatePropertyWhenAuthenticated() throws Exception {
-        String propertyBody =
+    void shouldCreateResidentialProperty() throws Exception {
+        String body =
                 """
             {
-                "alias": "Casa de Campo",
-                "property_type": "RESIDENCIAL",
-                "active": true
+                "alias": "Minha Casa",
+                "property_type": "RESIDENCIAL"
             }
             """;
 
         mockMvc.perform(post("/properties")
                         .cookie(sessionCookie)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(propertyBody))
-                .andExpect(status().isCreated());
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.property_type").value("RESIDENCIAL"));
+    }
+
+    @Test
+    void shouldCreateComercialProperty() throws Exception {
+        String body =
+                """
+            {
+                "alias": "Meu Escritorio",
+                "property_type": "COMERCIAL"
+            }
+            """;
+
+        mockMvc.perform(post("/properties")
+                        .cookie(sessionCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.property_type").value("COMERCIAL"));
+    }
+
+    @Test
+    void shouldRejectInvalidPropertyType() throws Exception {
+        String body =
+                """
+            {
+                "alias": "Teste",
+                "property_type": "Casa"
+            }
+            """;
+
+        mockMvc.perform(post("/properties")
+                        .cookie(sessionCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void shouldReturn401WhenCreatingPropertyWithoutAuth() throws Exception {
-        String propertyBody =
+        String body =
                 """
             {
-                "alias": "Apartamento",
-                "property_type": "RESIDENCIAL",
-                "active": true
+                "alias": "Sem Auth",
+                "property_type": "RESIDENCIAL"
             }
             """;
 
         mockMvc.perform(post("/properties")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(propertyBody))
+                        .content(body))
                 .andExpect(status().isUnauthorized());
     }
 }
