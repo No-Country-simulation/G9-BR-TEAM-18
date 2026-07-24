@@ -30,7 +30,8 @@ Cinco categorias de violações foram encontradas:
 
 O arquivo `cspell.json` importava `@cspell/dict-pt-br/cspell-ext.json`, mas o CI não
 instalava o pacote, causando erro de resolução:
-```
+
+```text
 Failed to resolve configuration file: "@cspell/dict-pt-br/cspell-ext.json"
 ```
 
