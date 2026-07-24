@@ -8,6 +8,7 @@ import br.com.group18.energiai.core.ports.in.GenerateAnalysisUseCase;
 import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
+import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
@@ -31,16 +32,19 @@ public class AnalysisController {
     private final GenerateAnalysisUseCase generateAnalysisUseCase;
     private final AnalysisRepositoryPort analysisRepository;
     private final PropertyService propertyService;
+    private final MlSchemaRegistry mlSchemaRegistry;
     private final double co2EmissionFactor;
 
     public AnalysisController(
             GenerateAnalysisUseCase generateAnalysisUseCase,
             AnalysisRepositoryPort analysisRepository,
             PropertyService propertyService,
+            MlSchemaRegistry mlSchemaRegistry,
             @Value("${CO2_EMISSION_FACTOR:0.096}") double co2EmissionFactor) {
         this.generateAnalysisUseCase = generateAnalysisUseCase;
         this.analysisRepository = analysisRepository;
         this.propertyService = propertyService;
+        this.mlSchemaRegistry = mlSchemaRegistry;
         this.co2EmissionFactor = co2EmissionFactor;
     }
 
@@ -131,6 +135,11 @@ public class AnalysisController {
 
         return ResponseEntity.ok(new DashboardDTO(
                 analyses.size(), averageConsumptionKwh, totalEstimatedCost, totalCo2EmissionKg, monthlyConsumption));
+    }
+
+    @GetMapping("/energy-analysis/categories")
+    public ResponseEntity<List<String>> getCategories() {
+        return ResponseEntity.ok(mlSchemaRegistry.getCategories());
     }
 
     private List<EnergyAnalysis> analysesForUser(Long userId) {
