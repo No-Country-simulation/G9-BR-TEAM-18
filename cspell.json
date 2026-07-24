@@ -91,7 +91,9 @@
     "Dockerfiles",
     "Microsserviços",
     "Usuario",
-    "Autenticacao"
+    "Autenticacao",
+    "ojdbc",
+    "ojdbc11"
   ],
   "ignorePaths": [
     "node_modules",
