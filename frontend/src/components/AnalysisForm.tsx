@@ -5,7 +5,6 @@ import {
   ApiError,
   CATEGORY_COLORS,
   CATEGORY_DISPLAY,
-  HIGHEST_CONSUMPTION_CATEGORIES,
   PROPERTY_TYPES,
 } from "../types";
 import {
@@ -68,20 +67,12 @@ export default function AnalysisForm() {
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  // --- Form state (todos os campos do ML Service) ---
+  // --- Form state (campos destinados ao usuário) ---
   const [form, setForm] = useState({
     property_type: "RESIDENCIAL" as PropertyType,
     consumption_kwh: 300,
     high_consumption_hours: 6,
     peak_hour_usage: false,
-    // Avançados
-    highest_consumption_category: "Outros" as string,
-    refrigeration_watts: 0,
-    heating_watts: 0,
-    air_conditioning_watts: 0,
-    lighting_watts: 0,
   });
 
   const [result, setResult] = useState<AnalysisResponse | null>(null);
@@ -177,18 +168,12 @@ export default function AnalysisForm() {
     };
   }, [selectedAppliances, applianceTypes]);
 
-  // Sincroniza applianceCalc com o formulário (apenas quando aparelhos mudam)
+  // Sincroniza consumo com os aparelhos selecionados
   useEffect(() => {
     if (selectedAppliances.length === 0) return;
-    const ac = applianceCalc;
     setForm((prev) => ({
       ...prev,
-      consumption_kwh: Math.round(ac.consumoMensalKwh),
-      highest_consumption_category: ac.highestConsumptionCategory,
-      refrigeration_watts: ac.refrigerationWatts,
-      heating_watts: ac.heatingWatts,
-      air_conditioning_watts: ac.airConditioningWatts,
-      lighting_watts: ac.lightingWatts,
+      consumption_kwh: Math.round(applianceCalc.consumoMensalKwh),
     }));
   }, [selectedAppliances, applianceCalc]);
 
@@ -491,107 +476,6 @@ export default function AnalysisForm() {
                 análise.
               </p>
             )}
-
-            {/* ============================================ */}
-            {/* SEÇÃO 3: DADOS AVANÇADOS ML                  */}
-            {/* ============================================ */}
-            <div className="advanced-section">
-              <button
-                type="button"
-                className="advanced-toggle"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-              >
-                <I.Settings size={16} />
-                {showAdvanced ? "Ocultar dados avançados" : "Mostrar dados avançados"}
-                {showAdvanced ? <I.ChevronDown size={16} /> : <I.ChevronRight size={16} />}
-              </button>
-
-              {showAdvanced && (
-                <div className="advanced-content">
-                  <p className="field-hint" style={{ marginBottom: "1rem" }}>
-                    Campos compatíveis com o modelo de IA. Normalmente preenchidos automaticamente
-                    quando você adiciona aparelhos.
-                  </p>
-
-                  <div className="form-group">
-                    <label htmlFor="catMaior">
-                      Categoria de maior consumo
-                      {selectedAppliances.length > 0 && <span className="auto-badge">auto</span>}
-                    </label>
-                    <select
-                      id="catMaior"
-                      value={form.highest_consumption_category}
-                      onChange={(e) =>
-                        setForm({ ...form, highest_consumption_category: e.target.value })
-                      }
-                    >
-                      {HIGHEST_CONSUMPTION_CATEGORIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="dist-grid">
-                    <div className="form-group">
-                      <label htmlFor="refrigW">
-                        Potência Refrigeração (W)
-                        {selectedAppliances.length > 0 && <span className="auto-badge">auto</span>}
-                      </label>
-                      <input
-                        id="refrigW"
-                        type="number"
-                        min="0"
-                        value={form.refrigeration_watts}
-                        onChange={(e) => setForm({ ...form, refrigeration_watts: +e.target.value })}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="aquecW">
-                        Potência Aquecimento (W)
-                        {selectedAppliances.length > 0 && <span className="auto-badge">auto</span>}
-                      </label>
-                      <input
-                        id="aquecW"
-                        type="number"
-                        min="0"
-                        value={form.heating_watts}
-                        onChange={(e) => setForm({ ...form, heating_watts: +e.target.value })}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="climatW">
-                        Potência Climatização (W)
-                        {selectedAppliances.length > 0 && <span className="auto-badge">auto</span>}
-                      </label>
-                      <input
-                        id="climatW"
-                        type="number"
-                        min="0"
-                        value={form.air_conditioning_watts}
-                        onChange={(e) =>
-                          setForm({ ...form, air_conditioning_watts: +e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="ilumW">
-                        Potência Iluminação (W)
-                        {selectedAppliances.length > 0 && <span className="auto-badge">auto</span>}
-                      </label>
-                      <input
-                        id="ilumW"
-                        type="number"
-                        min="0"
-                        value={form.lighting_watts}
-                        onChange={(e) => setForm({ ...form, lighting_watts: +e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
               {loading ? (

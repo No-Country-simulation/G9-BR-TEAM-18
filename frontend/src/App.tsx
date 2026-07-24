@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
-import AnalysisPage from "./pages/AnalysisPage";
+
 import ProfilePage from "./pages/ProfilePage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
@@ -50,7 +50,7 @@ export default function App() {
           path="/analysis"
           element={
             <PrivateRoute>
-              <AnalysisPage />
+              <ProfilePage />
             </PrivateRoute>
           }
         />
