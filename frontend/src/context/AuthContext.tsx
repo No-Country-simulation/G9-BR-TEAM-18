@@ -1,32 +1,15 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import type { User } from '../types'
+import { useState, useEffect, useCallback, type ReactNode } from "react"
+import type { User } from "../types"
+import { AuthContext } from "./authContext"
 
-const STORAGE_KEY = 'energiai_user'
-
-interface AuthContextValue {
-  user: User | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
-  resetPassword: (currentPassword: string, newPassword: string) => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue>({
-  user: null,
-  loading: true,
-  login: async () => false,
-  register: async () => {},
-  logout: () => {},
-  resetPassword: async () => {},
-})
+const STORAGE_KEY = "energiai_user"
 
 function restoreSession(): User | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const u: User = JSON.parse(raw)
-      if (u.id && u.name && document.cookie.includes('SESSION_TOKEN=')) {
+      if (u.id && u.name && document.cookie.includes("SESSION_TOKEN=")) {
         return u
       }
     }
@@ -43,61 +26,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+    const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
     const response = await fetch(`${url}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     })
     if (!response.ok) {
       const err = await response.json()
-      throw new Error(err.message ?? 'Erro ao fazer login')
+      throw new Error(err.message ?? "Erro ao fazer login")
     }
     const data = await response.json()
-    const u: User = { id: data.id, name: data.name, email: data.email, passwordResetRequired: data.password_reset_required }
+    const u: User = {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      passwordResetRequired: data.password_reset_required,
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
     setUser(u)
     return data.password_reset_required === true
   }, [])
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
-    const response = await fetch(`${url}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name, email, password }),
-    })
-    if (!response.ok) {
-      const err = await response.json()
-      throw new Error(err.message ?? 'Erro ao cadastrar')
-    }
-    await login(email, password)
-  }, [login])
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+      const response = await fetch(`${url}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name, email, password }),
+      })
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.message ?? "Erro ao cadastrar")
+      }
+      await login(email, password)
+    },
+    [login],
+  )
 
   const logout = useCallback(() => {
-    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
-    fetch(`${url}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {})
-    document.cookie = 'SESSION_TOKEN=; Path=/; Max-Age=0'
+    const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+    fetch(`${url}/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {})
+    document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0"
     localStorage.removeItem(STORAGE_KEY)
     setUser(null)
   }, [])
 
   const resetPassword = useCallback(async (currentPassword: string, newPassword: string) => {
-    const url = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+    const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
     const response = await fetch(`${url}/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     })
     if (!response.ok) {
       const err = await response.json()
-      throw new Error(err.message ?? 'Erro ao redefinir senha')
+      throw new Error(err.message ?? "Erro ao redefinir senha")
     }
     const data = await response.json()
-    const u: User = { id: data.id, name: data.name, email: data.email, passwordResetRequired: false }
+    const u: User = {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      passwordResetRequired: false,
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
     setUser(u)
   }, [])
@@ -107,8 +103,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  return useContext(AuthContext)
 }

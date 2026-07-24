@@ -52,11 +52,4 @@ export default function Logo({ size = 40, className }: LogoProps) {
   )
 }
 
-export function logoFaviconSvg(): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-    <path d="M16,58 A44,44 0 1,1 104,58" stroke="#0A0A0A" stroke-width="5" stroke-linecap="round" fill="none"/>
-    <path d="M22,58 A38,38 0 1,1 98,58" stroke="#29E7CD" stroke-width="3" stroke-linecap="round" fill="none"/>
-    <path d="M80,15 L45,55 L55,55 L35,100 L60,68 L50,68 Z" fill="#C6FF3D" stroke="#0A0A0A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="95" cy="72" r="5" fill="#FF4FA3" stroke="#0A0A0A" stroke-width="3"/>
-  </svg>`
-}
+

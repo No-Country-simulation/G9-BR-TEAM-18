@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { screen, waitFor } from '@testing-library/dom'
 import userEvent from '@testing-library/user-event'
-import { AuthProvider, useAuth } from '../context/AuthContext'
+import { AuthProvider } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import type { ReactNode } from 'react'
 
 const mockFetch = vi.fn()
