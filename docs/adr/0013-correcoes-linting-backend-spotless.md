@@ -1,4 +1,4 @@
-# ADR-0013: Correcoes de Linting no Backend - Spotless/Checkstyle
+# ADR-0013: Correções de Linting no Backend - Spotless/Checkstyle
 
 ## Status
 
@@ -6,21 +6,21 @@ Aceito
 
 ## Contexto
 
-A pipeline de CI do projeto inclui verificacoes obrigatorias de formatacao via Spotless
-(Palantir Java Format) e qualidade via Checkstyle. Apos a implementacao dos cards B020-B023
-e I010, novas violacoes de formatacao foram introduzidas nos arquivos:
+A pipeline de CI do projeto inclui verificações obrigatórias de formatação via Spotless
+(Palantir Java Format) e qualidade via Checkstyle. Após a implementação dos cards B020-B023
+e I010, novas violações de formatação foram introduzidas nos arquivos:
 
-- `AuthController.java` - indentacao do metodo `resetPassword` estava fora do padrao
+- `AuthController.java` - indentação do método `resetPassword` estava fora do padrão
   Palantir (quebra de linha incorreta)
 - `AuthenticationServiceTest.java` - chamadas de `assertThrows` com quebra de linha
   inadequada
 
 O CI `lint-backend` falhou com erro do Spotless, impedindo o merge do PR.
 
-## Decisao
+## Decisão
 
 A equipe decidiu executar `mvn spotless:apply` via Docker (imagem `eclipse-temurin:21-jdk`)
-para corrigir automaticamente todas as violacoes de formatacao, em vez de editar
+para corrigir automaticamente todas as violações de formatação, em vez de editar
 manualmente os arquivos. O comando executado foi:
 
 ```bash
@@ -29,18 +29,18 @@ docker run --rm -v "$(pwd):/app" -w /app \
   ./mvnw spotless:apply
 ```
 
-Nenhuma alteracao de logica foi feita - apenas formatacao.
+Nenhuma alteração de lógica foi feita - apenas formatação.
 
 ## Alternativas consideradas
 
-| Alternativa | Pros | Contras |
+| Alternativa | Prós | Contras |
 |---|---|---|
-| **Spotless:apply via Docker (escolhido)** | Garante mesma JDK do CI, resultado deterministico | Requer Docker instalado |
-| **Edicao manual** | Sem dependencia de ferramentas | Propenso a erro humano; Palantir tem regras de quebra de linha nao intuitivas |
+| **Spotless:apply via Docker (escolhido)** | Garante mesma JDK do CI, resultado determinístico | Requer Docker instalado |
+| **Edição manual** | Sem dependência de ferramentas | Propenso a erro humano; Palantir tem regras de quebra de linha não intuitivas |
 
-## Consequencias
+## Consequências
 
-- **Positivo:** Formatacao 100% consistente com o que o CI espera
-- **Positivo:** Uso do Docker elimina diferencas entre JDK local e do CI
+- **Positivo:** Formatação 100% consistente com o que o CI espera
+- **Positivo:** Uso do Docker elimina diferenças entre JDK local e do CI
 - **Neutro:** Desenvolvedores precisam executar `./mvnw spotless:apply` antes de commitar
-  (ja documentado no AGENTS.md)
+  (já documentado no AGENTS.md)
