@@ -3,6 +3,7 @@ package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AdminResetPasswordRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,6 +118,22 @@ public class AuthController {
             Map<String, Object> body = new HashMap<>();
             body.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+        }
+    }
+
+    @PostMapping("/admin/reset-password/{userId}")
+    public ResponseEntity<?> adminResetPassword(
+            @PathVariable Long userId,
+            @Valid @RequestBody AdminResetPasswordRequestDTO request,
+            HttpServletResponse servletResponse) {
+        try {
+            User user = authenticationService.adminResetPassword(userId, request.getNewPassword());
+            createSession(user, servletResponse);
+            return ResponseEntity.ok(toResponse(user));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
         }
     }
 

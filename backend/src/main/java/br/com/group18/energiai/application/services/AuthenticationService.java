@@ -66,15 +66,28 @@ public class AuthenticationService {
 
         String storedHash = user.getPasswordHash();
         boolean currentValid;
+        String hashType;
         if (isBcryptHash(storedHash)) {
+            hashType = "BCRYPT";
             currentValid = passwordEncoder.matches(currentPassword, storedHash);
         } else {
+            hashType = "SHA256";
             currentValid = verifySha256(currentPassword, storedHash);
         }
+        log.info("resetPassword userId={}: hashType={}, currentValid={}", userId, hashType, currentValid);
         if (!currentValid) {
             throw new IllegalArgumentException("Senha atual inválida");
         }
 
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetRequired(false);
+        return userRepository.save(user);
+    }
+
+    public User adminResetPassword(Long userId, String newPassword) {
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordResetRequired(false);
         return userRepository.save(user);
