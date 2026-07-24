@@ -54,3 +54,7 @@
 | B024 | Backend (Endpoints/Services) - Admin reset password endpoint | #63 | ADR-0019 |
 | B025 | Backend (Endpoints/Services) - Integration tests for password reset and admin reset | #64 | ADR-0019 |
 | I012 | Infraestrutura/Base - ADR-0019 (admin password reset) | #65 | ADR-0019 |
+| I013 | Infraestrutura/Base - ADR-0020 (Anti-Corruption Layer ML) | TBD | ADR-0020 |
+| I014 | Infraestrutura/Base - ADR-0021 (Schema Discovery) | TBD | ADR-0021 |
+| I015 | Infraestrutura/Base - ADR-0022 (Value Objects Eficiência) | TBD | ADR-0022 |
+| I016 | Infraestrutura/Base - ADR-0023 (Contract Testing ML) | TBD | ADR-0023 |

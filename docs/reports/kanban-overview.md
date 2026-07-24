@@ -31,7 +31,16 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 |---|---|---|---|---|
 | Done | 53 | | Backend (B) | 30 |
 | In review | 0 | | Infraestrutura (I) | 14 |
-| In progress | 0 | | Frontend (F) | 7 |
+| In progress | 4 | | Frontend (F) | 7 |
 | Ready | 0 | | Banco de Dados (M) | 4 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **53** | | **Total** | **57** |
+| **Total** | **57** | | **Total** | **57** |
+
+## Novos cards em In Progress (22/07/2026)
+
+| ID | Título | ADR |
+|---|---|---|
+| I013 | Anti-Corruption Layer para integração ML | ADR-0020 |
+| I014 | Schema Discovery dinâmico para contrato ML | ADR-0021 |
+| I015 | Value Objects de domínio para categorias de eficiência | ADR-0022 |
+| I016 | Estratégia de testes de contrato para integração ML | ADR-0023 |
