@@ -36,11 +36,27 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Backlog | 0 | | Queries/Views (Q) | 2 |
 | **Total** | **57** | | **Total** | **57** |
 
-## Novos cards em In Progress (22/07/2026)
+## Movimentações (24/07/2026)
 
-| ID | Título | ADR |
+### Done → finalizados
+
+| ID | Título |
+|---|---|
+| B028 | ACL: MlEnvelope, MlResult, AnalysisMapper |
+| B029 | Schema Discovery: MlSchemaRegistry, endpoint categorias |
+| B030 | EfficiencyCategory Value Object |
+| B031 | Contract Tests para integração ML |
+| B032 | Refactor: remover hardcoded, config via env vars |
+
+### In Progress — novos cards
+
+| ID | Título | Issue |
 |---|---|---|
-| I013 | Anti-Corruption Layer para integração ML | ADR-0020 |
-| I014 | Schema Discovery dinâmico para contrato ML | ADR-0021 |
-| I015 | Value Objects de domínio para categorias de eficiência | ADR-0022 |
-| I016 | Estratégia de testes de contrato para integração ML | ADR-0023 |
+| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) | - |
+| B034 | Endpoint batch de aparelhos | - |
+| B035 | Expandir Property com novos campos (address, residents, area) | - |
+| B036 | Endpoint de simulação de análise | - |
+| B037 | ML Service: endpoint /predict/simulate | - |
+| F008 | Unificar páginas de análise e remover dados avançados | - |
+| F009 | Reformular Dashboard com propósito (meta, simulação, progresso) | - |
+| I017 | Atualizar contrato-api.md e glossario.md | - |

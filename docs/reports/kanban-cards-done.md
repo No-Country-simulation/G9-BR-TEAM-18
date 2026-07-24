@@ -58,3 +58,8 @@
 | I014 | Infraestrutura/Base - ADR-0021 (Schema Discovery) | #69 | ADR-0021 |
 | I015 | Infraestrutura/Base - ADR-0022 (Value Objects Eficiência) | #67 | ADR-0022 |
 | I016 | Infraestrutura/Base - ADR-0023 (Contract Testing ML) | #66 | ADR-0023 |
+| B028 | Backend (Endpoints/Services) - ACL: MlEnvelope, MlResult, AnalysisMapper | - | ADR-0020 |
+| B029 | Backend (Endpoints/Services) - Schema Discovery: MlSchemaRegistry, endpoint categorias | - | ADR-0021 |
+| B030 | Backend (Endpoints/Services) - EfficiencyCategory Value Object | - | ADR-0022 |
+| B031 | Backend (Endpoints/Services) - Contract Tests para integração ML | - | ADR-0023 |
+| B032 | Backend (Endpoints/Services) - Refactor: remover hardcoded, config via env vars | - | ADR-0020 |
