@@ -52,11 +52,11 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Issue |
 |---|---|---|
-| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) | - |
-| B034 | Endpoint batch de aparelhos | - |
-| B035 | Expandir Property com novos campos (address, residents, area) | - |
-| B036 | Endpoint de simulação de análise | - |
-| B037 | ML Service: endpoint /predict/simulate | - |
-| F008 | Unificar páginas de análise e remover dados avançados | - |
-| F009 | Reformular Dashboard com propósito (meta, simulação, progresso) | - |
-| I017 | Atualizar contrato-api.md e glossario.md | - |
+| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) | #71 |
+| B034 | Endpoint batch de aparelhos | #72 |
+| B035 | Expandir Property com novos campos (address, residents, area) | #73 |
+| B036 | Endpoint de simulação de análise | #74 |
+| B037 | ML Service: endpoint /predict/simulate | #75 |
+| F008 | Unificar páginas de análise e remover dados avançados | #76 |
+| F009 | Reformular Dashboard com propósito (meta, simulação, progresso) | #77 |
+| I017 | Atualizar contrato-api.md e glossario.md | #78 |
