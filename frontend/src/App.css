@@ -868,8 +868,10 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  min-width: 36px;
+  min-height: 36px;
+  width: 36px;
+  height: 36px;
   border: 2px solid var(--ink);
   border-radius: var(--radius-xs);
   background: var(--bg-surface);
@@ -1748,6 +1750,12 @@ body::after {
   position: relative;
 }
 
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.5rem;
+  }
+}
+
 .auth-header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -2025,6 +2033,12 @@ body::after {
   border-radius: var(--radius);
   padding: 1.5rem;
   box-shadow: var(--shadow-hard-sm);
+}
+
+@media (max-width: 480px) {
+  .dash-chart {
+    padding: 0.75rem;
+  }
 }
 
 .dash-chart h3 {
