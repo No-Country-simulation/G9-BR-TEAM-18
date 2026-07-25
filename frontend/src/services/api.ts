@@ -29,8 +29,6 @@ async function authFetch(path: string, options?: RequestInit): Promise<Response>
   return response;
 }
 
-// --- Auth ---
-
 export async function login(email: string, password: string): Promise<void> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
@@ -59,22 +57,32 @@ export async function register(name: string, email: string, password: string): P
   }
 }
 
-// --- Properties ---
-
 export interface PropertyResponse {
   id: number;
   alias: string;
   property_type: string;
   active: boolean;
+  address?: string;
+  resident_count?: number;
+  area_sqm?: number;
 }
 
 export async function createProperty(
   alias: string,
   propertyType: string,
+  address?: string,
+  residentCount?: number,
+  areaSqm?: number,
 ): Promise<PropertyResponse> {
   const response = await authFetch("/properties", {
     method: "POST",
-    body: JSON.stringify({ alias, property_type: propertyType }),
+    body: JSON.stringify({
+      alias,
+      property_type: propertyType,
+      address: address || null,
+      resident_count: residentCount || null,
+      area_sqm: areaSqm || null,
+    }),
   });
 
   if (!response.ok) {
@@ -115,10 +123,20 @@ export async function updateProperty(
   alias: string,
   propertyType: string,
   active: boolean,
+  address?: string,
+  residentCount?: number,
+  areaSqm?: number,
 ): Promise<PropertyResponse> {
   const response = await authFetch(`/properties/${propertyId}`, {
     method: "PUT",
-    body: JSON.stringify({ alias, property_type: propertyType, active }),
+    body: JSON.stringify({
+      alias,
+      property_type: propertyType,
+      active,
+      address: address || null,
+      resident_count: residentCount || null,
+      area_sqm: areaSqm || null,
+    }),
   });
   if (!response.ok) {
     const err: ErrorResponse = await response.json();
@@ -164,13 +182,9 @@ export async function removeApplianceFromProperty(
   }
 }
 
-/**
- * Atualiza todos os aparelhos de uma propriedade em uma única chamada.
- * Remove aparelhos não listados, adiciona/atualiza os informados.
- */
 export async function batchUpdateAppliances(
   propertyId: number,
-  items: Array<{ applianceId: number; quantity: number }>,
+  items: Array<{ appliance_id: number; quantity: number }>,
 ): Promise<PropertyAppliance[]> {
   const response = await authFetch(`/properties/${propertyId}/appliances/batch`, {
     method: "PUT",
@@ -183,22 +197,25 @@ export async function batchUpdateAppliances(
   return response.json();
 }
 
-// --- Analysis ---
-
 export async function analyzeEnergy(
   propertyId: number,
   consumptionKwh: number,
   peakHourUsage: boolean,
   highConsumptionHours: number,
+  highestConsumptionCategory?: string,
 ): Promise<AnalysisResponse> {
+  const body: Record<string, unknown> = {
+    property_id: propertyId,
+    consumption_kwh: consumptionKwh,
+    peak_hour_usage: peakHourUsage,
+    high_consumption_hours: highConsumptionHours,
+  };
+  if (highestConsumptionCategory) {
+    body.highest_consumption_category = highestConsumptionCategory;
+  }
   const response = await authFetch("/energy-analysis", {
     method: "POST",
-    body: JSON.stringify({
-      property_id: propertyId,
-      consumption_kwh: consumptionKwh,
-      peak_hour_usage: peakHourUsage,
-      high_consumption_hours: highConsumptionHours,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -244,8 +261,6 @@ export async function fetchDashboard(): Promise<DashboardData> {
     ),
   };
 }
-
-// --- Appliances ---
 
 export async function listAppliances(): Promise<ApplianceType[]> {
   try {

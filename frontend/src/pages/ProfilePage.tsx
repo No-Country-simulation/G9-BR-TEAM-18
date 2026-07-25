@@ -35,7 +35,6 @@ const CATEGORIES: Record<string, { label: string; icon: string; color: string }>
   Iluminacao: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
   Eletrodomesticos: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
   Servicos: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
-  Outros: { label: "Outros", icon: "Box", color: "#6b7280" },
 };
 
 const CATEGORY_ORDER = [
@@ -45,7 +44,6 @@ const CATEGORY_ORDER = [
   "Iluminacao",
   "Eletrodomesticos",
   "Servicos",
-  "Outros",
 ];
 
 const REGULARITY_KEY = "energiai_regularity";
@@ -184,8 +182,13 @@ export default function ProfilePage() {
 
   const applianceCalc = useMemo(() => {
     if (selectedAppliances.length === 0) {
-      return { totalEquipment: 0, monthlyConsumptionKwh: 0 };
+      return {
+        totalEquipment: 0,
+        monthlyConsumptionKwh: 0,
+        highestConsumptionCategory: undefined,
+      };
     }
+    const aggregated: Record<string, number> = {};
     let totalConsumption = 0;
     let totalQty = 0;
     for (const item of selectedAppliances) {
@@ -194,8 +197,23 @@ export default function ProfilePage() {
       const dailyKwh = (appliance.powerWatts * appliance.dailyUsageHours * item.quantity) / 1000;
       totalConsumption += dailyKwh * 30;
       totalQty += item.quantity;
+      const totalW = appliance.powerWatts * item.quantity;
+      const cat = appliance.mlCategory;
+      aggregated[cat] = (aggregated[cat] ?? 0) + totalW;
     }
-    return { totalEquipment: totalQty, monthlyConsumptionKwh: totalConsumption };
+    let highestCat = "Outros";
+    let maxValue = -1;
+    for (const [cat, val] of Object.entries(aggregated)) {
+      if (val > maxValue) {
+        maxValue = val;
+        highestCat = cat;
+      }
+    }
+    return {
+      totalEquipment: totalQty,
+      monthlyConsumptionKwh: totalConsumption,
+      highestConsumptionCategory: highestCat,
+    };
   }, [selectedAppliances, applianceTypes]);
 
   async function handleSave() {
@@ -244,10 +262,14 @@ export default function ProfilePage() {
     setAnalyzing(true);
     setError(null);
     setResult(null);
-    try {
-      const consumptionKwh =
-        selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
-      const res = await analyzeEnergy(property.id, consumptionKwh, false, 6);
+    try {      const consumptionKwh = selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
+      const res = await analyzeEnergy(
+        property.id,
+        consumptionKwh,
+        propertyType === "COMERCIAL",
+        Math.max(4, Math.round(consumptionKwh / 100)),
+        applianceCalc.highestConsumptionCategory,
+      );
       setResult(res);
       setLastAnalysis({
         category: res.category,

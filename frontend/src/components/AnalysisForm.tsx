@@ -15,28 +15,24 @@ import {
 } from "../services/api";
 import { APPLIANCE_FALLBACK } from "../data/appliances";
 
-const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
-  Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
-  Climatizacao: { label: "Climatização", icone: "Wind", cor: "#06b6d4" },
-  Tecnologia: { label: "Tecnologia", icone: "Monitor", cor: "#8b5cf6" },
-  Iluminacao: { label: "Iluminação", icone: "Lightbulb", cor: "#f59e0b" },
-  Eletrodomesticos: { label: "Eletrodomésticos", icone: "Home", cor: "#ec4899" },
-  Servicos: { label: "Serviços", icone: "Wrench", cor: "#14b8a6" },
-  Outros: { label: "Outros", icone: "Box", cor: "#6b7280" },
+const CATEGORIES: Record<string, { label: string; icon: string; color: string }> = {
+  Refrigeracao: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
+  Climatizacao: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
+  Tecnologia: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
+  Iluminacao: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
+  Eletrodomesticos: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
+  Servicos: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
 };
 
-const ORDEM_CATEGORIAS = [
+const CATEGORY_ORDER = [
   "Refrigeracao",
   "Climatizacao",
   "Tecnologia",
   "Iluminacao",
   "Eletrodomesticos",
   "Servicos",
-  "Outros",
 ];
 
-// Fallback local com todos os tipos de aparelho (funciona mesmo sem backend)
-/** Retorna o componente Lucide correspondente ao nome do ícone */
 function LucideIcon({
   name,
   size = 16,
@@ -61,13 +57,13 @@ const FIELD_NAMES: Record<string, string> = {
 };
 
 export default function AnalysisForm() {
-  // --- Appliance types (fetch do backend) ---
+
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
-  // --- Form state (campos destinados ao usuário) ---
+
   const [form, setForm] = useState({
     property_type: "RESIDENCIAL" as PropertyType,
     consumption_kwh: 300,
@@ -80,7 +76,7 @@ export default function AnalysisForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Busca termo
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const [usingFallback, setUsingFallback] = useState(true);
@@ -96,7 +92,7 @@ export default function AnalysisForm() {
       });
   }, []);
 
-  // Aparelhos filtrados pela busca
+
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
     const term = searchTerm
@@ -113,13 +109,13 @@ export default function AnalysisForm() {
     );
   }, [applianceTypes, searchTerm]);
 
-  // --- Cálculo único e consolidado dos aparelhos selecionados ---
+
   const applianceCalc = useMemo(() => {
     if (selectedAppliances.length === 0) {
       return {
-        totalEquipamentos: 0,
-        consumoMensalKwh: 0,
-        highestConsumptionCategory: "Outros",
+        totalEquipment: 0,
+        monthlyConsumptionKwh: 0,
+        highestConsumptionCategory: undefined,
         refrigerationWatts: 0,
         heatingWatts: 0,
         airConditioningWatts: 0,
@@ -127,57 +123,57 @@ export default function AnalysisForm() {
       };
     }
 
-    const agregado: Record<string, number> = {};
-    let totalConsumo = 0;
+    const aggregated: Record<string, number> = {};
+    let totalConsumption = 0;
     let totalQty = 0;
 
     for (const item of selectedAppliances) {
-      const tipo = applianceTypes.find((t) => t.id === item.type);
-      if (!tipo) continue;
-      const dailyKwh = (tipo.powerWatts * tipo.dailyUsageHours * item.quantity) / 1000;
-      totalConsumo += dailyKwh * 30;
+      const appliance = applianceTypes.find((t) => t.id === item.type);
+      if (!appliance) continue;
+      const dailyKwh = (appliance.powerWatts * appliance.dailyUsageHours * item.quantity) / 1000;
+      totalConsumption += dailyKwh * 30;
       totalQty += item.quantity;
-      const totalW = tipo.powerWatts * item.quantity;
-      const cat = tipo.mlCategory;
-      agregado[cat] = (agregado[cat] ?? 0) + totalW;
-      if (tipo.distributionField !== "NONE") {
-        const distKey = `dist_${tipo.distributionField}`;
-        agregado[distKey] = (agregado[distKey] ?? 0) + totalW;
+      const totalW = appliance.powerWatts * item.quantity;
+      const cat = appliance.mlCategory;
+      aggregated[cat] = (aggregated[cat] ?? 0) + totalW;
+      if (appliance.distributionField !== "NONE") {
+        const distKey = `dist_${appliance.distributionField}`;
+        aggregated[distKey] = (aggregated[distKey] ?? 0) + totalW;
       }
     }
 
-    // Categoria de maior consumo (sem acentos, consistente com o modelo ML)
-    let maiorCat = "Outros";
-    let maiorValor = -1;
-    for (const [cat, val] of Object.entries(agregado)) {
+
+    let highestCat = "Outros";
+    let maxValue = -1;
+    for (const [cat, val] of Object.entries(aggregated)) {
       if (cat.startsWith("dist_")) continue;
-      if (val > maiorValor) {
-        maiorValor = val;
-        maiorCat = cat;
+      if (val > maxValue) {
+        maxValue = val;
+        highestCat = cat;
       }
     }
 
     return {
-      totalEquipamentos: totalQty,
-      consumoMensalKwh: totalConsumo,
-      highestConsumptionCategory: maiorCat,
-      refrigerationWatts: agregado["dist_REFRIGERATION_WATTS"] ?? 0,
-      heatingWatts: agregado["dist_HEATING_WATTS"] ?? 0,
-      airConditioningWatts: agregado["dist_AIR_CONDITIONING_WATTS"] ?? 0,
-      lightingWatts: agregado["dist_LIGHTING_WATTS"] ?? 0,
+      totalEquipment: totalQty,
+      monthlyConsumptionKwh: totalConsumption,
+      highestConsumptionCategory: highestCat,
+      refrigerationWatts: aggregated["dist_REFRIGERATION_WATTS"] ?? 0,
+      heatingWatts: aggregated["dist_HEATING_WATTS"] ?? 0,
+      airConditioningWatts: aggregated["dist_AIR_CONDITIONING_WATTS"] ?? 0,
+      lightingWatts: aggregated["dist_LIGHTING_WATTS"] ?? 0,
     };
   }, [selectedAppliances, applianceTypes]);
 
-  // Sincroniza consumo com os aparelhos selecionados
+
   useEffect(() => {
     if (selectedAppliances.length === 0) return;
     setForm((prev) => ({
       ...prev,
-      consumption_kwh: Math.round(applianceCalc.consumoMensalKwh),
+      consumption_kwh: Math.round(applianceCalc.monthlyConsumptionKwh),
     }));
   }, [selectedAppliances, applianceCalc]);
 
-  // --- Handlers ---
+
   function toggleCategory(cat: string) {
     setOpenCategories((prev) => {
       const next = new Set(prev);
@@ -189,8 +185,8 @@ export default function AnalysisForm() {
 
   function addAppliance(id: string) {
     setSelectedAppliances((prev) => {
-      const existente = prev.find((a) => a.type === id);
-      if (existente) {
+      const existing = prev.find((a) => a.type === id);
+      if (existing) {
         return prev.map((a) => (a.type === id ? { ...a, quantity: a.quantity + 1 } : a));
       }
       return [...prev, { type: id, quantity: 1 }];
@@ -224,21 +220,22 @@ export default function AnalysisForm() {
 
       if (!usingFallback && selectedAppliances.length > 0) {
         for (const item of selectedAppliances) {
-          const tipo = applianceTypes.find((t) => t.id === item.type);
-          if (tipo?.backendId) {
-            await addApplianceToProperty(propId, tipo.backendId, item.quantity);
+          const appliance = applianceTypes.find((t) => t.id === item.type);
+          if (appliance?.backendId) {
+            await addApplianceToProperty(propId, appliance.backendId, item.quantity);
           }
         }
       }
 
       const consumptionKwh =
-        selectedAppliances.length > 0 ? applianceCalc.consumoMensalKwh : form.consumption_kwh;
+        selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : form.consumption_kwh;
 
       const res = await analyzeEnergy(
         propId,
         consumptionKwh,
         form.peak_hour_usage,
         form.high_consumption_hours,
+        applianceCalc.highestConsumptionCategory,
       );
       setResult(res);
     } catch (err) {
@@ -266,9 +263,9 @@ export default function AnalysisForm() {
 
         <div className="demo-grid">
           <form onSubmit={handleSubmit} className="demo-form">
-            {/* ============================================ */}
-            {/* SEÇÃO 1: DADOS BÁSICOS                      */}
-            {/* ============================================ */}
+
+
+
             <h3 className="section-title">Dados do Imóvel</h3>
 
             <div className="form-group">
@@ -333,14 +330,14 @@ export default function AnalysisForm() {
               </label>
             </div>
 
-            {/* ============================================ */}
-            {/* SEÇÃO 2: SEUS APARELHOS                      */}
-            {/* ============================================ */}
+
+
+
             <h3 className="section-title">
               Seus Aparelhos
               {selectedAppliances.length > 0 && (
                 <span className="appliance-count-badge">
-                  {applianceCalc.totalEquipamentos} equip.
+                  {applianceCalc.totalEquipment} equip.
                 </span>
               )}
             </h3>
@@ -348,7 +345,7 @@ export default function AnalysisForm() {
               Adicione exatamente quais aparelhos você possui e a quantidade de cada um.
             </p>
 
-            {/* Busca */}
+
             <div className="appliance-search">
               <I.Search size={16} className="search-icon" />
               <input
@@ -365,9 +362,9 @@ export default function AnalysisForm() {
               )}
             </div>
 
-            {/* Catálogo */}
+
             <div className="appliance-catalog">
-              {ORDEM_CATEGORIAS.map((cat) => {
+              {CATEGORY_ORDER.map((cat) => {
                 const catInfo = CATEGORIES[cat];
                 const appliances = appliancesByCategory(cat);
                 if (appliances.length === 0) return null;
@@ -378,10 +375,10 @@ export default function AnalysisForm() {
                       type="button"
                       className="appliance-category-header"
                       onClick={() => toggleCategory(cat)}
-                      style={{ "--cat-color": catInfo.cor } as React.CSSProperties}
+                      style={{ "--cat-color": catInfo.color } as React.CSSProperties}
                     >
                       <span className="category-icon">
-                        <LucideIcon name={catInfo.icone} size={18} />
+                        <LucideIcon name={catInfo.icon} size={18} />
                       </span>
                       <span className="category-label">{catInfo.label}</span>
                       <span className="category-count">{appliances.length}</span>
@@ -415,7 +412,7 @@ export default function AnalysisForm() {
               })}
             </div>
 
-            {/* Lista de selecionados */}
+
             {selectedAppliances.length > 0 ? (
               <div className="selected-appliances">
                 <h4>Aparelhos adicionados</h4>
@@ -456,16 +453,16 @@ export default function AnalysisForm() {
                     );
                   })}
                 </div>
-                {/* Resumo */}
+
                 <div className="appliance-summary">
                   <div className="summary-stat">
                     <span className="summary-label">Equipamentos</span>
-                    <span className="summary-value">{applianceCalc.totalEquipamentos}</span>
+                    <span className="summary-value">{applianceCalc.totalEquipment}</span>
                   </div>
                   <div className="summary-stat">
                     <span className="summary-label">Consumo estimado</span>
                     <span className="summary-value">
-                      {applianceCalc.consumoMensalKwh.toFixed(0)} kWh/mês
+                      {applianceCalc.monthlyConsumptionKwh.toFixed(0)} kWh/mês
                     </span>
                   </div>
                 </div>
@@ -489,9 +486,9 @@ export default function AnalysisForm() {
             </button>
           </form>
 
-          {/* ============================================ */}
-          {/* RESULTADO                                     */}
-          {/* ============================================ */}
+
+
+
           <div className="demo-result">
             {loading && (
               <div className="result-placeholder">
