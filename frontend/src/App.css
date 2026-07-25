@@ -168,6 +168,14 @@ body::after {
   pointer-events: none;
 }
 
+/* Keyboard focus */
+
+:focus-visible {
+  outline: 3px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
 /* ─── Navbar ─── */
 
 .navbar {
