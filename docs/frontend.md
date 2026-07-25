@@ -1,0 +1,223 @@
+# Frontend - Arquitetura e Componentes
+
+Documentação da interface web React com TypeScript, Vite, React Router, Recharts e Lucide.
+
+## Índice
+
+- [Stack Tecnológica](#stack-tecnológica)
+- [Estrutura de Diretórios](#estrutura-de-diretórios)
+- [Roteamento](#roteamento)
+- [Páginas](#páginas)
+- [Componentes Compartilhados](#componentes-compartilhados)
+- [Fluxo de Autenticação](#fluxo-de-autenticação)
+- [Camada de Serviços (API)](#camada-de-serviços-api)
+- [Tipos e Constantes](#tipos-e-constantes)
+- [Tema](#tema)
+- [Testes](#testes)
+
+---
+
+## Stack Tecnológica
+
+| Tecnologia | Versão | Função |
+|---|---|---|
+| React | 19 | Biblioteca de UI |
+| TypeScript | ~5.7 | Tipagem estática |
+| Vite | ~6 | Bundler e dev server |
+| React Router | 7 | Roteamento SPA |
+| Recharts | ~2 | Gráficos (Dashboard) |
+| Lucide React | ~0.47 | Ícones |
+| Vitest | ~3 | Test runner |
+| Testing Library | ~16 | Testes de componentes |
+
+## Estrutura de Diretórios
+
+```
+frontend/src/
+├── components/        # Componentes reutilizáveis
+│   ├── AnalysisForm.tsx    # Formulário principal de análise
+│   ├── Navbar.tsx          # Barra de navegação superior
+│   ├── Footer.tsx          # Rodapé
+│   ├── Hero.tsx            # Seção hero da landing page
+│   ├── FeatureCards.tsx    # Cards de funcionalidades
+│   ├── HowItWorks.tsx      # Passo a passo do funcionamento
+│   ├── TechStack.tsx       # Exibição da stack tecnológica
+│   ├── Logo.tsx            # Componente do logotipo
+│   ├── PrivateRoute.tsx    # Guard de autenticação
+│   └── ScrollToTop.tsx     # Botão flutuante de scroll ao topo
+├── context/           # Contextos React
+│   ├── AuthContext.tsx      # Provedor de autenticação
+│   ├── authContext.ts       # Definição do contexto de auth
+│   ├── useAuth.ts          # Hook de acesso ao contexto de auth
+│   ├── ThemeContext.tsx     # Provedor de tema (dark/light)
+│   ├── themeContext.ts      # Definição do contexto de tema
+│   └── useTheme.ts         # Hook de acesso ao contexto de tema
+├── data/              # Dados estáticos
+│   └── appliances.ts       # Catálogo fallback de aparelhos
+├── pages/             # Componentes de página (roteadas)
+│   ├── Home.tsx            # Landing page
+│   ├── Login.tsx           # Login
+│   ├── Register.tsx        # Cadastro
+│   ├── Dashboard.tsx       # Dashboard com métricas e gráficos
+│   ├── ProfilePage.tsx     # Perfil do usuário + análise
+│   ├── History.tsx         # Histórico de análises
+│   └── ResetPasswordPage.tsx  # Redefinição de senha
+├── services/          # Comunicação com o backend
+│   └── api.ts              # Todas as chamadas HTTP
+├── types/             # Tipos e constantes
+│   └── index.ts            # Interfaces, tipos, constantes de UI
+├── test/              # Testes unitários
+│   ├── setup.ts
+│   ├── api.test.ts
+│   ├── AuthContext.test.tsx
+│   ├── PrivateRoute.test.tsx
+│   ├── ResetPasswordPage.test.tsx
+│   ├── demo.test.ts
+│   └── types.test.ts
+├── App.tsx            # Componente raiz com roteamento
+├── App.css            # Estilos globais
+└── main.tsx           # Entry point
+```
+
+## Roteamento
+
+Definido em `App.tsx` com React Router v7:
+
+| Caminho | Página | Acesso |
+|---|---|---|
+| `/` | Home (landing page) | Público |
+| `/register` | Register | Público |
+| `/login` | Login | Público |
+| `/reset-password` | ResetPasswordPage | Autenticado |
+| `/profile` | ProfilePage | Autenticado |
+| `/history` | History | Autenticado |
+| `/dashboard` | Dashboard | Autenticado |
+
+Todas as rotas autenticadas são protegidas pelo componente `PrivateRoute`.
+
+## Páginas
+
+### Home
+Landing page pública composta por:
+- **Hero**: Chamada principal com botão CTA para análise
+- **FeatureCards**: Três cards (Classificação ML, Recomendações Inteligentes, Estimativa Financeira)
+- **HowItWorks**: Fluxo em 4 passos (cadastro, coleta, classificação, recomendações)
+- **AnalysisForm**: Formulário de análise energética (simplificado, sem necessidade de login)
+- **TechStack**: Exibição da stack (React, Spring Boot, Python/ML)
+- **Footer**: Links e créditos
+
+### ProfilePage
+Página autenticada que concentra:
+- Dados do imóvel (tipo, endereço, moradores, área)
+- Gerenciamento de aparelhos (catálogo, busca, seleção por categoria, batch update)
+- Regularidade da análise (instantânea, diária, semanal, mensal)
+- Análise do momento (consumo, categoria, recomendações)
+- Última análise armazenada no perfil
+
+### Dashboard
+Página autenticada com métricas agregadas:
+- Total de análises, média de consumo, custo total, emissão de CO₂
+- Gráfico de consumo mensal (Recharts BarChart)
+- Indicador de tendência (melhorou/piorou)
+- Progresso entre categorias ao longo do tempo
+- Simulação de economia (redução de X kWh → economia em R$)
+- Atalhos para nova análise e histórico
+
+### History
+Página autenticada que lista todas as análises realizadas.
+
+### Login / Register
+Formulários de autenticação com validação e exibição de erros de campo.
+
+### ResetPasswordPage
+Página para redefinição de senha (após login com `passwordResetRequired: true`).
+
+## Componentes Compartilhados
+
+| Componente | Função |
+|---|---|
+| `Navbar` | Navegação superior com links condicionais (logado vs. anônimo), alternador de tema, efeito de digitação |
+| `Footer` | Rodapé com links de navegação e documentação |
+| `PrivateRoute` | Guard de rota que redireciona para `/login` se não autenticado |
+| `ScrollToTop` | Botão flutuante que aparece ao scroll abaixo de 300px |
+| `AnalysisForm` | Formulário reutilizável de análise (usado na Home) |
+| `Hero` | Seção de destaque da landing page |
+| `Logo` | Renderização do logotipo EnergiIA |
+
+## Fluxo de Autenticação
+
+1. **Registro**: `POST /auth/register` → cria usuário, inicia sessão (cookie `SESSION_TOKEN`)
+2. **Login**: `POST /auth/login` → valida credenciais, retorna cookie de sessão
+3. **Sessão**: O cookie `SESSION_TOKEN` (httpOnly) é enviado automaticamente pelo navegador
+4. **Restauração**: Ao recarregar a página, `AuthContext` verifica se o cookie existe e restaura o usuário do `localStorage`
+5. **Logout**: `POST /auth/logout` → invalida token, limpa cookie e `localStorage`
+6. **Redefinição de senha**: Se o backend retornar `passwordResetRequired: true`, o usuário é redirecionado para `/reset-password`
+
+O `AuthContext` expõe o hook `useAuth()` com:
+- `user: User | null` - dados do usuário logado
+- `loading: boolean` - estado de carregamento inicial
+- `login(email, password): Promise<boolean>` - retorna `true` se reset de senha for necessário
+- `register(name, email, password): Promise<void>`
+- `logout(): void`
+- `resetPassword(currentPassword, newPassword): Promise<void>`
+
+## Camada de Serviços (API)
+
+Todas as chamadas HTTP estão centralizadas em `services/api.ts`. A função `authFetch()` adiciona automaticamente o cabeçalho `Content-Type` e `credentials: "include"` para envio do cookie de sessão.
+
+Funções exportadas:
+
+| Função | Endpoint | Descrição |
+|---|---|---|
+| `login()` | `POST /auth/login` | Autenticação |
+| `register()` | `POST /auth/register` | Cadastro |
+| `createProperty()` | `POST /properties` | Criar imóvel |
+| `listProperties()` | `GET /properties` | Listar imóveis |
+| `updateProperty()` | `PUT /properties/{id}` | Atualizar imóvel |
+| `addApplianceToProperty()` | `POST /properties/{id}/appliances` | Adicionar aparelho |
+| `batchUpdateAppliances()` | `PUT /properties/{id}/appliances/batch` | Atualizar lote de aparelhos |
+| `listPropertyAppliances()` | `GET /properties/{id}/appliances` | Listar aparelhos do imóvel |
+| `listAppliances()` | `GET /appliances` | Catálogo de aparelhos |
+| `analyzeEnergy()` | `POST /energy-analysis` | Executar análise |
+| `listAnalyses()` | `GET /analyses` | Histórico de análises |
+| `fetchDashboard()` | `GET /dashboard` | Dados do dashboard |
+
+## Tipos e Constantes
+
+Centralizados em `types/index.ts`:
+
+- **Interfaces de domínio**: `User`, `AnalysisRequest`, `AnalysisResponse`, `AnalysisHistory`, `DashboardData`
+- **Tipos de dados**: `PropertyType` (`RESIDENCIAL` | `COMERCIAL`), `Regularity`, `HighestConsumptionCategory`
+- **Tipos de aparelho**: `ApplianceType`, `ApplianceItem`, `PropertyAppliance`
+- **Constantes de UI**: `CATEGORY_COLORS`, `CATEGORY_DISPLAY`, `PROPERTY_TYPES`, `REGULARITY_OPTIONS`
+- **Classe de erro**: `ApiError` com suporte a `fields` para erros de validação
+
+## Tema
+
+Gerenciado pelo `ThemeContext`, suporta dois temas:
+
+| Tema | Descrição |
+|---|---|
+| Dark (padrão) | Fundo escuro com acentos neon |
+| Light | Fundo claro com cores adaptadas |
+
+A preferência é persistida em `localStorage` (chave `energiai-theme`) e respeita `prefers-color-scheme` na inicialização.
+
+## Testes
+
+Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
+
+| Arquivo | O que testa |
+|---|---|
+| `api.test.ts` | Chamadas HTTP (analyzeEnergy, login, register, listProperties, CRUD de aparelhos) |
+| `AuthContext.test.tsx` | Fluxo de autenticação (login, registro, logout, reset de senha) |
+| `PrivateRoute.test.tsx` | Proteção de rotas (autenticado/não autenticado/reset pendente) |
+| `ResetPasswordPage.test.tsx` | Validação de formulário de redefinição de senha |
+| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegacao) |
+| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validacao, erros, navegacao) |
+| `Navbar.test.tsx` | Testes da barra de navegacao (6 testes: estados autenticado/anonimo) |
+| `types.test.ts` | Constantes de UI e classe ApiError |
+
+---
+
+> **Nota:** Consulte o [design system](./modulos/design-system.md) para diretrizes visuais e o [contrato de API](./contrato-api.md) para definição detalhada dos endpoints.

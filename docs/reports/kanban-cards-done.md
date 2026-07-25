@@ -63,3 +63,11 @@
 | B030 | Backend (Endpoints/Services) - EfficiencyCategory Value Object | - | ADR-0022 |
 | B031 | Backend (Endpoints/Services) - Contract Tests para integração ML | - | ADR-0023 |
 | B032 | Backend (Endpoints/Services) - Refactor: remover hardcoded, config via env vars | - | ADR-0020 |
+| F028 | Frontend (Telas/Componentes) - Alinhar catalogo de aparelhos com cobertura ML (PPH) | #83 | ADR-0024 |
+| F029 | Frontend (Telas/Componentes) - Corrigir property_type e highestConsumptionCategory | #84 | ADR-0024 |
+| B033 | Backend (Endpoints/Services) - V9 migration: remover aparelhos sem cobertura PPH | - | ADR-0024 |
+| F030 | Frontend (Telas/Componentes) - Remover dead code (updateApplianceQuantity, demo.test.ts) | - | - |
+| F031 | Frontend (Telas/Componentes) - Adicionar testes: Login, Register, Navbar (19 testes) | - | - |
+| B034 | Backend (Endpoints/Services) - Adicionar testes: PropertyServiceExtended (13), AnalysisMapperExtended (13) | - | - |
+| F032 | Frontend (Telas/Componentes) - Corrigir createProperty test e remover demo.test.ts | - | - |
+| I018 | Infraestrutura/Base - Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |

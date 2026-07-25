@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 53 | | Backend (B) | 30 |
-| In review | 0 | | Infraestrutura (I) | 14 |
-| In progress | 4 | | Frontend (F) | 7 |
+| Done | 62 | | Backend (B) | 34 |
+| In review | 0 | | Infraestrutura (I) | 15 |
+| In progress | 0 | | Frontend (F) | 12 |
 | Ready | 0 | | Banco de Dados (M) | 4 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **57** | | **Total** | **57** |
+| **Total** | **62** | | **Total** | **67** |
 
 ## Movimentações (24/07/2026)
 
@@ -47,16 +47,30 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B030 | EfficiencyCategory Value Object |
 | B031 | Contract Tests para integração ML |
 | B032 | Refactor: remover hardcoded, config via env vars |
+| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F029 | Corrigir property_type e highestConsumptionCategory |
+| B033 | V9 migration: remover aparelhos sem cobertura PPH |
+| F030 | Remover dead code (updateApplianceQuantity, demo.test.ts) |
+| F031 | Adicionar testes: Login, Register, Navbar (19 testes) |
+| B034 | Adicionar testes: PropertyServiceExtended, AnalysisMapperExtended |
+| F032 | Corrigir createProperty test e remover demo.test.ts |
+| I018 | Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) |
 
-### In Progress — novos cards
+### In Progress - movidos para In review
 
-| ID | Título | Issue |
-|---|---|---|
-| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) | #71 |
-| B034 | Endpoint batch de aparelhos | #72 |
-| B035 | Expandir Property com novos campos (address, residents, area) | #73 |
-| B036 | Endpoint de simulação de análise | #74 |
-| B037 | ML Service: endpoint /predict/simulate | #75 |
-| F008 | Unificar páginas de análise e remover dados avançados | #76 |
-| F009 | Reformular Dashboard com propósito (meta, simulação, progresso) | #77 |
-| I017 | Atualizar contrato-api.md e glossario.md | #78 |
+| ID | Título |
+|---|---|
+| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) |
+| B034 | Endpoint batch de aparelhos |
+| B035 | Expandir Property com novos campos (address, residents, area) |
+| B036 | Endpoint de simulação de análise |
+| B037 | ML Service: endpoint /predict/simulate |
+| F008 | Unificar páginas de análise e remover dados avançados |
+| F009 | Reformular Dashboard com propósito (meta, simulação, progresso) |
+| I017 | Atualizar contrato-api.md e glossario.md |
+| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F029 | Corrigir property_type e highestConsumptionCategory |
+| F030 | Remover dead code |
+| F031 | Adicionar testes frontend |
+| B034 | Adicionar testes backend |
+| I018 | Atualizar documentação |
