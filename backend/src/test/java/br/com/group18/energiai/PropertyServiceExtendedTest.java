@@ -137,7 +137,8 @@ class PropertyServiceExtendedTest {
 
     @Test
     void shouldListAppliances() {
-        Appliance ar = new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
+        Appliance ar =
+                new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
         PropertyAppliance pa = new PropertyAppliance(100L, ar, 2);
 
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
@@ -151,11 +152,13 @@ class PropertyServiceExtendedTest {
 
     @Test
     void shouldAddOrUpdateAppliance() {
-        Appliance ar = new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
+        Appliance ar =
+                new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
 
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
         when(applianceRepository.findById(1L)).thenReturn(Optional.of(ar));
-        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L)).thenReturn(Optional.empty());
+        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L))
+                .thenReturn(Optional.empty());
         when(propertyApplianceRepository.save(any(PropertyAppliance.class))).thenAnswer(i -> i.getArgument(0));
 
         PropertyAppliance result = propertyService.addOrUpdateAppliance(100L, 1L, 1L, 3);
@@ -169,17 +172,18 @@ class PropertyServiceExtendedTest {
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
         when(applianceRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> propertyService.addOrUpdateAppliance(100L, 1L, 999L, 1));
+        assertThrows(ResourceNotFoundException.class, () -> propertyService.addOrUpdateAppliance(100L, 1L, 999L, 1));
     }
 
     @Test
     void shouldRemoveAppliance() {
-        Appliance ar = new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
+        Appliance ar =
+                new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
         PropertyAppliance pa = new PropertyAppliance(100L, ar, 2);
 
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
-        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L)).thenReturn(Optional.of(pa));
+        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L))
+                .thenReturn(Optional.of(pa));
 
         propertyService.removeAppliance(100L, 1L, 1L);
 
@@ -189,29 +193,31 @@ class PropertyServiceExtendedTest {
     @Test
     void shouldThrowWhenRemovingApplianceNotLinked() {
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
-        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 999L)).thenReturn(Optional.empty());
+        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 999L))
+                .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> propertyService.removeAppliance(100L, 1L, 999L));
+        assertThrows(ResourceNotFoundException.class, () -> propertyService.removeAppliance(100L, 1L, 999L));
     }
 
     @Test
     void shouldBatchUpdateAppliances() {
-        Appliance ar = new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
-        Appliance geladeira = new Appliance(2L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
+        Appliance ar =
+                new Appliance(1L, "Ar Condicionado", "Climatizacao", new BigDecimal("1500.0"), new BigDecimal("8.0"));
+        Appliance geladeira =
+                new Appliance(2L, "Geladeira", "Refrigeracao", new BigDecimal("150.0"), new BigDecimal("24.0"));
         PropertyAppliance oldPa = new PropertyAppliance(100L, ar, 2);
 
         when(propertyRepository.findById(100L)).thenReturn(Optional.of(testProperty));
         when(propertyApplianceRepository.findByPropertyId(100L)).thenReturn(List.of(oldPa));
         when(applianceRepository.findById(1L)).thenReturn(Optional.of(ar));
         when(applianceRepository.findById(2L)).thenReturn(Optional.of(geladeira));
-        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L)).thenReturn(Optional.of(oldPa));
-        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 2L)).thenReturn(Optional.empty());
+        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 1L))
+                .thenReturn(Optional.of(oldPa));
+        when(propertyApplianceRepository.findByPropertyIdAndApplianceId(100L, 2L))
+                .thenReturn(Optional.empty());
         when(propertyApplianceRepository.save(any(PropertyAppliance.class))).thenAnswer(i -> i.getArgument(0));
 
-        List<ApplianceQuantity> items = List.of(
-                new ApplianceQuantity(1L, 1),
-                new ApplianceQuantity(2L, 3));
+        List<ApplianceQuantity> items = List.of(new ApplianceQuantity(1L, 1), new ApplianceQuantity(2L, 3));
 
         List<PropertyAppliance> result = propertyService.batchUpdateAppliances(100L, 1L, items);
 

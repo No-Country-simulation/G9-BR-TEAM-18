@@ -154,11 +154,12 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
                 "LIGHTING_WATTS", aggregation.lightingWatts());
 
-        String mlPropertyType = switch (propertyType.toUpperCase(Locale.ROOT)) {
-            case "RESIDENCIAL" -> "Casa";
-            case "COMERCIAL" -> "Comercial";
-            default -> propertyType;
-        };
+        String mlPropertyType =
+                switch (propertyType.toUpperCase(Locale.ROOT)) {
+                    case "RESIDENCIAL" -> "Casa";
+                    case "COMERCIAL" -> "Comercial";
+                    default -> propertyType;
+                };
 
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
         body.put("consumption_kwh", consumptionKwh);
