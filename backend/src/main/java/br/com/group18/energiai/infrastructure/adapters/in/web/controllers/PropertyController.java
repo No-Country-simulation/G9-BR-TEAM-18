@@ -8,6 +8,11 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyApplia
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyApplianceResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyResponseDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -22,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Propriedades")
+@SecurityRequirement(name = "sessionCookie")
 @RestController
 @RequestMapping("/properties")
 public class PropertyController {
@@ -32,6 +39,13 @@ public class PropertyController {
         this.propertyService = propertyService;
     }
 
+    @Operation(
+            summary = "Criar propriedade",
+            description = "Registra uma nova propriedade (residencial ou comercial) para o usuário autenticado.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Propriedade criada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição")
+    })
     @PostMapping
     public ResponseEntity<PropertyResponseDTO> create(
             @Valid @RequestBody PropertyRequestDTO request, HttpServletRequest httpRequest) {
@@ -49,6 +63,8 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(property));
     }
 
+    @Operation(summary = "Listar propriedades", description = "Retorna todas as propriedades do usuário autenticado.")
+    @ApiResponse(responseCode = "200", description = "Lista de propriedades retornada")
     @GetMapping
     public ResponseEntity<List<PropertyResponseDTO>> list(HttpServletRequest httpRequest) {
         Long userId = authenticatedUser(httpRequest);
@@ -60,6 +76,13 @@ public class PropertyController {
                 .toList());
     }
 
+    @Operation(
+            summary = "Atualizar propriedade",
+            description = "Atualiza os dados de uma propriedade existente. Apenas o proprietário pode alterar.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Propriedade atualizada com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Propriedade não encontrada")
+    })
     @PutMapping("/{propertyId}")
     public ResponseEntity<PropertyResponseDTO> update(
             @PathVariable Long propertyId,
@@ -80,6 +103,14 @@ public class PropertyController {
                 request.getAreaSqm())));
     }
 
+    @Operation(
+            summary = "Excluir propriedade",
+            description =
+                    "Remove uma propriedade e todos os seus eletrodomésticos associados. Apenas o proprietário pode excluir.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Propriedade excluída com sucesso (sem conteúdo)"),
+        @ApiResponse(responseCode = "404", description = "Propriedade não encontrada")
+    })
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<Void> delete(@PathVariable Long propertyId, HttpServletRequest httpRequest) {
         Long userId = authenticatedUser(httpRequest);
@@ -90,6 +121,10 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Listar eletrodomésticos da propriedade",
+            description = "Retorna todos os eletrodomésticos cadastrados em uma propriedade específica.")
+    @ApiResponse(responseCode = "200", description = "Lista de eletrodomésticos retornada")
     @GetMapping("/{propertyId}/appliances")
     public ResponseEntity<List<PropertyApplianceResponseDTO>> listAppliances(
             @PathVariable Long propertyId, HttpServletRequest httpRequest) {
@@ -102,6 +137,14 @@ public class PropertyController {
                 .toList());
     }
 
+    @Operation(
+            summary = "Adicionar eletrodoméstico à propriedade",
+            description =
+                    "Adiciona um eletrodoméstico do catálogo a uma propriedade. Se já existir, atualiza a quantidade.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Eletrodoméstico adicionado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição")
+    })
     @PostMapping("/{propertyId}/appliances")
     public ResponseEntity<PropertyApplianceResponseDTO> addAppliance(
             @PathVariable Long propertyId,
@@ -116,6 +159,13 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(propertyAppliance));
     }
 
+    @Operation(
+            summary = "Atualizar quantidade de eletrodoméstico",
+            description = "Atualiza a quantidade de um eletrodoméstico específico em uma propriedade.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Quantidade atualizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "ID do eletrodoméstico na URL difere do corpo")
+    })
     @PutMapping("/{propertyId}/appliances/{applianceId}")
     public ResponseEntity<PropertyApplianceResponseDTO> updateAppliance(
             @PathVariable Long propertyId,
@@ -133,6 +183,11 @@ public class PropertyController {
                 propertyService.addOrUpdateAppliance(propertyId, userId, applianceId, request.getQuantity())));
     }
 
+    @Operation(
+            summary = "Atualizar lote de eletrodomésticos",
+            description =
+                    "Atualiza múltiplos eletrodomésticos de uma vez em uma propriedade. Substitui todos os existentes.")
+    @ApiResponse(responseCode = "200", description = "Lote atualizado com sucesso")
     @PutMapping("/{propertyId}/appliances/batch")
     public ResponseEntity<List<PropertyApplianceResponseDTO>> batchUpdateAppliances(
             @PathVariable Long propertyId, @RequestBody List<ApplianceQuantity> items, HttpServletRequest httpRequest) {
@@ -145,6 +200,13 @@ public class PropertyController {
                 .toList());
     }
 
+    @Operation(
+            summary = "Remover eletrodoméstico da propriedade",
+            description = "Remove um eletrodoméstico específico de uma propriedade.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Eletrodoméstico removido com sucesso (sem conteúdo)"),
+        @ApiResponse(responseCode = "404", description = "Propriedade ou eletrodoméstico não encontrado")
+    })
     @DeleteMapping("/{propertyId}/appliances/{applianceId}")
     public ResponseEntity<Void> removeAppliance(
             @PathVariable Long propertyId, @PathVariable Long applianceId, HttpServletRequest httpRequest) {

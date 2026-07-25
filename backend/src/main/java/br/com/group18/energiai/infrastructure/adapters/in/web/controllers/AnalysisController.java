@@ -10,6 +10,12 @@ import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
 import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Análise Energética")
 @RestController
 public class AnalysisController {
 
@@ -52,6 +59,17 @@ public class AnalysisController {
         this.co2EmissionFactor = co2EmissionFactor;
     }
 
+    @Operation(
+            summary = "Realizar análise energética",
+            description = "Executa uma análise completa de eficiência energética para uma propriedade. "
+                    + "Utiliza o serviço de Machine Learning para classificar a eficiência e gerar recomendações.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Análise criada e classificada com sucesso"),
+        @ApiResponse(
+                responseCode = "503",
+                description = "Serviço de ML indisponível no momento: análise pode usar fallback")
+    })
+    @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/energy-analysis")
     public ResponseEntity<AnalysisResponseDTO> analyze(
             @Valid @RequestBody AnalysisRequestDTO request, HttpServletRequest httpRequest) {
@@ -71,6 +89,12 @@ public class AnalysisController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(result));
     }
 
+    @Operation(
+            summary = "Simular análise energética",
+            description = "Executa uma simulação de eficiência energética sem persistir o resultado. "
+                    + "Útil para testar cenários antes de realizar a análise definitiva.")
+    @ApiResponse(responseCode = "200", description = "Simulação concluída com sucesso")
+    @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/energy-analysis/simulate")
     public ResponseEntity<AnalysisResponseDTO> simulate(
             @Valid @RequestBody AnalysisRequestDTO request, HttpServletRequest httpRequest) {
@@ -90,6 +114,12 @@ public class AnalysisController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(
+            summary = "Listar análises do usuário",
+            description =
+                    "Retorna todas as análises energéticas realizadas pelo usuário em todas as suas propriedades.")
+    @ApiResponse(responseCode = "200", description = "Lista de análises retornada")
+    @SecurityRequirement(name = "sessionCookie")
     @GetMapping("/analyses")
     public ResponseEntity<List<AnalysisResponseDTO>> list(HttpServletRequest httpRequest) {
         Long userId = AuthController.getUserId(httpRequest);
@@ -100,6 +130,14 @@ public class AnalysisController {
                 analysesForUser(userId).stream().map(this::toResponse).toList());
     }
 
+    @Operation(
+            summary = "Obter análise por ID",
+            description = "Retorna os detalhes de uma análise específica pelo seu identificador.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Análise encontrada"),
+        @ApiResponse(responseCode = "404", description = "Análise não encontrada")
+    })
+    @SecurityRequirement(name = "sessionCookie")
     @GetMapping("/analyses/{analysisId}")
     public ResponseEntity<AnalysisResponseDTO> getById(@PathVariable Long analysisId, HttpServletRequest httpRequest) {
         Long userId = AuthController.getUserId(httpRequest);
@@ -113,6 +151,12 @@ public class AnalysisController {
         return ResponseEntity.ok(toResponse(analysis));
     }
 
+    @Operation(
+            summary = "Obter dashboard do usuário",
+            description = "Retorna um resumo consolidado com número total de análises, consumo médio, "
+                    + "custo total estimado, emissão total de CO₂ e consumo mensal agregado.")
+    @ApiResponse(responseCode = "200", description = "Dados do dashboard retornados")
+    @SecurityRequirement(name = "sessionCookie")
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardDTO> dashboard(HttpServletRequest httpRequest) {
         Long userId = AuthController.getUserId(httpRequest);
@@ -161,6 +205,11 @@ public class AnalysisController {
                 analyses.size(), averageConsumptionKwh, totalEstimatedCost, totalCo2EmissionKg, monthlyConsumption));
     }
 
+    @Operation(
+            summary = "Listar categorias de eficiência",
+            description =
+                    "Retorna as categorias de classificação energética disponíveis no serviço de Machine Learning.")
+    @ApiResponse(responseCode = "200", description = "Lista de categorias retornada")
     @GetMapping("/energy-analysis/categories")
     public ResponseEntity<List<String>> getCategories() {
         return ResponseEntity.ok(mlSchemaRegistry.getCategories());
@@ -190,12 +239,18 @@ public class AnalysisController {
                 analysis.getUpdatedAt());
     }
 
+    @Schema(description = "Dados consolidados do dashboard do usuário")
     public record DashboardDTO(
-            int totalAnalyses,
-            double averageConsumptionKwh,
-            double totalEstimatedCost,
-            double totalCo2EmissionKg,
-            List<MonthlyConsumptionDTO> monthlyConsumption) {}
+            @Schema(description = "Número total de análises realizadas", example = "15") int totalAnalyses,
+            @Schema(description = "Consumo médio em kWh entre todas as análises", example = "320.5")
+                    double averageConsumptionKwh,
+            @Schema(description = "Custo total estimado acumulado em R$", example = "3500.75")
+                    double totalEstimatedCost,
+            @Schema(description = "Emissão total de CO₂ em kg", example = "125.8") double totalCo2EmissionKg,
+            @Schema(description = "Consumo agregado por mês") List<MonthlyConsumptionDTO> monthlyConsumption) {}
 
-    public record MonthlyConsumptionDTO(String month, double consumptionKwh) {}
+    @Schema(description = "Consumo mensal agregado para o dashboard")
+    public record MonthlyConsumptionDTO(
+            @Schema(description = "Mês/ano no formato 'Mmm/AAAA'", example = "Jul/2026") String month,
+            @Schema(description = "Consumo total do mês em kWh", example = "350.0") double consumptionKwh) {}
 }

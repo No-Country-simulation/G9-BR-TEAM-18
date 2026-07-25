@@ -131,7 +131,9 @@
     "desserializador",
     "desserializer",
     "Dtest",
-    "mockado"
+    "mockado",
+    "documentacao",
+    "glossario"
   ],
   "ignorePaths": [
     "node_modules",

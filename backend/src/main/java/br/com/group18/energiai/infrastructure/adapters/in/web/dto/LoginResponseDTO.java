@@ -1,10 +1,20 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Dados do usuário retornados após autenticação")
 public class LoginResponseDTO {
 
+    @Schema(description = "Identificador único do usuário", example = "1")
     private Long id;
+
+    @Schema(description = "Nome completo do usuário", example = "João Silva")
     private String name;
+
+    @Schema(description = "E-mail do usuário", example = "usuario@exemplo.com")
     private String email;
+
+    @Schema(description = "Indica se o usuário precisa redefinir a senha", example = "false")
     private boolean passwordResetRequired;
 
     public LoginResponseDTO() {}

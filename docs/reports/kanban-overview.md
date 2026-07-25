@@ -74,3 +74,11 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F031 | Adicionar testes frontend |
 | B034 | Adicionar testes backend |
 | I018 | Atualizar documentação |
+
+## Movimentações (25/07/2026)
+
+### Backlog → In review
+
+| ID | Título |
+|---|---|
+| I019 | Infraestrutura/Base - Enriquecer documentação Swagger/OpenAPI da API |

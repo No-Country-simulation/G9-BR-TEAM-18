@@ -9,6 +9,11 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseD
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ResetPasswordRequestDTO;
 import br.com.group18.energiai.infrastructure.config.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Autenticação")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -52,6 +58,13 @@ public class AuthController {
         this.sessionSecure = sessionSecure;
     }
 
+    @Operation(
+            summary = "Registrar novo usuário",
+            description = "Cria uma nova conta e retorna os dados do usuário junto com um cookie de sessão JWT.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
+        @ApiResponse(responseCode = "409", description = "Conflito: e-mail já cadastrado no sistema")
+    })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
         try {
@@ -65,6 +78,13 @@ public class AuthController {
         }
     }
 
+    @Operation(
+            summary = "Autenticar usuário",
+            description = "Autentica com e-mail e senha. Retorna os dados do usuário e define o cookie de sessão JWT.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado: e-mail ou senha inválidos")
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse response) {
         var userOpt = authenticationService.login(request.getEmail(), request.getPassword());
@@ -79,6 +99,11 @@ public class AuthController {
         return ResponseEntity.ok(toResponse(user));
     }
 
+    @Operation(
+            summary = "Encerrar sessão",
+            description = "Invalida o token JWT atual na blacklist e remove o cookie de sessão.")
+    @ApiResponse(responseCode = "200", description = "Sessão encerrada com sucesso")
+    @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         String token = extractToken(request);
@@ -100,6 +125,14 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+            summary = "Redefinir própria senha",
+            description = "Altera a senha do usuário autenticado. Requer a senha atual para confirmar a identidade.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
+        @ApiResponse(responseCode = "403", description = "Proibido: senha atual incorreta")
+    })
+    @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(
             @Valid @RequestBody ResetPasswordRequestDTO request,
@@ -121,6 +154,14 @@ public class AuthController {
         }
     }
 
+    @Operation(
+            summary = "[Admin] Redefinir senha de outro usuário",
+            description = "Permite que um administrador redefina a senha de qualquer usuário pelo ID.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
+    @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/admin/reset-password/{userId}")
     public ResponseEntity<?> adminResetPassword(
             @PathVariable Long userId,
@@ -137,6 +178,14 @@ public class AuthController {
         }
     }
 
+    @Operation(
+            summary = "Obter dados do usuário atual",
+            description = "Retorna os dados do usuário autenticado com base no cookie de sessão.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Dados do usuário retornados"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado: sessão inválida ou expirada")
+    })
+    @SecurityRequirement(name = "sessionCookie")
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
         Long userId = getUserId(request);
