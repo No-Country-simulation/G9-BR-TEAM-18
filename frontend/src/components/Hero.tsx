@@ -16,7 +16,7 @@ export default function Hero() {
           equipamentos e tornar seu imóvel mais eficiente.
         </p>
         <div className="hero-actions">
-          <Link to={user ? "/analysis" : "/register"} className="btn btn-primary">
+          <Link to={user ? "/profile" : "/register"} className="btn btn-primary">
             Experimente Agora
           </Link>
           <a href="#como-funciona" className="btn btn-secondary">

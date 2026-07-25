@@ -46,14 +46,6 @@ export default function App() {
           }
         />
         <Route
-          path="/analysis"
-          element={
-            <PrivateRoute>
-              <ProfilePage />
-            </PrivateRoute>
-          }
-        />
-        <Route
           path="/history"
           element={
             <PrivateRoute>

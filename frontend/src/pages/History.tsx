@@ -49,7 +49,7 @@ export default function History() {
         <h1>
           <Clock size={28} /> Histórico
         </h1>
-        <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+        <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
           Nova análise
         </button>
       </div>
@@ -57,7 +57,7 @@ export default function History() {
       {analyses.length === 0 ? (
         <div className="history-empty">
           <p>Nenhuma análise encontrada.</p>
-          <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+          <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
             Fazer primeira análise
           </button>
         </div>

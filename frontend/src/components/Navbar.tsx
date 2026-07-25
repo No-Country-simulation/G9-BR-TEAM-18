@@ -28,7 +28,6 @@ export default function Navbar() {
     ? [
         { to: "/dashboard", label: "Dashboard" },
         { to: "/profile", label: "Perfil" },
-        { to: "/analysis", label: "Analisar" },
         { to: "/history", label: "Histórico" },
       ]
     : [

@@ -109,7 +109,7 @@ export default function Dashboard() {
             <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--secondary">
               <UserCog size={18} /> Criar Perfil
             </button>
-            <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+            <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
               Fazer análise
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function Dashboard() {
         <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--secondary">
           <UserCog size={18} /> Meu Perfil
         </button>
-        <button onClick={() => navigate("/analysis")} className="dash-btn dash-btn--primary">
+        <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
           <BarChart3 size={18} /> Nova análise
         </button>
       </div>

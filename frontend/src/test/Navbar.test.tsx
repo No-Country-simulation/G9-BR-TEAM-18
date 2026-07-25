@@ -70,13 +70,12 @@ describe("Navbar", () => {
     });
   });
 
-  it("shows dashboard, perfil, analisar, and history links when authenticated", async () => {
+  it("shows dashboard, perfil, and history links when authenticated", async () => {
     renderWithState("authenticated");
 
     await vi.waitFor(() => {
       expect(screen.getByText("Dashboard")).toBeInTheDocument();
       expect(screen.getByText("Perfil")).toBeInTheDocument();
-      expect(screen.getByText("Analisar")).toBeInTheDocument();
       expect(screen.getByText("Histórico")).toBeInTheDocument();
     });
   });
