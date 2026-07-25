@@ -15,6 +15,7 @@ import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableExcepti
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
@@ -81,10 +82,6 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         }
     }
 
-    /**
-     * Executa a mesma lógica de análise mas sem persistir o resultado.
-     * Usado para simulações e testes de cenários.
-     */
     public AnalysisResponseDTO simulate(
             Property property,
             List<PropertyAppliance> appliances,
@@ -94,10 +91,14 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             String highestConsumptionCategory) {
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
-        MlEnvelope request = buildMlRequest(consumptionKwh.doubleValue(),
+        MlEnvelope request = buildMlRequest(
+                consumptionKwh.doubleValue(),
                 Boolean.TRUE.equals(peakHourUsage),
-                aggregation.totalEquipment(), property.getPropertyType(),
-                highConsumptionHours.doubleValue(), aggregation, highestConsumptionCategory);
+                aggregation.totalEquipment(),
+                property.getPropertyType(),
+                highConsumptionHours.doubleValue(),
+                aggregation,
+                highestConsumptionCategory);
         MlEnvelope response = mlServiceClient.predictSimulate(request);
 
         if (response == null) {
@@ -125,7 +126,9 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
     }
 
     private MlEnvelope buildMlRequest(
-            EnergyAnalysis analysis, Property property, ApplianceAggregationService.AggregationResult aggregation,
+            EnergyAnalysis analysis,
+            Property property,
+            ApplianceAggregationService.AggregationResult aggregation,
             String highestConsumptionCategory) {
         return buildMlRequest(
                 analysis.getConsumptionKwh().doubleValue(),
@@ -138,8 +141,11 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
     }
 
     private MlEnvelope buildMlRequest(
-            double consumptionKwh, boolean peakHourUsage, int equipmentQuantity,
-            String propertyType, double highConsumptionHours,
+            double consumptionKwh,
+            boolean peakHourUsage,
+            int equipmentQuantity,
+            String propertyType,
+            double highConsumptionHours,
             ApplianceAggregationService.AggregationResult aggregation,
             String highestConsumptionCategory) {
         Map<String, Object> dist = Map.of(
@@ -148,11 +154,17 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
                 "LIGHTING_WATTS", aggregation.lightingWatts());
 
+        String mlPropertyType = switch (propertyType.toUpperCase(Locale.ROOT)) {
+            case "RESIDENCIAL" -> "Casa";
+            case "COMERCIAL" -> "Comercial";
+            default -> propertyType;
+        };
+
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
         body.put("consumption_kwh", consumptionKwh);
         body.put("peak_hour_usage", peakHourUsage);
         body.put("equipment_quantity", equipmentQuantity);
-        body.put("property_type", propertyType);
+        body.put("property_type", mlPropertyType);
         body.put("high_consumption_hours", highConsumptionHours);
         body.put("daily_consumption_distribution", dist);
 
