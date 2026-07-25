@@ -28,6 +28,14 @@ function savingsSimulation(currentKwh: number, reductionKwh: number) {
   return { saving, newKwh, reductionKwh };
 }
 
+const CATEGORY_RANK: Record<string, number> = {
+  EXCELENTE: 0,
+  BOM: 1,
+  MEDIANO: 2,
+  RUIM: 3,
+  CRITICO: 4,
+};
+
 function interpretTrend(analyses: AnalysisHistory[]): {
   trend: "up" | "down" | "stable";
   percentage: number;
@@ -41,7 +49,7 @@ function interpretTrend(analyses: AnalysisHistory[]): {
   return { trend: pct > 0 ? "up" : "down", percentage: Math.abs(pct) };
 }
 
-const SAVINGS_PRESETS = [50, 100, 150, 200];
+const SAVINGS_RATES = [0.1, 0.2, 0.3, 0.4];
 const GOAL_KEY = "energiai_goal_kwh";
 
 export default function Dashboard() {
@@ -114,16 +122,16 @@ export default function Dashboard() {
   const trendInfo = interpretTrend(analyses);
 
   const recentCategories = analyses.slice(-2).map((a) => a.category);
-  const improved =
+  const rankDiff =
     analyses.length >= 2
-      ? CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY] !==
-        CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]
-      : false;
+      ? CATEGORY_RANK[recentCategories[1]] - CATEGORY_RANK[recentCategories[0]]
+      : 0;
 
   const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;
-  const simulations = SAVINGS_PRESETS.map((r) => ({
+  const savingsPresets = SAVINGS_RATES.map((rate) => Math.max(10, Math.round(currentKwh * rate)));
+  const simulations = savingsPresets.map((r) => ({
     ...savingsSimulation(currentKwh, r),
-    label: `${r} kWh/mês`,
+    label: `${r} kWh/mês - ${((r / currentKwh) * 100).toFixed(0)}%`,
   }));
 
   const goalProgress = goalKwh > 0 ? Math.min(100, (currentKwh / goalKwh) * 100) : 0;
@@ -177,10 +185,10 @@ export default function Dashboard() {
               </span>
             )}
           </div>
-          {improved && analyses.length >= 2 && (
-            <div className="dash-progress-msg">
-              <TrendingUp size={16} />
-              Você evoluiu de{" "}
+          {rankDiff !== 0 && analyses.length >= 2 && (
+            <div className={`dash-progress-msg ${rankDiff > 0 ? "dash-progress-msg--worse" : ""}`}>
+              {rankDiff < 0 ? <TrendingUp size={16} /> : <ArrowDown size={16} />}
+              {rankDiff < 0 ? "Voce evoluiu de " : "Seu consumo piorou de "}
               <strong>
                 {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY]}
               </strong>{" "}
@@ -340,13 +348,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {lastAnalysis && (
+      {lastAnalysis && currentKwh > 0 && (
         <div className="dash-section">
           <h3>
             <PiggyBank size={20} /> Simule sua Economia
           </h3>
           <p className="dash-section-subtitle">
-            Veja quanto você pode economizar reduzindo seu consumo mensal:
+            Veja quanto voce pode economizar reduzindo seu consumo mensal:
           </p>
           <div className="dash-simulation-grid">
             {simulations.map((sim) => (
@@ -356,7 +364,7 @@ export default function Dashboard() {
                   <span className="sim-reduction">Reduza {sim.reductionKwh} kWh</span>
                   <span className="sim-consumption">Novo consumo: {sim.newKwh.toFixed(0)} kWh</span>
                 </div>
-                <span className="sim-saving">+ R$ {sim.saving.toFixed(2)}/mês</span>
+                <span className="sim-saving">+ R$ {sim.saving.toFixed(2)}/mes</span>
               </div>
             ))}
           </div>

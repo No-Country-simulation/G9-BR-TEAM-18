@@ -40,8 +40,12 @@ public class PropertyController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Property property = propertyService.create(
-                userId, request.getAlias(), request.getPropertyType().name(),
-                request.getAddress(), request.getResidentCount(), request.getAreaSqm());
+                userId,
+                request.getAlias(),
+                request.getPropertyType().name(),
+                request.getAddress(),
+                request.getResidentCount(),
+                request.getAreaSqm());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(property));
     }
 
@@ -131,9 +135,7 @@ public class PropertyController {
 
     @PutMapping("/{propertyId}/appliances/batch")
     public ResponseEntity<List<PropertyApplianceResponseDTO>> batchUpdateAppliances(
-            @PathVariable Long propertyId,
-            @RequestBody List<ApplianceQuantity> items,
-            HttpServletRequest httpRequest) {
+            @PathVariable Long propertyId, @RequestBody List<ApplianceQuantity> items, HttpServletRequest httpRequest) {
         Long userId = authenticatedUser(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -160,8 +162,13 @@ public class PropertyController {
 
     private PropertyResponseDTO toResponse(Property property) {
         return new PropertyResponseDTO(
-                property.getId(), property.getAlias(), property.getPropertyType(), property.isActive(),
-                property.getAddress(), property.getResidentCount(), property.getAreaSqm());
+                property.getId(),
+                property.getAlias(),
+                property.getPropertyType(),
+                property.isActive(),
+                property.getAddress(),
+                property.getResidentCount(),
+                property.getAreaSqm());
     }
 
     private PropertyApplianceResponseDTO toResponse(PropertyAppliance propertyAppliance) {

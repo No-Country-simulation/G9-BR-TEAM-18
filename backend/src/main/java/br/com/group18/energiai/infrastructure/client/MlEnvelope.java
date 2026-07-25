@@ -4,11 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Generic envelope for communication with the ML Service.
- * Replaces typed records (MlPredictRequest, MlPredictResponse, DailyConsumptionDistribution)
- * with a dynamic Map<String, Object> to decouple the backend from the ML Service schema.
- */
 public record MlEnvelope(Map<String, Object> body, Map<String, String> metadata) {
 
     public MlEnvelope {

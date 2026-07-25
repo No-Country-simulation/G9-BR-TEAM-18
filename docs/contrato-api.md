@@ -41,7 +41,7 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 
 ### Endpoint: Logout
 
-**`POST /auth/logout`** — Invalida o token JWT atual e limpa o cookie de sessão.
+**`POST /auth/logout`** - Invalida o token JWT atual e limpa o cookie de sessão.
 
 ### Endpoint: Redefinir senha
 
@@ -105,11 +105,11 @@ O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`
 
 ### Endpoint: Listar análises do usuário
 
-**`GET /analyses`** — Retorna todas as análises do usuário autenticado, ordenadas por data.
+**`GET /analyses`** - Retorna todas as análises do usuário autenticado, ordenadas por data.
 
 ### Endpoint: Buscar análise por ID
 
-**`GET /analyses/{analysisId}`** — Retorna uma análise específica, validando que pertence ao usuário.
+**`GET /analyses/{analysisId}`** - Retorna uma análise específica, validando que pertence ao usuário.
 
 ### Endpoint: Dashboard
 
@@ -140,10 +140,10 @@ O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`
 
 ### Endpoint: CRUD de imóveis (properties)
 
-**`POST /properties`** — Criar imóvel
-**`GET /properties`** — Listar imóveis
-**`PUT /properties/{id}`** — Atualizar imóvel
-**`DELETE /properties/{id}`** — Excluir imóvel
+**`POST /properties`** - Criar imóvel
+**`GET /properties`** - Listar imóveis
+**`PUT /properties/{id}`** - Atualizar imóvel
+**`DELETE /properties/{id}`** - Excluir imóvel
 
 ```json
 // POST /properties Request (alias é o nome do imóvel)
@@ -172,15 +172,15 @@ O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`
 
 ### Endpoint: Aparelhos do imóvel
 
-**`GET /appliances`** — Lista o catálogo de aparelhos disponíveis.
+**`GET /appliances`** - Lista o catálogo de aparelhos disponíveis.
 
-**`GET /properties/{id}/appliances`** — Lista os aparelhos vinculados a um imóvel.
+**`GET /properties/{id}/appliances`** - Lista os aparelhos vinculados a um imóvel.
 
-**`POST /properties/{id}/appliances`** — Vincula um aparelho.
+**`POST /properties/{id}/appliances`** - Vincula um aparelho.
 
-**`PUT /properties/{id}/appliances/{applianceId}`** — Atualiza quantidade.
+**`PUT /properties/{id}/appliances/{applianceId}`** - Atualiza quantidade.
 
-**`PUT /properties/{id}/appliances/batch`** — Atualiza todos os aparelhos de uma vez:
+**`PUT /properties/{id}/appliances/batch`** - Atualiza todos os aparelhos de uma vez:
 
 ```json
 // Request
@@ -192,7 +192,7 @@ O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`
 
 Aparelhos não listados são removidos do imóvel.
 
-**`DELETE /properties/{id}/appliances/{applianceId}`** — Remove um aparelho do imóvel.
+**`DELETE /properties/{id}/appliances/{applianceId}`** - Remove um aparelho do imóvel.
 
 ---
 
@@ -236,11 +236,11 @@ Comunicação entre o backend Java e a API Python de predição.
 
 ### Endpoint: Predição simulada (sem log de treinamento)
 
-**`POST /predict/simulate`** — Mesma entrada/saída de `/predict`, porém **não armazena** os dados no log de treinamento (`treino_feedback.jsonl`).
+**`POST /predict/simulate`** - Mesma entrada/saída de `/predict`, porém **não armazena** os dados no log de treinamento (`treino_feedback.jsonl`).
 
 ### Endpoint: Schema descoberta
 
-**`GET /predict-schema`** — Retorna o schema JSON do `PredictRequest` para validação dinâmica.
+**`GET /predict-schema`** - Retorna o schema JSON do `PredictRequest` para validação dinâmica.
 
 ### Endpoint: Categorias válidas
 
@@ -253,7 +253,7 @@ Comunicação entre o backend Java e a API Python de predição.
 
 ### Endpoint: Status
 
-**`GET /status`** — Retorna status do modelo, Groq disponível e limites de taxa.
+**`GET /status`** - Retorna status do modelo, Groq disponível e limites de taxa.
 
 ---
 

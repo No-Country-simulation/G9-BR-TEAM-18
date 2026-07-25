@@ -70,9 +70,9 @@ export default function Login() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="senha">Senha</label>
+            <label htmlFor="password">Senha</label>
             <input
-              id="senha"
+              id="password"
               type="password"
               placeholder=".........."
               value={password}

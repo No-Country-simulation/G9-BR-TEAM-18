@@ -24,12 +24,6 @@ public class MlServiceClient {
         this.webClient = WebClient.builder().baseUrl(mlServiceUrl).build();
     }
 
-    /**
-     * Sends a prediction request to the ML Service and returns a generic envelope.
-     *
-     * @param request the request data as a generic envelope
-     * @return the response as a generic envelope, or {@code null} if unavailable
-     */
     public MlEnvelope predict(MlEnvelope request) {
         try {
             Map<String, Object> responseBody = webClient
@@ -53,10 +47,6 @@ public class MlServiceClient {
         }
     }
 
-    /**
-     * Sends a prediction request to the ML Service's /predict/simulate endpoint.
-     * Unlike /predict, this does NOT store training data on the ML side.
-     */
     public MlEnvelope predictSimulate(MlEnvelope request) {
         try {
             Map<String, Object> responseBody = webClient
@@ -80,11 +70,6 @@ public class MlServiceClient {
         }
     }
 
-    /**
-     * Fetches the JSON schema of the ML Service's PredictRequest model.
-     *
-     * @return the schema as a Map, or empty Map if unavailable
-     */
     public Map<String, Object> fetchSchema() {
         try {
             Map<String, Object> schema = webClient
@@ -101,11 +86,6 @@ public class MlServiceClient {
         }
     }
 
-    /**
-     * Fetches the list of valid efficiency categories from the ML Service.
-     *
-     * @return the list of categories, or empty list if unavailable
-     */
     public List<String> fetchCategories() {
         try {
             Map<String, Object> response = webClient

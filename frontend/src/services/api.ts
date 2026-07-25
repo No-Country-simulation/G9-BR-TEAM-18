@@ -154,33 +154,6 @@ export async function listPropertyAppliances(propertyId: number): Promise<Proper
   return response.json();
 }
 
-export async function updateApplianceQuantity(
-  propertyId: number,
-  applianceId: number,
-  quantity: number,
-): Promise<void> {
-  const response = await authFetch(`/properties/${propertyId}/appliances/${applianceId}`, {
-    method: "PUT",
-    body: JSON.stringify({ appliance_id: applianceId, quantity }),
-  });
-  if (!response.ok) {
-    const err: ErrorResponse = await response.json();
-    throw new ApiError(err.message ?? "Erro ao atualizar aparelho", err.fields ?? {});
-  }
-}
-
-export async function removeApplianceFromProperty(
-  propertyId: number,
-  applianceId: number,
-): Promise<void> {
-  const response = await authFetch(`/properties/${propertyId}/appliances/${applianceId}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    const err: ErrorResponse = await response.json();
-    throw new ApiError(err.message ?? "Erro ao remover aparelho", err.fields ?? {});
-  }
-}
 
 export async function batchUpdateAppliances(
   propertyId: number,

@@ -2,7 +2,6 @@ package br.com.group18.energiai.core.domain.model;
 
 import java.math.BigDecimal;
 
-/** Appliance catalog entry persisted in {@code tb_appliance}. */
 public class Appliance {
 
     private Long id;

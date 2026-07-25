@@ -8,10 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- * Registry that stores the ML Service's schema and valid categories
- * discovered at startup via {@link MlSchemaDiscovery}.
- */
 @Component
 public class MlSchemaRegistry {
 

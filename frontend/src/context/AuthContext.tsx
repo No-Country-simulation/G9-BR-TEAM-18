@@ -14,7 +14,7 @@ function restoreSession(): User | null {
       }
     }
   } catch {
-    /* ignore */
+    void 0
   }
   return null;
 }

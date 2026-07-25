@@ -22,27 +22,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if push is a merge commit
+      - name: Check if push is a legitimate PR merge
         id: check_merge
         run: |
-          COMMIT_COUNT=$(git rev-list --count \
-            --merges "${{ github.event.before }}".."${{ github.event.after }}" \
-            2>/dev/null || echo 0)
+          COMMITTER="${{ github.event.head_commit.committer.name }}"
+          USERNAME="${{ github.event.head_commit.committer.username }}"
+          MESSAGE="${{ github.event.head_commit.message }}"
           PARENTS=$(git cat-file -p ${{ github.event.after }} 2>/dev/null | grep "^parent " | wc -l || echo 0)
-          echo "Commit parents: $PARENTS"
-          echo "Merge commits in range: $COMMIT_COUNT"
-          echo "is_merge=$([ "$PARENTS" -gt 1 ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
+          echo "Committer: $COMMITTER"
+          echo "Username: $USERNAME"
+          echo "Message: $MESSAGE"
+          echo "Parents: $PARENTS"
+
+          # PR merges via GitHub UI are always committed by "GitHub" (bot)
+          # This covers: merge commit (2 parents), squash merge (1 parent),
+          # and rebase merge (multiple commits, 1 parent each)
+          if [ "$COMMITTER" = "GitHub" ] || [ "$USERNAME" = "web-flow" ]; then
+            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
+          elif echo "$MESSAGE" | grep -qE "^(Merge pull request|Merge branch)"; then
+            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
+          elif [ "$PARENTS" -gt 1 ]; then
+            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_pr_merge=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Reject direct push
-        if: steps.check_merge.outputs.is_merge == 'false'
+        if: steps.check_merge.outputs.is_pr_merge == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
           COMMITTER: ${{ github.event.head_commit.committer.name }}
+          MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "❌ Push direto detectado em $BRANCH por $COMMITTER"
           echo ""
-          echo "Apenas merges de PR são permitidos em $BRANCH."
+          echo "Apenas merges de PR sao permitidos em $BRANCH."
           echo "Criando Issue de alerta..."
 
           gh issue create \
@@ -51,12 +67,12 @@ jobs:
             --body "**Branch:** $BRANCH
           **Autor:** $COMMITTER
           **Commit:** ${{ github.event.after }}
-          **Mensagem:** ${{ github.event.head_commit.message }}
+          **Mensagem:** $MESSAGE
 
-          Push direto em $BRANCH não é permitido. Crie um PR a partir da branch correta:
-          - **dev** → **homolog** (para features)
-          - **homolog** → **main** (para releases)
+          Push direto em $BRANCH nao e permitido. Crie um PR a partir da branch correta:
+          - **dev** -> **homolog** (para features)
+          - **homolog** -> **main** (para releases)
 
-          Se este push foi acidental, reverta manualmente ou feche esta Issue após correção."
+          Se este push foi acidental, reverta manualmente ou feche esta Issue apos correcao."
 
           exit 1

@@ -33,7 +33,7 @@ public class PropertyEntity {
     @Column(name = "resident_count")
     private Integer residentCount;
 
-    @Column(name = "area_sqm")
+    @Column(name = "area_sqm", columnDefinition = "NUMBER")
     private Double areaSqm;
 
     public Long getId() {

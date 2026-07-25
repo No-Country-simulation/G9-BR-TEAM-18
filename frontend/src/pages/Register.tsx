@@ -69,9 +69,9 @@ export default function Register() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="nome">Nome completo</label>
+            <label htmlFor="name">Nome completo</label>
             <input
-              id="nome"
+              id="name"
               type="text"
               placeholder="Seu nome"
               value={name}
@@ -91,9 +91,9 @@ export default function Register() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="senha">Senha</label>
+            <label htmlFor="password">Senha</label>
             <input
-              id="senha"
+              id="password"
               type="password"
               placeholder=".........."
               value={password}
@@ -103,9 +103,9 @@ export default function Register() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="confirmar">Confirmar senha</label>
+            <label htmlFor="confirm-password">Confirmar senha</label>
             <input
-              id="confirmar"
+              id="confirm-password"
               type="password"
               placeholder=".........."
               value={confirmPassword}

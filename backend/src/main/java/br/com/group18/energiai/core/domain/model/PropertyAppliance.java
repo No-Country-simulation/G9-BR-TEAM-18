@@ -3,7 +3,6 @@ package br.com.group18.energiai.core.domain.model;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/** Association persisted in {@code tb_property_appliance}. */
 public class PropertyAppliance {
 
     private static final BigDecimal DAYS_PER_MONTH = BigDecimal.valueOf(30);

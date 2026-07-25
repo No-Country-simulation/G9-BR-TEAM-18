@@ -17,7 +17,7 @@ import "./App.css";
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 export default function App() {
-  // Warm up the backend on first load to reduce cold start delay
+
   useEffect(() => {
     fetch(`${API_URL}/auth/me`, { mode: "no-cors" }).catch(() => {});
   }, []);

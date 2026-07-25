@@ -1,62 +1,130 @@
-# Dependências do projeto
+# Dependências do Projeto
 
-Documentação das bibliotecas configuradas no arquivo `pom.xml` da API, com explicação do propósito de cada dependência e como ela se encaixa na arquitetura hexagonal.
+Documentação das bibliotecas utilizadas em cada serviço do projeto EnergiIA.
 
-## Gerenciamento de segurança
+## Índice
 
-Bloco utilizado para forçar o Maven a baixar versões específicas e seguras de bibliotecas transitivas, corrigindo alertas de vulnerabilidades (CVEs).
+- [Backend (Java / Spring Boot)](#backend-java--spring-boot)
+- [Frontend (React / TypeScript)](#frontend-react--typescript)
+- [ML Service (Python / FastAPI)](#ml-service-python--fastapi)
+- [Ferramentas de Build e Lint](#ferramentas-de-build-e-lint)
 
-| Dependência | Versão | Propósito |
-|---|---|---|
-| `commons-io` | 2.18.0 | Biblioteca utilitária para operações de entrada e saída de arquivos |
-| `bcprov-jdk18on` | 1.80 | Provedor de criptografia Bouncy Castle |
-| `commons-fileupload` | 1.5 | Biblioteca para manipulação de upload de arquivos |
+---
 
-## Núcleo do Spring Boot (starters)
+## Backend (Java / Spring Boot)
 
-Dependências principais que habilitam os recursos do framework Spring.
+Gerenciado pelo Maven (`backend/pom.xml`).
+
+### Núcleo do Spring Boot
 
 | Dependência | Propósito |
 |---|---|
-| `spring-boot-starter-web` | Criação de APIs RESTful com servidor Apache Tomcat embutido |
+| `spring-boot-starter-web` | API REST com servidor Apache Tomcat embutido |
+| `spring-boot-starter-webflux` | Cliente HTTP reativo (WebClient) para comunicação com o ML Service |
+| `spring-boot-starter-validation` | Validação de dados de entrada com Bean Validation (`@NotNull`, `@Email`) |
 | `spring-boot-starter-data-jpa` | Mapeamento objeto-relacional (ORM) com Hibernate |
-| `spring-boot-starter-validation` | Validação de dados de entrada com Bean Validation (`@NotNull`, `@Min`, `@Email`) |
 
-## Banco de dados e versionamento
-
-Ferramentas responsáveis pela persistência e evolução do esquema de dados.
+### Segurança
 
 | Dependência | Propósito |
 |---|---|
-| `h2` | Banco de dados H2 em memória para ambiente de desenvolvimento |
-| `spring-boot-h2console` | Console web do H2 (obrigatório a partir do Spring Boot 4.x) |
+| `spring-security-crypto` | Apenas `BCryptPasswordEncoder` (sem auto-configuração Spring Security) |
+| `jjwt-api` (0.12.6) | Geração e validação de tokens JWT (HMAC-SHA384) |
+| `jjwt-impl` (0.12.6) | Implementação do JJWT |
+| `jjwt-jackson` (0.12.6) | Serialização JSON para o JJWT |
 
-## Utilitários e produtividade
-
-Bibliotecas que reduzem a escrita de código repetitivo (boilerplate).
-
-| Dependência | Versão | Propósito |
-|---|---|---|
-| `lombok` | - | Geração automática de getters, setters, construtores e builders via anotações |
-| `mapstruct` | 1.5.5.Final | Mapeamento automático entre DTOs, entidades de domínio e entidades JPA |
-
-## Integração e documentação
-
-Ferramentas para comunicação com o mundo externo (frontend e IA).
-
-| Dependência | Versão | Propósito |
-|---|---|---|
-| `springdoc-openapi-starter-webmvc-ui` | 3.0.3 | Geração automática de documentação interativa (Swagger UI) |
-| `spring-boot-starter-webflux` | - | Cliente HTTP reativo para comunicação com a API Python de predição |
-
-## Escopo de testes
-
-Bibliotecas restritas ao ambiente de testes, utilizadas para garantir a qualidade do código.
+### Banco de Dados
 
 | Dependência | Propósito |
 |---|---|
-| `spring-boot-starter-test` | Ferramentas e configurações para testes unitários e de integração |
-| `spring-boot-starter-webmvc-test` | Testes da camada web (controllers) sem subir o servidor completo |
-| `spring-boot-test-autoconfigure` | Auto-configuração para testes do Spring Boot |
+| `ojdbc11` | Driver JDBC Oracle |
+| `oraclepki` | Suporte a wallets Oracle para conexão segura |
 
-> **Nota:** Consulte a [documentação de arquitetura hexagonal](./arquitetura-hexagonal.md) para entender como essas dependências se encaixam na separação de camadas, e o [glossário do projeto](./glossario.md) para definição dos termos técnicos.
+### Migrações
+
+| Dependência | Propósito |
+|---|---|
+| `flyway-core` | Controle de versão do esquema de banco de dados |
+| `flyway-database-oracle` | Suporte Flyway para Oracle |
+
+### Documentação
+
+| Dependência | Versão | Propósito |
+|---|---|---|
+| `springdoc-openapi-starter-webmvc-ui` | 3.0.3 | Geração automática de documentação OpenAPI/Swagger UI |
+
+### Testes
+
+| Dependência | Propósito |
+|---|---|
+| `spring-boot-starter-test` | JUnit 5, Mockito,断言, utilitários de teste |
+| `spring-boot-test-autoconfigure` | Auto-configuração para testes |
+| `spring-boot-starter-webmvc-test` | Testes da camada web (MockMvc) sem servidor completo |
+
+### Build
+
+| Plugin | Versão | Propósito |
+|---|---|---|
+| `spring-boot-maven-plugin` | - | Empacotamento JAR executável |
+| `spotless-maven-plugin` | 2.43.0 | Formatação automática (Palantir Java Format 2.50) |
+
+## Frontend (React / TypeScript)
+
+Gerenciado pelo npm (`frontend/package.json`).
+
+| Dependência | Versão | Propósito |
+|---|---|---|
+| `react` | ^19 | Biblioteca de UI |
+| `react-dom` | ^19 | Renderização DOM |
+| `react-router-dom` | ^7 | Roteamento SPA |
+| `recharts` | ^2 | Gráficos (Dashboard) |
+| `lucide-react` | ^0.47 | Ícones |
+| `typescript` | ^5.7 | Tipagem estática |
+| `vite` | ^6 | Bundler e dev server |
+| `@vitejs/plugin-react` | ^4 | Integração React com Vite |
+| `eslint` | ^9 | Linter |
+| `typescript-eslint` | ^8 | Regras ESLint para TypeScript |
+| `eslint-plugin-react-hooks` | ^5 | Regras para React Hooks |
+| `eslint-plugin-react-refresh` | ^0.4 | Regras para HMR |
+| `eslint-config-prettier` | ^10 | Integração ESLint + Prettier |
+| `prettier` | ^3 | Formatador |
+| `vitest` | ^3 | Test runner |
+| `@testing-library/react` | ^16 | Testes de componentes |
+| `@testing-library/jest-dom` | ^6 | Matchers DOM para testes |
+| `@testing-library/user-event` | ^14 | Simulação de eventos de usuário |
+| `jsdom` | ^26 | Ambiente DOM para testes |
+
+## ML Service (Python / FastAPI)
+
+Gerenciado pelo pip (`ml-service/requirements.txt`).
+
+| Biblioteca | Versão | Propósito |
+|---|---|---|
+| `fastapi` | 0.139.0 | Framework web |
+| `uvicorn` | 0.51.0 | Servidor ASGI |
+| `pydantic` | 2.13.4 | Validação de schemas |
+| `scikit-learn` | 1.9.0 | Modelo Random Forest + pipeline |
+| `pandas` | 3.0.3 | Manipulação de dados |
+| `numpy` | 2.5.1 | Operações numéricas |
+| `joblib` | 1.5.3 | Serialização do modelo treinado |
+| `groq` | 1.5.0 | Cliente API Groq (fallback LLM) |
+| `python-dotenv` | 1.1.0 | Carregamento de variáveis de ambiente |
+
+## Ferramentas de Build e Lint
+
+| Ferramenta | Configuração | Propósito |
+|---|---|---|
+| Checkstyle | `backend/checkstyle.xml` | Padrões de código Java (usado em CI) |
+| Spotless | `backend/pom.xml` (plugin) | Formatação automática Java |
+| ESLint | `frontend/eslint.config.js` | Lint TypeScript/React |
+| Prettier | `frontend/.prettierrc` | Formatação frontend |
+| Ruff | `ml-service/pyproject.toml` | Lint Python (E, F, I, UP, B) |
+| MyPy | `ml-service/pyproject.toml` | Tipagem estática Python |
+| Markdownlint | `.markdownlint.json` | Padrões de documentação |
+| Hadolint | `.hadolint.yaml` | Lint de Dockerfiles |
+| YAMLlint | `.yamllint.yml` | Lint de arquivos YAML |
+| CSpell | `cspell.json` | Verificação ortográfica |
+
+---
+
+> **Nota:** Consulte o [guia de execução](./guia-execucao.md) para instruções de instalação e a [documentação de CI/CD](./ci-cd.md) para detalhes dos pipelines de lint.

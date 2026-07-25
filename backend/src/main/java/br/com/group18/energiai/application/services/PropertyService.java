@@ -29,8 +29,8 @@ public class PropertyService {
         this.propertyApplianceRepository = propertyApplianceRepository;
     }
 
-    public Property create(Long userId, String alias, String propertyType,
-            String address, Integer residentCount, Double areaSqm) {
+    public Property create(
+            Long userId, String alias, String propertyType, String address, Integer residentCount, Double areaSqm) {
         Property property = new Property(userId, alias, propertyType);
         property.setAddress(address);
         property.setResidentCount(residentCount);
@@ -45,15 +45,22 @@ public class PropertyService {
     public Property getOwned(Long propertyId, Long userId) {
         Property property = propertyRepository
                 .findById(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Propriedade n\u00e3o encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Propriedade não encontrada."));
         if (!property.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("Voc\u00ea n\u00e3o tem acesso a esta propriedade.");
+            throw new ForbiddenOperationException("Você não tem acesso a esta propriedade.");
         }
         return property;
     }
 
-    public Property update(Long propertyId, Long userId, String alias, String propertyType, boolean active,
-            String address, Integer residentCount, Double areaSqm) {
+    public Property update(
+            Long propertyId,
+            Long userId,
+            String alias,
+            String propertyType,
+            boolean active,
+            String address,
+            Integer residentCount,
+            Double areaSqm) {
         Property property = getOwned(propertyId, userId);
         property.setAlias(alias);
         property.setPropertyType(propertyType);
@@ -77,7 +84,7 @@ public class PropertyService {
         getOwned(propertyId, userId);
         Appliance appliance = applianceRepository
                 .findById(applianceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aparelho n\u00e3o encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Aparelho não encontrado."));
 
         PropertyAppliance propertyAppliance = propertyApplianceRepository
                 .findByPropertyIdAndApplianceId(propertyId, applianceId)
@@ -90,19 +97,16 @@ public class PropertyService {
         getOwned(propertyId, userId);
         PropertyAppliance propertyAppliance = propertyApplianceRepository
                 .findByPropertyIdAndApplianceId(propertyId, applianceId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Aparelho n\u00e3o est\u00e1 vinculado \u00e0 propriedade."));
+                .orElseThrow(() -> new ResourceNotFoundException("Aparelho não está vinculado à propriedade."));
         propertyApplianceRepository.delete(propertyAppliance);
     }
 
     @Transactional
-    public List<PropertyAppliance> batchUpdateAppliances(
-            Long propertyId, Long userId, List<ApplianceQuantity> items) {
+    public List<PropertyAppliance> batchUpdateAppliances(Long propertyId, Long userId, List<ApplianceQuantity> items) {
         getOwned(propertyId, userId);
 
-        List<Long> incomingIds = items.stream()
-                .map(ApplianceQuantity::applianceId)
-                .toList();
+        List<Long> incomingIds =
+                items.stream().map(ApplianceQuantity::applianceId).toList();
 
         List<PropertyAppliance> existing = propertyApplianceRepository.findByPropertyId(propertyId);
 
@@ -116,8 +120,8 @@ public class PropertyService {
         for (ApplianceQuantity item : items) {
             Appliance appliance = applianceRepository
                     .findById(item.applianceId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Aparelho id=" + item.applianceId() + " não encontrado."));
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Aparelho id=" + item.applianceId() + " não encontrado."));
 
             PropertyAppliance pa = propertyApplianceRepository
                     .findByPropertyIdAndApplianceId(propertyId, item.applianceId())

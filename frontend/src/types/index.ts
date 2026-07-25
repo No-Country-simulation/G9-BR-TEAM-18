@@ -5,42 +5,6 @@ export interface User {
   passwordResetRequired?: boolean;
 }
 
-/** Categorias de maior consumo (ML Service) — sem acentos para consistência com o modelo */
-export const HIGHEST_CONSUMPTION_CATEGORIES = [
-  "Refrigeracao",
-  "Climatizacao",
-  "Tecnologia",
-  "Iluminacao",
-  "Eletrodomesticos",
-  "Servicos",
-  "Outros",
-] as const;
-
-export type HighestConsumptionCategory = (typeof HIGHEST_CONSUMPTION_CATEGORIES)[number];
-
-export interface AnalysisRequest {
-  property_id?: string;
-  /** Consumo mensal em kWh (auto-calculado dos aparelhos, ou manual) */
-  consumption_kwh?: number;
-  peak_hour_usage: boolean;
-  /** Total de equipamentos (auto-calculado dos aparelhos, ou manual) */
-  equipment_quantity?: number;
-  property_type: PropertyType;
-  high_consumption_hours: number;
-  /** Categoria com maior consumo (auto-calculado dos aparelhos, ou manual) */
-  highest_consumption_category?: string;
-  /** Distribuição de potência por categoria (4 campos do ML) */
-  daily_consumption_distribution?: {
-    REFRIGERATION_WATTS: number;
-    HEATING_WATTS: number;
-    AIR_CONDITIONING_WATTS: number;
-    LIGHTING_WATTS: number;
-  };
-  /** Aparelhos específicos selecionados pelo usuário (precisão quantitativa) */
-  appliances?: ApplianceItem[];
-}
-
-/** Tipo de aparelho disponível (vindo do backend ou fallback local) */
 export interface ApplianceType {
   id: string;
   name: string;
@@ -48,15 +12,14 @@ export interface ApplianceType {
   distributionField: string;
   powerWatts: number;
   dailyUsageHours: number;
-  /** Nome do ícone Lucide (PascalCase) para exibição */
+
   icon: string;
-  /** ID numérico do backend (opcional — presente quando o backend tem esse appliance) */
+
   backendId?: number;
 }
 
-/** Aparelho selecionado pelo usuário com quantidade */
 export interface ApplianceItem {
-  type: string; // id do ApplianceType (ex: "GELADEIRA")
+  type: string;
   quantity: number;
 }
 
@@ -66,20 +29,6 @@ export interface AnalysisResponse {
   recommendations: string[];
   estimated_monthly_cost: number;
   source?: string;
-}
-
-/** Backend response para análise com todos os campos (incluindo id, timestamps) */
-export interface AnalysisDetailResponse extends AnalysisResponse {
-  id: number;
-  property_id: number;
-  consumption_kwh: number;
-  peak_hour_usage: boolean;
-  high_consumption_hours: number;
-  estimated_monthly_cost: number;
-  status: string;
-  source?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export type EfficiencyClassification = "EXCELENTE" | "BOM" | "MEDIANO" | "RUIM" | "CRITICO";

@@ -1,22 +1,10 @@
-/**
- * check-forbidden-chars.mjs
- *
- * Verifica a presença de caracteres proibidos em arquivos de texto.
- * Uso: node scripts/check-forbidden-chars.mjs <arquivo1> [arquivo2 ...]
- *
- * Caracteres proibidos atualmente:
- *   - EM DASH (—) — usar travessão simples (-) ou hífen duplo (--) no lugar
- *   - Aspa simples curva (') — usar apóstrofo reto (') no lugar
- *   - Aspa dupla curva (") — usar aspas retas (") no lugar
- */
-
 import { readFileSync } from "node:fs";
 
 const FORBIDDEN = [
   { char: "\u2014", label: "em dash (—)" },
   { char: "\u2013", label: "en dash (–)" },
-  { char: "\u2018", label: "aspa simples curva/esquerda (')" },
-  { char: "\u2019", label: "aspa simples curva/direita (')" },
+  { char: "\u2018", label: "aspa simples curva/esquerda ('')" },
+  { char: "\u2019", label: "aspa simples curva/direita ('')" },
   { char: "\u201C", label: "aspa dupla curva/esquerda (\")" },
   { char: "\u201D", label: "aspa dupla curva/direita (\")" },
 ];
@@ -35,7 +23,7 @@ for (const file of files) {
   try {
     content = readFileSync(file, "utf-8");
   } catch (err) {
-    console.error(`${file}: erro ao ler arquivo — ${err.message}`);
+    console.error(`${file}: erro ao ler arquivo -- ${err.message}`);
     hasError = true;
     continue;
   }

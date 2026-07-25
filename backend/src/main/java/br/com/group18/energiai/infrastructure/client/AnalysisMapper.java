@@ -8,11 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- * Translates a generic {@link MlEnvelope} from the ML Service into a
- * domain {@link MlResult}. Field keys are configurable via application.properties
- * to absorb schema changes in the ML Service without code changes.
- */
 @Component
 public class AnalysisMapper {
 
@@ -34,19 +29,12 @@ public class AnalysisMapper {
         this.sourceKey = sourceKey;
     }
 
-    /**
-     * Converts an {@link MlEnvelope} received from the ML Service into a validated
-     * {@link MlResult} domain object.
-     *
-     * @param envelope the raw response from the ML Service
-     * @return a validated domain result
-     * @throws MlServiceUnavailableException if required fields are missing or invalid
-     */
     public MlResult toMlResult(MlEnvelope envelope) {
         String category = extractString(envelope, categoryKey);
         double probability = extractDouble(envelope, probabilityKey);
         List<String> recommendations = extractStringList(envelope, recommendationsKey);
-        String source = envelope.get(sourceKey) != null ? envelope.get(sourceKey).toString() : "";
+        String source =
+                envelope.get(sourceKey) != null ? envelope.get(sourceKey).toString() : "";
 
         log.debug(
                 "Mapped ML response: category='{}', probability={}, recommendations={}, source='{}'",

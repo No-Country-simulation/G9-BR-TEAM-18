@@ -1,6 +1,5 @@
 package br.com.group18.energiai.core.domain.model;
 
-/** Property persisted in {@code tb_property}. */
 public class Property {
 
     private Long id;

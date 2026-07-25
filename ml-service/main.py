@@ -102,69 +102,6 @@ def _groq_register_call() -> None:
     _groq_calls_today += 1
 
 
-def _run_prediction(data: PredictRequest) -> dict:
-    """Executa a lógica de predição e retorna um dicionário com category, probability, recommendations, source."""
-    category = ""
-    probability = 0.0
-    source = ""
-    recommendations = []
-
-    if model is not None:
-        try:
-            dc = data.daily_consumption_distribution or ConsumptionDistribution()
-            df = pd.DataFrame(
-                [
-                    {
-                        "consumption_kwh": data.consumption_kwh,
-                        "peak_hour_usage": int(data.peak_hour_usage),
-                        "equipment_quantity": data.equipment_quantity,
-                        "property_type": data.property_type,
-                        "high_consumption_hours": data.high_consumption_hours,
-                        "highest_consumption_category": data.highest_consumption_category
-                        or "Outros",
-                        "refrigeration_watts": dc.REFRIGERATION_WATTS,
-                        "heating_watts": dc.HEATING_WATTS,
-                        "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
-                        "lighting_watts": dc.LIGHTING_WATTS,
-                    }
-                ]
-            )
-            pred = model.predict(df)[0]
-            probs = model.predict_proba(df)[0]
-            max_prob = float(max(probs))
-            category = pred.upper()
-            probability = round(max_prob, 4)
-
-            if max_prob >= 0.80:
-                source = "model"
-            elif groq_client and _groq_can_call():
-                source = f"model+groq (confidence {max_prob:.1%})"
-            else:
-                source = f"model (confidence {max_prob:.1%})"
-        except Exception as e:
-            print(f"[EnergiAI] Prediction error: {e}")
-            category, probability = _classify_rule_based(data)
-            source = "rule-based (model error)"
-    else:
-        category, probability = _classify_rule_based(data)
-        source = "rule-based (model unavailable)"
-
-    if groq_client and "groq" in source:
-        _groq_register_call()
-        try:
-            recommendations = _generate_recommendations_groq(data, category)
-            if not recommendations:
-                raise ValueError("Groq returned empty recommendations")
-        except Exception as e:
-            print(f"[EnergiAI] Error calling Groq: {e} — using rule-based fallback")
-            recommendations = _generate_recommendations(data, category)
-            source = source.replace("groq", "rule-based (groq failed)")
-    else:
-        recommendations = _generate_recommendations(data, category)
-
-    return {"category": category, "probability": probability, "recommendations": recommendations, "source": source}
-
-
 # -------------------------------------------------------------
 # CONTRACT DEFINITION
 # -------------------------------------------------------------
@@ -329,6 +266,68 @@ sem introdução e sem comentários adicionais."""
         if linha.strip()
     ]
     return [r for r in recommendations[:3] if r]
+
+def _run_prediction(data: "PredictRequest") -> dict:
+    """Executa a lógica de predição e retorna um dicionário com category, probability, recommendations, source."""
+    category = ""
+    probability = 0.0
+    source = ""
+    recommendations = []
+
+    if model is not None:
+        try:
+            dc = data.daily_consumption_distribution or ConsumptionDistribution()
+            df = pd.DataFrame(
+                [
+                    {
+                        "consumption_kwh": data.consumption_kwh,
+                        "peak_hour_usage": int(data.peak_hour_usage),
+                        "equipment_quantity": data.equipment_quantity,
+                        "property_type": data.property_type,
+                        "high_consumption_hours": data.high_consumption_hours,
+                        "highest_consumption_category": data.highest_consumption_category
+                        or "Outros",
+                        "refrigeration_watts": dc.REFRIGERATION_WATTS,
+                        "heating_watts": dc.HEATING_WATTS,
+                        "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
+                        "lighting_watts": dc.LIGHTING_WATTS,
+                    }
+                ]
+            )
+            pred = model.predict(df)[0]
+            probs = model.predict_proba(df)[0]
+            max_prob = float(max(probs))
+            category = pred.upper()
+            probability = round(max_prob, 4)
+
+            if max_prob >= 0.80:
+                source = "model"
+            elif groq_client and _groq_can_call():
+                source = f"model+groq (confidence {max_prob:.1%})"
+            else:
+                source = f"model (confidence {max_prob:.1%})"
+        except Exception as e:
+            print(f"[EnergiAI] Prediction error: {e}")
+            category, probability = _classify_rule_based(data)
+            source = "rule-based (model error)"
+    else:
+        category, probability = _classify_rule_based(data)
+        source = "rule-based (model unavailable)"
+
+    if groq_client and "groq" in source:
+        _groq_register_call()
+        try:
+            recommendations = _generate_recommendations_groq(data, category)
+            if not recommendations:
+                raise ValueError("Groq returned empty recommendations")
+        except Exception as e:
+            print(f"[EnergiAI] Error calling Groq: {e} — using rule-based fallback")
+            recommendations = _generate_recommendations(data, category)
+            source = source.replace("groq", "rule-based (groq failed)")
+    else:
+        recommendations = _generate_recommendations(data, category)
+
+    return {"category": category, "probability": probability, "recommendations": recommendations, "source": source}
 
 
 # -------------------------------------------------------------

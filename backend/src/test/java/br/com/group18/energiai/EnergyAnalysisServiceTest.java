@@ -55,8 +55,15 @@ class EnergyAnalysisServiceTest {
 
         when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Map<String, Object> responseBody =
-                Map.of("category", "EXCELENTE", "probability", 0.95, "recommendations", List.of("Ótimo consumo."), "source", "model");
+        Map<String, Object> responseBody = Map.of(
+                "category",
+                "EXCELENTE",
+                "probability",
+                0.95,
+                "recommendations",
+                List.of("Ótimo consumo."),
+                "source",
+                "model");
         when(mlClientMock.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(responseBody));
 
         EnergyAnalysis result = service.execute(
@@ -84,7 +91,12 @@ class EnergyAnalysisServiceTest {
         MlServiceUnavailableException exception = assertThrows(
                 MlServiceUnavailableException.class,
                 () -> service.execute(
-                        property, List.of(propertyAppliance), new BigDecimal("108.0"), true, new BigDecimal("6.5"), null));
+                        property,
+                        List.of(propertyAppliance),
+                        new BigDecimal("108.0"),
+                        true,
+                        new BigDecimal("6.5"),
+                        null));
 
         assertEquals(
                 "Serviço de análise temporariamente indisponível. Tente novamente em instantes.",

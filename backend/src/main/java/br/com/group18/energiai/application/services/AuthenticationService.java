@@ -97,8 +97,6 @@ public class AuthenticationService {
         return hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$");
     }
 
-    // ---- SHA-256 legacy methods (for existing users before BCrypt migration) ----
-
     private boolean verifySha256(String password, String storedHash) {
         try {
             byte[] saltHash = Base64.getDecoder().decode(storedHash);

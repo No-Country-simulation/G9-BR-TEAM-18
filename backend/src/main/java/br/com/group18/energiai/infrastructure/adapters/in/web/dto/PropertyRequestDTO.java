@@ -1,6 +1,6 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
-import br.com.group18.energiai.core.domain.model.TipoImovel;
+import br.com.group18.energiai.core.domain.model.PropertyType;
 import jakarta.validation.constraints.NotNull;
 
 public class PropertyRequestDTO {
@@ -9,7 +9,7 @@ public class PropertyRequestDTO {
     private String alias;
 
     @NotNull
-    private TipoImovel propertyType;
+    private PropertyType propertyType;
 
     private boolean active = true;
 
@@ -27,11 +27,11 @@ public class PropertyRequestDTO {
         this.alias = alias;
     }
 
-    public TipoImovel getPropertyType() {
+    public PropertyType getPropertyType() {
         return propertyType;
     }
 
-    public void setPropertyType(TipoImovel propertyType) {
+    public void setPropertyType(PropertyType propertyType) {
         this.propertyType = propertyType;
     }
 

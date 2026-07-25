@@ -8,10 +8,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-/**
- * Discovers the ML Service's schema and valid categories at application startup.
- * Falls back to defaults if the ML Service is unavailable.
- */
 @Component
 public class MlSchemaDiscovery implements ApplicationRunner {
 

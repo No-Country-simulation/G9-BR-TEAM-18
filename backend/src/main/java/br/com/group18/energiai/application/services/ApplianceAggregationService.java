@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
 
-/** Builds the inventory-derived features expected by the ML service. */
 @Service
 public class ApplianceAggregationService {
 
@@ -27,9 +26,7 @@ public class ApplianceAggregationService {
                 case HEATING -> heatingWatts = heatingWatts.add(watts);
                 case AIR_CONDITIONING -> airConditioningWatts = airConditioningWatts.add(watts);
                 case LIGHTING -> lightingWatts = lightingWatts.add(watts);
-                case OTHER -> {
-                    // Categories outside the ML distribution are still counted as equipment.
-                }
+                case OTHER -> {}
             }
         }
 

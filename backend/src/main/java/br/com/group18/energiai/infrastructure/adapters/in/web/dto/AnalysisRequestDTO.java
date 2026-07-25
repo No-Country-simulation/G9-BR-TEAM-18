@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
-/** Input required to create an analysis linked to {@code tb_property}. */
 public class AnalysisRequestDTO {
 
     @NotNull

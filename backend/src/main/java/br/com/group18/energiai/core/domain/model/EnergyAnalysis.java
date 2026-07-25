@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Energy analysis and its recommendations, persisted in two related tables. */
 public class EnergyAnalysis {
 
     private Long id;

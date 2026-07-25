@@ -165,7 +165,7 @@ describe("AuthContext", () => {
     await userEvent.click(screen.getByText("reset password"));
 
     await waitFor(() => {
-      // After successful reset, the needs reset flag should be gone
+
       expect(screen.queryByText("needs reset")).not.toBeInTheDocument();
     });
   });
@@ -188,7 +188,7 @@ describe("AuthContext", () => {
 
     await userEvent.click(screen.getByText("reset password"));
 
-    // User should still be logged in with needs reset flag
+
     await waitFor(() => {
       expect(screen.getByText("needs reset")).toBeInTheDocument();
     });
