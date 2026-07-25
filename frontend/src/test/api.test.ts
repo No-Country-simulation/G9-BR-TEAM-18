@@ -9,7 +9,6 @@ import {
   listProperties,
   addApplianceToProperty,
   listPropertyAppliances,
-  removeApplianceFromProperty,
   listAppliances,
 } from "../services/api";
 
@@ -132,7 +131,13 @@ describe("createProperty", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ alias: "Casa", property_type: "Casa" }),
+      body: JSON.stringify({
+        alias: "Casa",
+        property_type: "Casa",
+        address: null,
+        resident_count: null,
+        area_sqm: null,
+      }),
     });
   });
 
@@ -196,33 +201,19 @@ describe("listPropertyAppliances", () => {
   });
 });
 
-describe("removeApplianceFromProperty", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("sends DELETE request", async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
-
-    await removeApplianceFromProperty(1, 2);
-
-    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances/2`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-  });
-
-  it("throws ApiError on failure", async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "error", fields: {} }));
-
-    await expect(removeApplianceFromProperty(1, 2)).rejects.toThrow("error");
-  });
-});
-
 describe("listAppliances", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns fallback on network error", async () => {
     mockFetch.mockRejectedValueOnce(new Error("network"));
+
+    const result = await listAppliances();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("returns fallback when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, []));
 
     const result = await listAppliances();
     expect(Array.isArray(result)).toBe(true);
