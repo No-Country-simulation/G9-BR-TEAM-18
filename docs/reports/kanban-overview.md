@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 62 | | Backend (B) | 34 |
-| In review | 0 | | Infraestrutura (I) | 15 |
+| Done | 63 | | Backend (B) | 34 |
+| In review | 0 | | Infraestrutura (I) | 16 |
 | In progress | 0 | | Frontend (F) | 12 |
 | Ready | 0 | | Banco de Dados (M) | 4 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **62** | | **Total** | **67** |
+| **Total** | **63** | | **Total** | **68** |
 
 ## Movimentações (24/07/2026)
 
@@ -82,3 +82,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título |
 |---|---|
 | I019 | Infraestrutura/Base - Enriquecer documentação Swagger/OpenAPI da API |
+
+### In progress → Done (Finalizados)
+
+| ID | Título |
+|---|---|
+| I020 | Configuração de usuários DEV e TEST no Oracle DB com ORDS |

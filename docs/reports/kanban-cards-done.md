@@ -71,3 +71,4 @@
 | B034 | Backend (Endpoints/Services) - Adicionar testes: PropertyServiceExtended (13), AnalysisMapperExtended (13) | - | - |
 | F032 | Frontend (Telas/Componentes) - Corrigir createProperty test e remover demo.test.ts | - | - |
 | I018 | Infraestrutura/Base - Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
+| I020 | Infraestrutura/Base - Configuração de usuários DEV e TEST no Oracle DB com ORDS | #89 | - |
