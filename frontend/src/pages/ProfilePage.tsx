@@ -6,7 +6,6 @@ import type {
   ApplianceType,
   ApplianceItem,
   PropertyType,
-  PropertyAppliance,
   Regularity,
   AnalysisResponse,
 } from "../types";
@@ -23,24 +22,23 @@ import {
   updateProperty,
   listAppliances,
   listPropertyAppliances,
-  addApplianceToProperty,
-  removeApplianceFromProperty,
+  batchUpdateAppliances,
   analyzeEnergy,
   listAnalyses,
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
 
-const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
-  Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
-  Climatizacao: { label: "Climatização", icone: "Wind", cor: "#06b6d4" },
-  Tecnologia: { label: "Tecnologia", icone: "Monitor", cor: "#8b5cf6" },
-  Iluminacao: { label: "Iluminação", icone: "Lightbulb", cor: "#f59e0b" },
-  Eletrodomesticos: { label: "Eletrodomésticos", icone: "Home", cor: "#ec4899" },
-  Servicos: { label: "Serviços", icone: "Wrench", cor: "#14b8a6" },
-  Outros: { label: "Outros", icone: "Box", cor: "#6b7280" },
+const CATEGORIES: Record<string, { label: string; icon: string; color: string }> = {
+  Refrigeracao: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
+  Climatizacao: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
+  Tecnologia: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
+  Iluminacao: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
+  Eletrodomesticos: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
+  Servicos: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
+  Outros: { label: "Outros", icon: "Box", color: "#6b7280" },
 };
 
-const ORDEM_CATEGORIAS = [
+const CATEGORY_ORDER = [
   "Refrigeracao",
   "Climatizacao",
   "Tecnologia",
@@ -73,7 +71,9 @@ export default function ProfilePage() {
 
   const [property, setProperty] = useState<PropertyResponse | null>(null);
   const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
-  const [savedAppliances, setSavedAppliances] = useState<PropertyAppliance[]>([]);
+  const [address, setAddress] = useState("");
+  const [residentCount, setResidentCount] = useState(1);
+  const [areaSqm, setAreaSqm] = useState(50);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
@@ -109,8 +109,10 @@ export default function ProfilePage() {
         if (active) {
           setProperty(active);
           setPropertyType(active.property_type as PropertyType);
+          setAddress(active.address ?? "");
+          setResidentCount(active.resident_count ?? 1);
+          setAreaSqm(active.area_sqm ?? 50);
           return listPropertyAppliances(active.id).then((pa) => {
-            setSavedAppliances(pa);
             setSelectedAppliances(
               pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
             );
@@ -160,8 +162,8 @@ export default function ProfilePage() {
 
   function addAppliance(id: string) {
     setSelectedAppliances((prev) => {
-      const existente = prev.find((a) => a.type === id);
-      if (existente) {
+      const existing = prev.find((a) => a.type === id);
+      if (existing) {
         return prev.map((a) => (a.type === id ? { ...a, quantity: a.quantity + 1 } : a));
       }
       return [...prev, { type: id, quantity: 1 }];
@@ -182,18 +184,18 @@ export default function ProfilePage() {
 
   const applianceCalc = useMemo(() => {
     if (selectedAppliances.length === 0) {
-      return { totalEquipamentos: 0, consumoMensalKwh: 0 };
+      return { totalEquipment: 0, monthlyConsumptionKwh: 0 };
     }
-    let totalConsumo = 0;
+    let totalConsumption = 0;
     let totalQty = 0;
     for (const item of selectedAppliances) {
-      const tipo = applianceTypes.find((t) => t.id === item.type);
-      if (!tipo) continue;
-      const dailyKwh = (tipo.powerWatts * tipo.dailyUsageHours * item.quantity) / 1000;
-      totalConsumo += dailyKwh * 30;
+      const appliance = applianceTypes.find((t) => t.id === item.type);
+      if (!appliance) continue;
+      const dailyKwh = (appliance.powerWatts * appliance.dailyUsageHours * item.quantity) / 1000;
+      totalConsumption += dailyKwh * 30;
       totalQty += item.quantity;
     }
-    return { totalEquipamentos: totalQty, consumoMensalKwh: totalConsumo };
+    return { totalEquipment: totalQty, monthlyConsumptionKwh: totalConsumption };
   }, [selectedAppliances, applianceTypes]);
 
   async function handleSave() {
@@ -202,38 +204,34 @@ export default function ProfilePage() {
     try {
       let prop = property;
       if (prop) {
-        prop = await updateProperty(prop.id, "Meu Perfil", propertyType, true);
+        prop = await updateProperty(
+          prop.id,
+          "Meu Perfil",
+          propertyType,
+          true,
+          address,
+          residentCount,
+          areaSqm,
+        );
       } else {
-        prop = await createProperty("Meu Perfil", propertyType);
+        prop = await createProperty("Meu Perfil", propertyType, address, residentCount, areaSqm);
       }
       setProperty(prop);
 
-      const selectedWithBackend = selectedAppliances
-        .map((item) => ({
-          item,
-          tipo: applianceTypes.find((t) => t.id === item.type),
-        }))
-        .filter((x): x is { item: typeof x.item; tipo: ApplianceType } => !!x.tipo?.backendId);
+      const batchItems = selectedAppliances
+        .map((item) => {
+          const appliance = applianceTypes.find((t) => t.id === item.type);
+          return appliance?.backendId
+            ? { appliance_id: appliance.backendId, quantity: item.quantity }
+            : null;
+        })
+        .filter((x): x is { appliance_id: number; quantity: number } => x !== null);
 
-      const selectedBackendIds = new Set(selectedWithBackend.map((x) => x.tipo.backendId!));
-
-      for (const { item, tipo } of selectedWithBackend) {
-        const aid = tipo.backendId!;
-        const saved = savedAppliances.find((sa) => sa.appliance_id === aid);
-        if (!saved || saved.quantity !== item.quantity) {
-          await addApplianceToProperty(prop.id, aid, item.quantity);
-        }
-      }
-      for (const sa of savedAppliances) {
-        if (!selectedBackendIds.has(sa.appliance_id)) {
-          await removeApplianceFromProperty(prop.id, sa.appliance_id);
-        }
+      if (batchItems.length > 0) {
+        await batchUpdateAppliances(prop.id, batchItems);
       }
 
       localStorage.setItem(REGULARITY_KEY, regularity);
-
-      const refreshed = await listPropertyAppliances(prop.id);
-      setSavedAppliances(refreshed);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar perfil");
     } finally {
@@ -247,7 +245,8 @@ export default function ProfilePage() {
     setError(null);
     setResult(null);
     try {
-      const consumptionKwh = selectedAppliances.length > 0 ? applianceCalc.consumoMensalKwh : 300;
+      const consumptionKwh =
+        selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
       const res = await analyzeEnergy(property.id, consumptionKwh, false, 6);
       setResult(res);
       setLastAnalysis({
@@ -301,18 +300,53 @@ export default function ProfilePage() {
               >
                 {PROPERTY_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {t === "RESIDENCIAL" ? "Residencial" : "Comercial"}
                   </option>
                 ))}
               </select>
             </div>
 
+            <div className="form-group">
+              <label htmlFor="endereco">Endereço</label>
+              <input
+                id="endereco"
+                type="text"
+                className="form-input"
+                placeholder="Rua, número, bairro"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="moradores">Moradores</label>
+                <input
+                  id="moradores"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={residentCount}
+                  onChange={(e) => setResidentCount(Math.max(1, Number(e.target.value)))}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="area">Área (m²)</label>
+                <input
+                  id="area"
+                  type="number"
+                  min="10"
+                  max="99999"
+                  value={areaSqm}
+                  onChange={(e) => setAreaSqm(Math.max(10, Number(e.target.value)))}
+                />
+              </div>
+            </div>
+
             <h3 className="section-title">
               Seus Aparelhos
               {selectedAppliances.length > 0 && (
-                <span className="appliance-count-badge">
-                  {applianceCalc.totalEquipamentos} equip.
-                </span>
+                <span className="appliance-count-badge">{applianceCalc.totalEquipment} equip.</span>
               )}
             </h3>
             <p className="section-subtitle">
@@ -329,14 +363,19 @@ export default function ProfilePage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                <button type="button" className="search-clear" onClick={() => setSearchTerm("")}>
+                <button
+                  type="button"
+                  className="search-clear"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Limpar busca"
+                >
                   ✕
                 </button>
               )}
             </div>
 
             <div className="appliance-catalog">
-              {ORDEM_CATEGORIAS.map((cat) => {
+              {CATEGORY_ORDER.map((cat) => {
                 const catInfo = CATEGORIES[cat];
                 const appliances = appliancesByCategory(cat);
                 if (appliances.length === 0) return null;
@@ -347,10 +386,13 @@ export default function ProfilePage() {
                       type="button"
                       className="appliance-category-header"
                       onClick={() => toggleCategory(cat)}
-                      style={{ "--cat-color": catInfo.cor } as React.CSSProperties}
+                      aria-label={
+                        isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
+                      }
+                      style={{ "--cat-color": catInfo.color } as React.CSSProperties}
                     >
                       <span className="category-icon">
-                        <LucideIcon name={catInfo.icone} size={18} />
+                        <LucideIcon name={catInfo.icon} size={18} />
                       </span>
                       <span className="category-label">{catInfo.label}</span>
                       <span className="category-count">{appliances.length}</span>
@@ -366,6 +408,11 @@ export default function ProfilePage() {
                               type="button"
                               className={`appliance-card ${selected ? "selected" : ""}`}
                               onClick={() => !selected && addAppliance(t.id)}
+                              aria-label={
+                                selected
+                                  ? `${t.name} - ${selected.quantity}x selecionado`
+                                  : `Adicionar ${t.name} - ${t.powerWatts}W`
+                              }
                               title={`${t.name} - ${t.powerWatts}W, ~${t.dailyUsageHours}h/dia`}
                             >
                               <LucideIcon name={t.icon} size={22} className="appliance-card-icon" />
@@ -401,6 +448,7 @@ export default function ProfilePage() {
                             className="qty-btn"
                             onClick={() => changeQuantity(item.type, -1)}
                             disabled={item.quantity <= 1}
+                            aria-label={`Reduzir quantidade de ${info.name}`}
                           >
                             <I.Minus size={14} />
                           </button>
@@ -409,6 +457,7 @@ export default function ProfilePage() {
                             type="button"
                             className="qty-btn"
                             onClick={() => changeQuantity(item.type, 1)}
+                            aria-label={`Aumentar quantidade de ${info.name}`}
                           >
                             <I.Plus size={14} />
                           </button>
@@ -417,6 +466,7 @@ export default function ProfilePage() {
                           type="button"
                           className="remove-btn"
                           onClick={() => removeAppliance(item.type)}
+                          aria-label={`Remover ${info.name} da lista`}
                         >
                           <I.Trash2 size={14} />
                         </button>
@@ -427,12 +477,12 @@ export default function ProfilePage() {
                 <div className="appliance-summary">
                   <div className="summary-stat">
                     <span className="summary-label">Equipamentos</span>
-                    <span className="summary-value">{applianceCalc.totalEquipamentos}</span>
+                    <span className="summary-value">{applianceCalc.totalEquipment}</span>
                   </div>
                   <div className="summary-stat">
                     <span className="summary-label">Consumo estimado</span>
                     <span className="summary-value">
-                      {applianceCalc.consumoMensalKwh.toFixed(0)} kWh/mês
+                      {applianceCalc.monthlyConsumptionKwh.toFixed(0)} kWh/mês
                     </span>
                   </div>
                 </div>
@@ -454,6 +504,7 @@ export default function ProfilePage() {
                   type="button"
                   className={`regularity-option ${regularity === opt.value ? "active" : ""}`}
                   onClick={() => setRegularity(opt.value)}
+                  aria-label={`Regularidade: ${opt.label}`}
                 >
                   {opt.value === "instantanea" && <I.Zap size={16} />}
                   {opt.value === "diaria" && <I.Sun size={16} />}
@@ -469,6 +520,7 @@ export default function ProfilePage() {
               className="btn btn-primary btn-full"
               onClick={handleSave}
               disabled={saving}
+              aria-label="Salvar perfil do imóvel"
             >
               {saving ? (
                 "Salvando..."
@@ -485,6 +537,7 @@ export default function ProfilePage() {
                 className="btn btn-secondary btn-full"
                 onClick={handleAnalyzeNow}
                 disabled={analyzing || saving}
+                aria-label="Executar análise energética"
                 style={{ marginTop: "0.75rem" }}
               >
                 {analyzing ? (

@@ -15,7 +15,6 @@ import {
   UserCog,
   ArrowUp,
   ArrowDown,
-  Minus,
   Target,
   Lightbulb,
   PiggyBank,
@@ -23,14 +22,12 @@ import {
 
 const KWH_TARIFF = 0.75;
 
-/** Calcula quanto o usuário economizaria se reduzisse X kWh */
 function savingsSimulation(currentKwh: number, reductionKwh: number) {
   const saving = reductionKwh * KWH_TARIFF;
   const newKwh = Math.max(0, currentKwh - reductionKwh);
   return { saving, newKwh, reductionKwh };
 }
 
-/** Interpreta a tendência do consumo */
 function interpretTrend(analyses: AnalysisHistory[]): {
   trend: "up" | "down" | "stable";
   percentage: number;
@@ -51,6 +48,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [chartHeight] = useState(() => (window.innerWidth < 480 ? 200 : 300));
   const [loading, setLoading] = useState(true);
   const [analyses, setAnalyses] = useState<AnalysisHistory[]>([]);
   const [goalKwh, setGoalKwh] = useState<number>(() => {
@@ -115,7 +113,6 @@ export default function Dashboard() {
   const lastAnalysis = analyses.length > 0 ? analyses[analyses.length - 1] : null;
   const trendInfo = interpretTrend(analyses);
 
-  // Últimas 2 categorias para mostrar progresso
   const recentCategories = analyses.slice(-2).map((a) => a.category);
   const improved =
     analyses.length >= 2
@@ -123,14 +120,12 @@ export default function Dashboard() {
         CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]
       : false;
 
-  // Simulações de economia
   const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;
   const simulations = SAVINGS_PRESETS.map((r) => ({
     ...savingsSimulation(currentKwh, r),
     label: `${r} kWh/mês`,
   }));
 
-  // Progresso da meta
   const goalProgress = goalKwh > 0 ? Math.min(100, (currentKwh / goalKwh) * 100) : 0;
 
   return (
@@ -146,7 +141,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* --- Última Análise + Tendência --- */}
       {lastAnalysis && (
         <div className="dash-last-analysis">
           <div className="dash-last-header">
@@ -186,8 +180,15 @@ export default function Dashboard() {
           {improved && analyses.length >= 2 && (
             <div className="dash-progress-msg">
               <TrendingUp size={16} />
-              Você evoluiu de <strong>{CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY]}</strong>{" "}
-              para <strong>{CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]}</strong>!
+              Você evoluiu de{" "}
+              <strong>
+                {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY]}
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]}
+              </strong>
+              !
             </div>
           )}
         </div>
@@ -202,7 +203,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* --- Cards de Métricas --- */}
       <div className="dash-grid">
         <div className="dash-card">
           <div className="dash-card-header">
@@ -241,7 +241,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* --- Meta Personalizada --- */}
       <div className="dash-section">
         <h3>
           <Target size={20} /> Meta de Consumo
@@ -341,7 +340,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* --- Simulação de Economia --- */}
       {lastAnalysis && (
         <div className="dash-section">
           <h3>
@@ -356,9 +354,7 @@ export default function Dashboard() {
                 <Lightbulb size={20} className="sim-icon" />
                 <div className="sim-details">
                   <span className="sim-reduction">Reduza {sim.reductionKwh} kWh</span>
-                  <span className="sim-consumption">
-                    Novo consumo: {sim.newKwh.toFixed(0)} kWh
-                  </span>
+                  <span className="sim-consumption">Novo consumo: {sim.newKwh.toFixed(0)} kWh</span>
                 </div>
                 <span className="sim-saving">+ R$ {sim.saving.toFixed(2)}/mês</span>
               </div>
@@ -367,13 +363,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* --- Gráfico de Consumo --- */}
       {data.monthlyConsumption.length > 0 && (
         <div className="dash-chart">
           <h3>
             <TrendingUp size={20} /> Consumo por Mês (kWh)
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={data.monthlyConsumption}>
               <XAxis
                 dataKey="month"
