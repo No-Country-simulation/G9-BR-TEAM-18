@@ -2,7 +2,7 @@
 
 ## Status
 
-Aceito
+Proposto
 
 ## Contexto
 
