@@ -12,23 +12,27 @@ para português internamente. No entanto, durante a análise do código-fonte do
 surgiram dúvidas sobre por que certos identificadores internos permanecem em português e se
 isso poderia causar confusão ou retrabalho no backend.
 
-As principais dúvidas foram:
+Além disso, o feedback técnico da equipe de ML revelou três nuances importantes que este ADR
+complementa:
 
-- O dicionário `BASE_CONSUMPTION_BY_TYPE` em `main.py` contém valores como `"Casa": 250.0` -
-  por que em português se o contrato agora é inglês?
-- O log de treinamento (`_store_for_training()`) registra `data.property_type` diretamente -
-  isso ficará em inglês ou português?
-- O backend precisa saber que o ML Service usa português internamente para fazer algum
-  tratamento especial?
+1. A função `normalize_category()` em `features.py` não pode ser modificada porque é usada
+   tanto no treino (dados acentuados em português) quanto na inferência (via `sklearn Pipeline`).
+   A solução é **adicionar** uma função de tradução separada, não modificar a existente.
+2. O dicionário `BASE_CONSUMPTION_BY_TYPE` existe em três arquivos (`main.py`, `features.py`,
+   `train_model.py`). Apenas a cópia em `main.py` deve mudar para inglês.
+3. O log de treinamento (`_store_for_training()`) deve armazenar valores em português
+   (traduzidos), não crus em inglês, para manter a compatibilidade com `load_feedback()` e
+   o `OneHotEncoder` em `train_model.py`.
 
 Este ADR complementa o ADR-0027 esclarecendo a fronteira exata entre o que é **contrato público
-da API** (inglês) e o que é **processamento interno do ML Service** (pode usar português).
+da API** (inglês) e o que é **processamento interno do ML Service** (pode usar português),
+incorporando as correções apontadas pelo time responsável pelo ML.
 
 ## Decisão
 
 A equipe decidiu formalizar a separação entre **camada de contrato** e **camada de
 processamento interno** do ML Service, documentando que o backend nunca precisa conhecer
-os detalhes internos do ML. A normalização EN→PT é uma responsabilidade exclusiva do ML
+os detalhes internos do ML. A tradução EN→PT é uma responsabilidade exclusiva do ML
 Service, e o backend se relaciona apenas com o contrato em inglês.
 
 ### 1. O que o backend vê vs o que o ML processa internamente
@@ -41,12 +45,22 @@ Service, e o backend se relaciona apenas com o contrato em inglês.
 │  highest_consumption_category │──HTTP→│  │  → property_type: "RESIDENCIAL"      │   │
 │  : "REFRIGERATION"            │       │  │  → highest_consumption_category:     │   │
 │                               │       │  │    "REFRIGERATION"                   │   │
-│  Recebe do ML:                │       │  └──────────────────────────────────────┘   │
-│  category: "BOM"              │       │                     ↓                      │
-│  recommendations: ["..."]     │←HTTP──│  ┌── normalização EN→PT ───────────────┐   │
+│  Recebe do ML:                │       │  │                                       │   │
+│  category: "BOM"              │       │  │  _store_for_training()               │   │
+│  recommendations: ["..."]     │←HTTP──│  │  → grava VALORES TRADUZIDOS (PT)    │   │
+│                               │       │  │    para compatibilidade com          │   │
+│                               │       │  │    load_feedback() + OneHotEncoder   │   │
+│                               │       │  └──────────────────────────────────────┘   │
+│                               │       │                     ↓ (traduz)             │
+│                               │       │  ┌── normalização EN→PT ───────────────┐   │
 │                               │       │  │  normalize_property_type()           │   │
-│                               │       │  │  normalize_category()                │   │
+│                               │       │  │  translate_category() (NOVA!)        │   │
 │                               │       │  │  → "Casa", "Refrigeracao"            │   │
+│                               │       │  │                                     │   │
+│                               │       │  │  normalize_category() (existe)       │   │
+│                               │       │  │  → normaliza acentos PT ("Refrige-  │   │
+│                               │       │  │    ração" → "Refrigeracao")          │   │
+│                               │       │  │  → NÃO modificada (usada no treino)  │   │
 │                               │       │  └──────────────────────────────────────┘   │
 │                               │       │                     ↓                      │
 │                               │       │  ┌── Camada Interna (português) ───────┐   │
@@ -56,40 +70,30 @@ Service, e o backend se relaciona apenas com o contrato em inglês.
 │                               │       │  │  Fallback rule-based:                │   │
 │                               │       │  │  _classify_rule_based()             │   │
 │                               │       │  │  BASE_CONSUMPTION_BY_TYPE           │   │
-│                               │       │  │  → "Casa": 250.0 (língua neutra)    │   │
+│                               │       │  │  → chaves em INGLÊS (só main.py)   │   │
 │                               │       │  └──────────────────────────────────────┘   │
 └───────────────────────────────┘       └─────────────────────────────────────────────┘
 ```
 
-### 2. Por que `BASE_CONSUMPTION_BY_TYPE` usa `"Casa": 250.0` no código atual
+### 2. Por que `BASE_CONSUMPTION_BY_TYPE` existe em três arquivos, mas só um muda
 
-O dicionário `BASE_CONSUMPTION_BY_TYPE` é usado exclusivamente pela função de fallback
-`_classify_rule_based()`. Essa função recebe o `data.property_type` **cru** (sem normalização).
+O dicionário `BASE_CONSUMPTION_BY_TYPE` está presente em três arquivos, cada um com um
+propósito diferente:
 
-**Código atual (antes do ADR-0027):**
+| Arquivo | Uso | Deve mudar para inglês? | Motivo |
+|---|---|---|---|
+| `main.py` | `_classify_rule_based()` - fallback da API | **Sim** | Recebe `data.property_type` cru da requisição, que agora será `"RESIDENCIAL"` (inglês) |
+| `features.py` | Definido mas **não usado** (código usa `500.0` hardcoded) | **Não** (ou remover) | Está apenas definido, nunca acessado com o valor cru da requisição |
+| `train_model.py` | Geração de dados sintéticos e cálculo de ineficiência no treino | **Não** | Usado internamente, nunca recebe dados do backend |
 
-```python
-BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250.0,
-    "Apartamento": 150.0,
-    "Comercial": 500.0,
-}
-
-def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
-    base = BASE_CONSUMPTION_BY_TYPE.get(data.property_type, 250.0)
-    #                            ↑ data.property_type = "Casa" (português)
-```
-
-Neste cenário, o backend enviava `"Casa"` (português), e o dicionário tinha chaves em português.
-Funcionava porque **contrato e processamento interno estavam no mesmo idioma**.
-
-**Após o ADR-0027:**
+**Código após ADR-0027 (apenas `main.py` muda):**
 
 ```python
+# main.py - Recebe data.property_type cru da requisição → chaves em inglês
 BASE_CONSUMPTION_BY_TYPE = {
-    "RESIDENCIAL": 250.0,   # ← chave agora em inglês
-    "APARTAMENTO": 150.0,   # ← porque data.property_type agora é "RESIDENCIAL"
-    "COMERCIAL": 500.0,     # ← (cru, sem normalização)
+    "RESIDENCIAL": 250.0,
+    "APARTAMENTO": 150.0,
+    "COMERCIAL": 500.0,
 }
 
 def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
@@ -97,53 +101,101 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
     #                            ↑ data.property_type = "RESIDENCIAL" (inglês)
 ```
 
-O dicionário `BASE_CONSUMPTION_BY_TYPE` **não contém texto em português** - ele contém:
+**O que não muda:**
 
-| Chave | Valor | Natureza do valor |
-|---|---|---|
-| `"RESIDENCIAL"` | `250.0` | Número: consumo base estimado em kWh/mês |
-| `"APARTAMENTO"` | `150.0` | Número: consumo base estimado em kWh/mês |
-| `"COMERCIAL"` | `500.0` | Número: consumo base estimado em kWh/mês |
+```python
+# features.py - Permanece em português (ou pode ser limpo se não usado)
+BASE_CONSUMPTION_BY_TYPE = {
+    "Casa": 250,
+    "Apartamento": 150,
+    "Comercial": 500,
+}
 
-Os valores `250.0`, `150.0` e `500.0` são **números**, não texto. Números não têm idioma.
-O mesmo vale para `kWh/mês` - é uma unidade de medida universal.
+# train_model.py - Permanece em português (dados sintéticos de treino)
+BASE_CONSUMPTION_BY_TYPE = {
+    "Casa": 250,
+    "Apartamento": 150,
+    "Comercial": 500,
+}
+```
 
-### 3. Por que o modelo foi treinado com dados em português
+### 3. Por que `normalize_category()` não é modificada
 
-O modelo de Machine Learning (`categorization-model.joblib`) foi treinado com dados da
-Pesquisa de Posse e Hábitos (PPH) 2019 do PROCEL/ELETROBRAS. Esses dados estão em português
-porque são originários de uma pesquisa brasileira:
+A função `normalize_category()` em `features.py` tem a função de normalizar **variações de
+acentuação em português** (ex: `"Refrigeração"` → `"Refrigeracao"`, `"Serviços"` →
+`"Servicos"`). Ela é usada em dois contextos distintos:
 
-- Colunas dos CSVs: `qtd_geladeira`, `qtd_chuveiro_eletrico`, etc.
-- Categorias: `"Refrigeracao"`, `"Climatizacao"`, etc.
-- Tipos de imóvel inferidos: `"Casa"`, `"Apartamento"`, `"Comercial"`
+1. **Treino do modelo** (`train_model.py`): Os dados do CSV `rotuled-ml-processed.csv`
+   chegam com acentos (`"Refrigeração"`, `"Climatização"`). A `normalize_category()` roda
+   dentro do `sklearn Pipeline` via `feature_engineering()` e remove os acentos para
+   compatibilidade com o `OneHotEncoder`.
 
-O modelo **aprendeu** a associar o texto `"Casa"` a um determinado perfil de consumo.
-Se alimentarmos o modelo com `"RESIDENCIAL"`, ele não reconhecerá - por isso a normalização
-é necessária. Isso não é um problema de arquitetura, é uma característica de qualquer modelo
-de ML treinado com dados categóricos: os valores precisam ser os mesmos do treinamento.
+2. **Inferência** (`main.py`): O `sklearn Pipeline` é carregado do `.joblib` e executa
+   automaticamente `feature_engineering()` em toda chamada de `predict()`, que por sua vez
+   chama `normalize_category()`.
 
-### 4. Por que o log de treinamento (`_store_for_training`) registrará valores em inglês
+Se `normalize_category()` fosse reescrita para mapear inglês → português:
 
-Atualmente, `_store_for_training()` armazena `data.property_type` diretamente:
+- **No treino**, os dados acentuados em português não bateriam com nenhuma chave em inglês
+  e seriam todos classificados como `"Outros"`, corrompendo o treinamento.
+- **Na inferência**, o fluxo seria: `"REFRIGERATION"` → `translate_category()` → `"Refrigeracao"`
+  (dentro de `main.py`), e então o pipeline executaria `normalize_category("Refrigeracao")`
+  que espera inglês → `"Outros"`.
+
+**Solução:** Criar `translate_category()` como função **nova e separada**, chamada **antes**
+do pipeline sklearn. O pipeline continua executando `normalize_category()` normalmente
+(que receberá `"Refrigeracao"` sem acentos e passará direto).
+
+```python
+# features.py - Função NOVA (não modifica normalize_category existente)
+def translate_category(cat: object) -> str:
+    """Traduz categoria do inglês (contrato) para português (formato do modelo).
+    
+    Chamada ANTES do pipeline sklearn. O resultado já sai sem acentos,
+    então normalize_category() (dentro do pipeline) passa direto.
+    """
+    ...
+
+# features.py - Função EXISTENTE (não modificada)
+def normalize_category(cat: object) -> str:
+    """Normaliza variações de acentuação em português.
+    
+    Usada dentro do sklearn Pipeline (train_model.py + main.py).
+    NÃO deve ser alterada para mapear inglês → português.
+    """
+    ...
+```
+
+### 4. Por que o log de treinamento registra valores em português (traduzidos)
+
+O ADR-0027 propunha originalmente que `_store_for_training()` registrasse `data.property_type`
+**cru** (agora em inglês). No entanto, `load_feedback()` em `train_model.py` lê esse campo
+sem nenhuma normalização e passa diretamente ao `OneHotEncoder`, que só reconhece categorias
+em português (`"Casa"`, `"Apartamento"`, `"Comercial"`).
+
+Se o log armazenasse `"RESIDENCIAL"` (inglês), a linha seria descartada pelo `OneHotEncoder`
+por não corresponder a nenhuma categoria conhecida.
+
+**Solução:** `_store_for_training()` deve gravar os valores **já traduzidos para português**:
 
 ```python
 def _store_for_training(data: PredictRequest, ...):
     record = {
         "features": {
-            "property_type": data.property_type,  # ← valor CRU, sem normalização
+            "property_type": normalize_property_type(data.property_type),
+            #                  ↑ "RESIDENCIAL" → "Casa" antes de armazenar
+            "highest_consumption_category": translate_category(
+                data.highest_consumption_category or "Outros"
+            ),
+            #                              ↑ "REFRIGERATION" → "Refrigeracao"
             ...
         }
     }
 ```
 
-Com a mudança do ADR-0027, `data.property_type` será `"RESIDENCIAL"` (inglês). O log de
-treinamento passará a registrar valores em inglês. Isso é **intencional** e benéfico:
-
-- Se no futuro o modelo for retreinado, os logs já estarão no formato que o novo contrato
-  espera (inglês).
-- O log é um dado interno do ML Service - o backend nunca o consulta.
-- A normalização EN→PT continuará sendo aplicada antes de passar os dados ao modelo.
+**Impacto:** O log continua sendo um dado interno do ML Service. O backend nunca o consulta.
+A diferença é que, em vez de armazenar o valor cru em inglês, armazena o valor já traduzido
+para garantir que o `OneHotEncoder` do `load_feedback()` continue funcionando sem alterações.
 
 ### 5. Fronteira clara: o que fica em português vs inglês no ML Service
 
@@ -152,12 +204,15 @@ treinamento passará a registrar valores em inglês. Isso é **intencional** e b
 | **`PredictRequest`** (contrato da API) | Inglês | Backend envia valores nativos dos seus enums |
 | **`/contract`** (schema discovery) | Inglês | Backend descobre o contrato no mesmo idioma que envia |
 | **`/appliance-catalog`** (nomes dos aparelhos) | Português | São substantivos do mundo real, não identificadores de código |
-| **`normalize_property_type()`** | EN→PT | Ponte entre o contrato (inglês) e o modelo (português) |
-| **`normalize_category()`** | EN→PT | Ponte entre o contrato (inglês) e o modelo (português) |
-| **`BASE_CONSUMPTION_BY_TYPE`** | Inglês | Acessado com `data.property_type` cru (agora inglês) |
-| **`HIGHEST_CONSUMPTION_CATEGORIES`** | Português | Usado internamente após normalização - o dado já foi convertido |
+| **`normalize_property_type()`** (nova) | EN→PT | Ponte entre o contrato (inglês) e o modelo (português) |
+| **`translate_category()`** (nova) | EN→PT | Ponte entre o contrato (inglês) e o modelo (português) - chamada antes do pipeline |
+| **`normalize_category()`** (existente) | PT→PT (acentos) | Não modificada - usada no treino e dentro do pipeline sklearn |
+| **`BASE_CONSUMPTION_BY_TYPE` em `main.py`** | Inglês | Acessado com `data.property_type` cru (agora inglês) |
+| **`BASE_CONSUMPTION_BY_TYPE` em `features.py`** | Português | Inalterado (ou pode ser removido se não usado) |
+| **`BASE_CONSUMPTION_BY_TYPE` em `train_model.py`** | Português | Inalterado (usado no treino, nunca recebe dados da API) |
+| **`HIGHEST_CONSUMPTION_CATEGORIES`** | Português | Usado internamente após tradução - o dado já foi convertido |
 | **Modelo ML (.joblib)** | Português | Treinado com dados da pesquisa PPH 2019 |
-| **Log de treinamento** | Inglês | Registra o valor cru recebido (agora inglês) |
+| **Log de treinamento (`_store_for_training`)** | Português (traduzido) | Armazena valores traduzidos para compatibilidade com `load_feedback()` e `OneHotEncoder` |
 | **Recomendações (Groq/rule-based)** | Português | Saída exibida ao usuário final |
 
 ### 6. O backend nunca precisa saber disso
@@ -170,9 +225,12 @@ O backend (Java/Spring) se relaciona apenas com a **camada de contrato** do ML S
 
 O backend **não precisa saber** que internamente o ML Service:
 
-- Normaliza `"RESIDENCIAL"` para `"Casa"` antes de passar ao modelo
-- Mantém um dicionário `BASE_CONSUMPTION_BY_TYPE` com chaves outrora em português
-- Usa um modelo treinado com dados da PPH 2019 em português
+- Traduz `"RESIDENCIAL"` para `"Casa"` via `normalize_property_type()` antes de passar ao modelo
+- Traduz `"REFRIGERATION"` para `"Refrigeracao"` via `translate_category()` (nova função),
+  e depois o pipeline executa `normalize_category()` (existente) que passa direto
+- Mantém a função `normalize_category()` original intacta para o treino do modelo
+- Só alterou as chaves do `BASE_CONSUMPTION_BY_TYPE` no `main.py` - as outras cópias continuam em português
+- Armazena o log de treinamento com valores já traduzidos para português
 
 Isso é exatamente o objetivo do ADR-0027: **o ML Service é o único ponto de normalização
 linguística**, e as demais camadas enviam e recebem dados no idioma do contrato (inglês
@@ -183,24 +241,35 @@ para identificadores, português para conteúdo exibível ao usuário).
 | Alternativa | Prós | Contras |
 |---|---|---|
 | **Documentar fronteira contrato vs interno (escolhido)** | Elimina dúvidas sobre o que está em cada idioma; backend sabe exatamente o que enviar | Nenhuma - é apenas documentação complementar |
-| **Retreinar o modelo com dados em inglês** | Eliminaria a necessidade de normalização no ML | Custo alto de retreinamento; dados originais estão em português |
-| **Forçar português também no contrato** | Eliminaria a normalização (tudo no mesmo idioma) | Backend precisaria de tradução; volta ao problema original do ADR-0027 |
+| **Modificar `normalize_category()` em vez de criar `translate_category()` (rejeitado)** | Reaproveita função existente | Quebra o treino (dados acentuados em PT viram "Outros"); quebra o pipeline na inferência (dupla passagem) |
+| **Retreinar o modelo com dados em inglês** | Eliminaria a necessidade de tradução no ML | Custo alto de retreinamento; dados originais estão em português |
+| **Forçar português também no contrato** | Eliminaria a tradução (tudo no mesmo idioma) | Backend precisaria de tradução; volta ao problema original do ADR-0027 |
 | **Não documentar a fronteira (deixar como está)** | Nenhum esforço adicional | Dúvidas como esta continuariam surgindo; risco de interpretação errada |
 
 ## Consequências
 
 - **Positivo:** Fica claro que o backend nunca precisa conhecer os detalhes internos do ML
   Service - ele se relaciona apenas com o contrato em inglês.
-- **Positivo:** O dicionário `BASE_CONSUMPTION_BY_TYPE` com chaves `"RESIDENCIAL"` (inglês)
-  está correto e alinhado ao que o `_classify_rule_based()` recebe como entrada crua.
-- **Positivo:** O log de treinamento registrará valores em inglês, facilitando um eventual
-  retreinamento do modelo com o novo formato de contrato.
+- **Positivo:** A função `normalize_category()` existente não é modificada, preservando o
+  treino do modelo e o pipeline sklearn.
+- **Positivo:** A nova função `translate_category()` é uma adição segura que não afeta o
+  fluxo existente.
+- **Positivo:** Apenas a cópia de `main.py` do `BASE_CONSUMPTION_BY_TYPE` muda para inglês,
+  alinhada ao fluxo da API. As cópias de `features.py` e `train_model.py` não são afetadas.
+- **Positivo:** O log de treinamento armazena valores traduzidos (português), garantindo
+  que `load_feedback()` e o `OneHotEncoder` continuem funcionando sem alterações.
 - **Positivo:** A tabela de fronteira (seção 5) serve como referência rápida para qualquer
   membro da equipe entender o idioma de cada componente.
 - **Negativo:** Este ADR adiciona um documento complementar que precisa ser mantido
   atualizado se a arquitetura interna do ML Service mudar.
 - **Negativo:** Se no futuro o modelo for retreinado para aceitar inglês diretamente, a
-  normalização EN→PT se tornará desnecessária, e este ADR precisará ser revisado.
+  tradução EN→PT se tornará desnecessária, e este ADR precisará ser revisado.
+- **Negativo:** O ML Service ganha uma função adicional (`translate_category()`), mas com
+  complexidade O(1) e apenas ~15 linhas de código - impacto desprezível.
+- **Futuro:** O `BASE_CONSUMPTION_BY_TYPE` em `features.py` está definido mas não é
+  utilizado no código (usa `500.0` hardcoded em vez do dicionário). Recomenda-se
+  como limpeza futura: remover o dicionário morto ou corrigir o código para
+  usá-lo efetivamente.
 
 > **Nota:** Consulte o [glossário do projeto](../glossario.md) para definição dos termos
 > utilizados neste documento.
