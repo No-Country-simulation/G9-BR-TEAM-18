@@ -101,7 +101,7 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 |---|---|
 | Gatilho | Push para `dev` (após PR merge) |
 | Jobs | `deploy` |
-| Destino | Render (https://energiai-api.onrender.com) |
+| Destino | Render (<https://energiai-api.onrender.com>) |
 | Passos | Checkout → Build Maven → Deploy para Render via webhook |
 
 ### `deploy-ml-dev.yml`
@@ -110,7 +110,7 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 |---|---|
 | Gatilho | Push para `dev` (após PR merge) |
 | Jobs | `deploy` |
-| Destino | Render (https://energiai-ml.onrender.com) |
+| Destino | Render (<https://energiai-ml.onrender.com>) |
 | Passos | Checkout → Build Docker → Deploy para Render via webhook |
 
 ## Workflows de Validação

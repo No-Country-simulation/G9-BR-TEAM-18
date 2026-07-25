@@ -55,11 +55,13 @@ O ML Service implementa três estratégias de classificação em ordem de priori
 ## Modelo de Machine Learning
 
 ### Algoritmo
+
 - **RandomForestClassifier** com RandomizedSearchCV para otimização de hiperparâmetros
 - Calibração de probabilidades via `CalibratedClassifierCV` (método sigmoid)
 - Classificação multiclasse em 5 categorias
 
 ### Hiperparâmetros (melhores encontrados)
+
 - `n_estimators`: 200
 - `max_depth`: 9
 - `min_samples_split`: 5
@@ -128,6 +130,7 @@ Sem a chave `GROQ_API_KEY` configurada, o serviço funciona apenas com modelo + 
 ### POST /predict
 
 **Request:**
+
 ```json
 {
   "consumption_kwh": 420.0,
@@ -146,6 +149,7 @@ Sem a chave `GROQ_API_KEY` configurada, o serviço funciona apenas com modelo + 
 ```
 
 **Response:**
+
 ```json
 {
   "category": "MEDIANO",

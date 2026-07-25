@@ -154,7 +154,6 @@ export async function listPropertyAppliances(propertyId: number): Promise<Proper
   return response.json();
 }
 
-
 export async function batchUpdateAppliances(
   propertyId: number,
   items: Array<{ appliance_id: number; quantity: number }>,

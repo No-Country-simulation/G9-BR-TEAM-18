@@ -1,7 +1,6 @@
 import type { ApplianceType } from "../types";
 
 export const APPLIANCE_FALLBACK: ApplianceType[] = [
-
   {
     id: "REFRIGERATOR",
     name: "Geladeira",
@@ -106,7 +105,6 @@ export const APPLIANCE_FALLBACK: ApplianceType[] = [
     dailyUsageHours: 0.75,
     icon: "Home",
   },
-
 ];
 
 export function mergeAppliancesWithBackend(

@@ -32,7 +32,7 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 
 ## Estrutura de Diretórios
 
-```
+```text
 frontend/src/
 ├── components/        # Componentes reutilizáveis
 │   ├── AnalysisForm.tsx    # Formulário principal de análise
@@ -98,7 +98,9 @@ Todas as rotas autenticadas são protegidas pelo componente `PrivateRoute`.
 ## Páginas
 
 ### Home
+
 Landing page pública composta por:
+
 - **Hero**: Chamada principal com botão CTA para análise
 - **FeatureCards**: Três cards (Classificação ML, Recomendações Inteligentes, Estimativa Financeira)
 - **HowItWorks**: Fluxo em 4 passos (cadastro, coleta, classificação, recomendações)
@@ -107,7 +109,9 @@ Landing page pública composta por:
 - **Footer**: Links e créditos
 
 ### ProfilePage
+
 Página autenticada que concentra:
+
 - Dados do imóvel (tipo, endereço, moradores, área)
 - Gerenciamento de aparelhos (catálogo, busca, seleção por categoria, batch update)
 - Regularidade da análise (instantânea, diária, semanal, mensal)
@@ -115,7 +119,9 @@ Página autenticada que concentra:
 - Última análise armazenada no perfil
 
 ### Dashboard
+
 Página autenticada com métricas agregadas:
+
 - Total de análises, média de consumo, custo total, emissão de CO₂
 - Gráfico de consumo mensal (Recharts BarChart)
 - Indicador de tendência (melhorou/piorou)
@@ -124,12 +130,15 @@ Página autenticada com métricas agregadas:
 - Atalhos para nova análise e histórico
 
 ### History
+
 Página autenticada que lista todas as análises realizadas.
 
 ### Login / Register
+
 Formulários de autenticação com validação e exibição de erros de campo.
 
 ### ResetPasswordPage
+
 Página para redefinição de senha (após login com `passwordResetRequired: true`).
 
 ## Componentes Compartilhados
@@ -154,6 +163,7 @@ Página para redefinição de senha (após login com `passwordResetRequired: tru
 6. **Redefinição de senha**: Se o backend retornar `passwordResetRequired: true`, o usuário é redirecionado para `/reset-password`
 
 O `AuthContext` expõe o hook `useAuth()` com:
+
 - `user: User | null` - dados do usuário logado
 - `loading: boolean` - estado de carregamento inicial
 - `login(email, password): Promise<boolean>` - retorna `true` se reset de senha for necessário

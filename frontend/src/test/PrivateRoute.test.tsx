@@ -15,7 +15,6 @@ function TestResetPage() {
 type AuthState = "authenticated-no-reset" | "authenticated-needs-reset" | "unauthenticated";
 
 function renderWithState(state: AuthState) {
-
   localStorage.clear();
   document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
 
@@ -32,7 +31,6 @@ function renderWithState(state: AuthState) {
     );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
   }
-
 
   return render(
     <MemoryRouter initialEntries={["/dashboard"]}>

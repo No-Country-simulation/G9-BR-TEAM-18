@@ -165,7 +165,6 @@ describe("AuthContext", () => {
     await userEvent.click(screen.getByText("reset password"));
 
     await waitFor(() => {
-
       expect(screen.queryByText("needs reset")).not.toBeInTheDocument();
     });
   });
@@ -187,7 +186,6 @@ describe("AuthContext", () => {
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
 
     await userEvent.click(screen.getByText("reset password"));
-
 
     await waitFor(() => {
       expect(screen.getByText("needs reset")).toBeInTheDocument();

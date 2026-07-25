@@ -1,12 +1,7 @@
 import { useState, useEffect, useMemo, type FormEvent, type ReactElement } from "react";
 import * as I from "lucide-react";
 import type { AnalysisResponse, ApplianceType, ApplianceItem, PropertyType } from "../types";
-import {
-  ApiError,
-  CATEGORY_COLORS,
-  CATEGORY_DISPLAY,
-  PROPERTY_TYPES,
-} from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES } from "../types";
 import {
   analyzeEnergy,
   listAppliances,
@@ -57,7 +52,6 @@ const FIELD_NAMES: Record<string, string> = {
 };
 
 export default function AnalysisForm() {
-
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
@@ -76,7 +70,6 @@ export default function AnalysisForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
 
-
   const [searchTerm, setSearchTerm] = useState("");
 
   const [usingFallback, setUsingFallback] = useState(true);
@@ -91,7 +84,6 @@ export default function AnalysisForm() {
         setUsingFallback(true);
       });
   }, []);
-
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -108,7 +100,6 @@ export default function AnalysisForm() {
           .includes(term) || t.mlCategory.toLowerCase().includes(term),
     );
   }, [applianceTypes, searchTerm]);
-
 
   const applianceCalc = useMemo(() => {
     if (selectedAppliances.length === 0) {
@@ -142,7 +133,6 @@ export default function AnalysisForm() {
       }
     }
 
-
     let highestCat = "Outros";
     let maxValue = -1;
     for (const [cat, val] of Object.entries(aggregated)) {
@@ -164,7 +154,6 @@ export default function AnalysisForm() {
     };
   }, [selectedAppliances, applianceTypes]);
 
-
   useEffect(() => {
     if (selectedAppliances.length === 0) return;
     setForm((prev) => ({
@@ -172,7 +161,6 @@ export default function AnalysisForm() {
       consumption_kwh: Math.round(applianceCalc.monthlyConsumptionKwh),
     }));
   }, [selectedAppliances, applianceCalc]);
-
 
   function toggleCategory(cat: string) {
     setOpenCategories((prev) => {
@@ -263,9 +251,6 @@ export default function AnalysisForm() {
 
         <div className="demo-grid">
           <form onSubmit={handleSubmit} className="demo-form">
-
-
-
             <h3 className="section-title">Dados do Imóvel</h3>
 
             <div className="form-group">
@@ -330,21 +315,15 @@ export default function AnalysisForm() {
               </label>
             </div>
 
-
-
-
             <h3 className="section-title">
               Seus Aparelhos
               {selectedAppliances.length > 0 && (
-                <span className="appliance-count-badge">
-                  {applianceCalc.totalEquipment} equip.
-                </span>
+                <span className="appliance-count-badge">{applianceCalc.totalEquipment} equip.</span>
               )}
             </h3>
             <p className="section-subtitle">
               Adicione exatamente quais aparelhos você possui e a quantidade de cada um.
             </p>
-
 
             <div className="appliance-search">
               <I.Search size={16} className="search-icon" />
@@ -361,7 +340,6 @@ export default function AnalysisForm() {
                 </button>
               )}
             </div>
-
 
             <div className="appliance-catalog">
               {CATEGORY_ORDER.map((cat) => {
@@ -411,7 +389,6 @@ export default function AnalysisForm() {
                 );
               })}
             </div>
-
 
             {selectedAppliances.length > 0 ? (
               <div className="selected-appliances">
@@ -485,9 +462,6 @@ export default function AnalysisForm() {
               )}
             </button>
           </form>
-
-
-
 
           <div className="demo-result">
             {loading && (

@@ -14,7 +14,6 @@ export default function Logo({ size = 40, className }: LogoProps) {
       className={className}
       aria-label="EnergiIA logo"
     >
-
       <path
         d="M16,58 A44,44 0 1,1 104,58"
         stroke="#0A0A0A"
@@ -30,7 +29,6 @@ export default function Logo({ size = 40, className }: LogoProps) {
         fill="none"
       />
 
-
       <path
         d="M80,15 L45,55 L55,55 L35,100 L60,68 L50,68 Z"
         fill="#C6FF3D"
@@ -40,9 +38,7 @@ export default function Logo({ size = 40, className }: LogoProps) {
         strokeLinecap="round"
       />
 
-
       <path d="M72,24 L46,55 L54,55 L40,85 L57,64 L50,64 Z" fill="rgba(255,255,255,0.25)" />
-
 
       <circle cx="95" cy="72" r="5" fill="#FF4FA3" stroke="#0A0A0A" strokeWidth="3" />
     </svg>

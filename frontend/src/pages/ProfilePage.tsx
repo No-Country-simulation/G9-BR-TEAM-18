@@ -262,7 +262,9 @@ export default function ProfilePage() {
     setAnalyzing(true);
     setError(null);
     setResult(null);
-    try {      const consumptionKwh = selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
+    try {
+      const consumptionKwh =
+        selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
       const res = await analyzeEnergy(
         property.id,
         consumptionKwh,
