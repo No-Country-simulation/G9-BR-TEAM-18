@@ -9,7 +9,6 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 - [Backend - Testes de Integração](#backend---testes-de-integração)
 - [Backend - Testes de Contrato](#backend---testes-de-contrato)
 - [Frontend - Testes](#frontend---testes)
-- [ML Service - Testes](#ml-service---testes)
 - [Como Executar](#como-executar)
 - [Cobertura](#cobertura)
 

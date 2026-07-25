@@ -13,7 +13,12 @@ Isso gerava dois problemas:
 1. **Ruido na analise:** O frontend enviava ao ML Service aparelhos que o modelo nao reconhecia, poluindo a distribuicao de consumo e reduzindo a precisao da classificacao.
 2. **Falsa expectativa:** O usuario podia cadastrar aparelhos como "Freezer", "Frigobar", "Bomba d'agua" etc., mas esses dados eram ignorados pelo modelo, gerando uma analise inconsistente com o que o usuario esperava.
 
-Os aparelhos sem cobertura PPH incluiam variantes de iluminacao (LED, fluorescente, incandescente, lustre, abajur, spot), variantes de climatizacao (Split, Ventilador de teto), eletrodomesticos diversos (Air fryer, Cafeteira, Ferro de passar, Aspirador, Secador, Liquidificador), tecnologia (OLED TV, Notebook, Monitor, Roteador, Caixa de som) e a categoria inteira de Servicos (Bomba d'agua, Portao, Interfone, Cancela, Piscina, CFTV, Sensor, Cerca).
+Os aparelhos sem cobertura PPH incluiam variantes de iluminacao (LED, fluorescente,
+incandescente, lustre, abajur, spot), variantes de climatizacao (Split, Ventilador de
+teto), eletrodomesticos diversos (Air fryer, Cafeteira, Ferro de passar, Aspirador,
+Secador, Liquidificador), tecnologia (OLED TV, Notebook, Monitor, Roteador, Caixa de
+som) e a categoria inteira de Servicos (Bomba d'agua, Portao, Interfone, Cancela,
+Piscina, CFTV, Sensor, Cerca).
 
 ## Decisao
 
