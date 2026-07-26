@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 65 | | Backend (B) | 35 |
+| Done | 66 | | Backend (B) | 35 |
 | In review | 5 | | Infraestrutura (I) | 17 |
-| In progress | 0 | | Frontend (F) | 14 |
+| In progress | 0 | | Frontend (F) | 15 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **70** | | **Total** | **70** |
+| **Total** | **71** | | **Total** | **71** |
 
 ## Movimentações (24/07/2026)
 
@@ -116,6 +116,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Commits associados |
 |---|---|---|
 | F036 | Frontend - Consumir endpoint /energy-analysis/categories (Dashboard + AnalysisForm + ProfilePage) | 594c4cb, 036cb90 |
+| F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | aa7ba40 |
 
 ## Movimentações (27/07/2026)
 
