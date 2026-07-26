@@ -195,29 +195,27 @@ sequenceDiagram
     participant BE as Backend (Java)
     participant FE as Frontend (React)
 
-    rect rgb(200, 230, 255)
-        Note over ML,FE: Startup: Descoberta
-        BE->>ML: GET /contract
-        ML-->>BE: property_types, consumption_categories
-        BE->>ML: GET /appliance-catalog
-        ML-->>BE: appliance catalog
-        FE->>BE: GET /appliances
-        BE-->>FE: appliance catalog
-        FE->>BE: GET /contract-info
-        BE-->>FE: types and categories
-        Note over FE: Renderiza dinamicamente<br/>selects, grids, aparelhos
-        Note over BE: Se ML adicionar "SOBRADO":<br/>basta reiniciar (ou refresh)<br/>e nova opção aparece
-    end
+    Note over ML,BE: STARTUP: Descoberta
+    BE->>ML: GET /contract
+    ML-->>BE: property_types, consumption_categories
+    BE->>ML: GET /appliance-catalog
+    ML-->>BE: appliance catalog
+    Note over BE: Se ML adicionar "SOBRADO":<br/>basta reiniciar (ou refresh)<br/>e já aparece
 
-    rect rgb(255, 230, 200)
-        Note over ML,FE: Predição
-        FE->>BE: Submit analysis
-        BE->>ML: POST /predict (EN: RESIDENCIAL, REFRIGERATION)
-        ML-->>BE: category, probability, recommendations
-        BE-->>FE: Analysis response
-        Note over ML: ML traduz EN→PT internamente
-        Note over BE: Switch de tradução ELIMINADO
-    end
+    Note over FE,BE: FRONTEND consome do BACKEND
+    FE->>BE: GET /appliances
+    BE-->>FE: appliance catalog
+    FE->>BE: GET /contract-info
+    BE-->>FE: types and categories
+    Note over FE: Renderiza dinamicamente<br/>selects, grids, aparelhos
+
+    Note over ML,FE: PREDIÇÃO
+    FE->>BE: Submit analysis
+    BE->>ML: POST /predict (EN: RESIDENCIAL, REFRIGERATION)
+    ML-->>BE: category, probability, recommendations
+    BE-->>FE: Analysis response
+    Note over ML: ML traduz EN→PT internamente
+    Note over BE: Switch de tradução ELIMINADO
 ```
 
 ### Efeito no backend
