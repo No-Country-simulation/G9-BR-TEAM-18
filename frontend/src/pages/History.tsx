@@ -121,10 +121,10 @@ export default function History() {
                   style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.9rem" }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <Zap size={14} /> {a.consumption_kwh.toFixed(0)} kWh
+                    <Zap size={14} /> {(a.consumption_kwh ?? 0).toFixed(0)} kWh
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <DollarSign size={14} /> R$ {a.estimated_monthly_cost.toFixed(2)}
+                    <DollarSign size={14} /> R$ {(a.estimated_monthly_cost ?? 0).toFixed(2)}
                   </span>
                 </div>
               </div>
