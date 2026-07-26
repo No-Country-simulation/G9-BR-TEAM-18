@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 87 | | Backend (B) | 40 |
+| Done | 88 | | Backend (B) | 40 |
 | In review | 2 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 27 |
+| In progress | 0 | | Frontend (F) | 28 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **89** | | **Total** | **89** |
+| **Total** | **90** | | **Total** | **90** |
 
 ## Movimentações (24/07/2026)
 
@@ -147,3 +147,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F029 | Correções property_type e highestConsumptionCategory | - |
 | I019 | Documentação Swagger/OpenAPI da API | - |
 | F042 | Code splitting: React.lazy() para reduzir bundle de 1.15MB para 242kB | c16ae3a |
+| F043 | ChunkErrorBoundary para capturar falhas de carregamento lazy | d480b7a |
