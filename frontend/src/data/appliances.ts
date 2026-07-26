@@ -9,10 +9,7 @@ import type { ApplianceType } from "../types";
  * Se um aparelho do backend não estiver neste mapa, são usados valores
  * padrão (ícone "HelpCircle", distributionField "NONE").
  */
-const METADATA_BY_NAME: Record<
-  string,
-  { icon: string; distributionField: string }
-> = {
+const METADATA_BY_NAME: Record<string, { icon: string; distributionField: string }> = {
   geladeira: { icon: "Snowflake", distributionField: "REFRIGERATION_WATTS" },
   "ar-condicionado": {
     icon: "Wind",
@@ -42,15 +39,44 @@ function normalizeName(name: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-export function enrichAppliance(
-  raw: {
-    id: number;
-    name: string;
-    appliance_category: string;
-    average_power_watts: number;
-    average_daily_use_hours: number;
-  },
-): ApplianceType {
+/**
+ * Normaliza o nome da categoria vindo do backend para o formato
+ * usado no frontend (sem acentos, primeira letra maiuscula).
+ *
+ * O banco de dados armazena valores em portugues com acentos
+ * (ex.: "Refrigeracao", "Climatizacao"), enquanto o frontend
+ * usa chaves sem acentos ("Refrigeracao", "Climatizacao").
+ */
+const CATEGORY_NORMALIZE: Record<string, string> = {
+  refrigeracao: "Refrigeracao",
+  climatizacao: "Climatizacao",
+  eletrodomesticos: "Eletrodomesticos",
+  iluminacao: "Iluminacao",
+  tecnologia: "Tecnologia",
+  servicos: "Servicos",
+  refrigeration: "Refrigeracao",
+  climate_control: "Climatizacao",
+  appliances: "Eletrodomesticos",
+  lighting: "Iluminacao",
+  technology: "Tecnologia",
+  services: "Servicos",
+};
+
+function normalizeCategory(raw: string): string {
+  const key = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return CATEGORY_NORMALIZE[key] ?? key;
+}
+
+export function enrichAppliance(raw: {
+  id: number;
+  name: string;
+  appliance_category: string;
+  average_power_watts: number;
+  average_daily_use_hours: number;
+}): ApplianceType {
   const meta = METADATA_BY_NAME[normalizeName(raw.name)] ?? {
     icon: "HelpCircle",
     distributionField: "NONE",
@@ -58,7 +84,7 @@ export function enrichAppliance(
   return {
     id: String(raw.id),
     name: raw.name,
-    mlCategory: raw.appliance_category,
+    mlCategory: normalizeCategory(raw.appliance_category),
     powerWatts: raw.average_power_watts,
     dailyUsageHours: raw.average_daily_use_hours,
     icon: meta.icon,
