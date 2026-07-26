@@ -30,11 +30,11 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
 | Done | 64 | | Backend (B) | 35 |
-| In review | 5 | | Infraestrutura (I) | 17 |
-| In progress | 2 | | Frontend (F) | 14 |
+| In review | 6 | | Infraestrutura (I) | 17 |
+| In progress | 0 | | Frontend (F) | 14 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **71** | | **Total** | **71** |
+| **Total** | **70** | | **Total** | **70** |
 
 ## Movimentações (24/07/2026)
 
