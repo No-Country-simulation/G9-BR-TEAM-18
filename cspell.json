@@ -178,7 +178,8 @@
     "medio",
     "reentrevistas",
     "REGIAO",
-    "mockados"
+    "mockados",
+    "ORDS"
   ],
   "ignorePaths": [
     "node_modules",

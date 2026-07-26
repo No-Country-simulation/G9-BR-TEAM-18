@@ -30,11 +30,11 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
 | Done | 64 | | Backend (B) | 35 |
-| In review | 3 | | Infraestrutura (I) | 17 |
-| In progress | 0 | | Frontend (F) | 12 |
+| In review | 5 | | Infraestrutura (I) | 17 |
+| In progress | 2 | | Frontend (F) | 14 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **67** | | **Total** | **71** |
+| **Total** | **71** | | **Total** | **71** |
 
 ## Movimentações (24/07/2026)
 
@@ -110,3 +110,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F033 | Frontend - Validação de sessão na montagem (auth/me) |
 | F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
 | I021 | Infraestrutura/Base - ADR-0030 (session validation + mock removal) |
+
+## Movimentações (27/07/2026)
+
+### In progress → In review
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F035 | Frontend - Alinhar categorias de aparelhos (normalização EN/PT) | 2119896 |
+| F037 | Frontend - Adicionar campo status nas análises | fcdcb65 |
