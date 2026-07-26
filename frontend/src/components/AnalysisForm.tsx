@@ -5,6 +5,7 @@ import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES } from "../
 import {
   analyzeEnergy,
   listAppliances,
+  fetchCategories,
   createProperty,
   addApplianceToProperty,
 } from "../services/api";
@@ -70,10 +71,14 @@ export default function AnalysisForm() {
   const [loading, setLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    listAppliances()
-      .then((data) => setApplianceTypes(data))
+    Promise.all([listAppliances(), fetchCategories()])
+      .then(([data, cats]) => {
+        setApplianceTypes(data);
+        if (cats.length > 0) setBackendCategorySet(new Set(cats));
+      })
       .catch((err) => setError(err.message));
   }, []);
 
@@ -148,11 +153,11 @@ export default function AnalysisForm() {
 
   useEffect(() => {
     if (selectedAppliances.length === 0) return;
-    setForm((prev) => ({
-      ...prev,
-      consumption_kwh: Math.round(applianceCalc.monthlyConsumptionKwh),
-    }));
-  }, [selectedAppliances, applianceCalc, setForm]);
+    const value = Math.round(applianceCalc.monthlyConsumptionKwh);
+    queueMicrotask(() => {
+      setForm((prev) => ({ ...prev, consumption_kwh: value }));
+    });
+  }, [selectedAppliances, applianceCalc]);
 
   function toggleCategory(cat: string) {
     setOpenCategories((prev) => {
@@ -482,7 +487,11 @@ export default function AnalysisForm() {
               <div className="result-card">
                 <div
                   className="result-badge"
-                  style={{ backgroundColor: CATEGORY_COLORS[result.category] ?? "#6b7280" }}
+                  style={{
+                    backgroundColor:
+                      CATEGORY_COLORS[result.category] ??
+                      (backendCategorySet.has(result.category) ? "#6366f1" : "#6b7280"),
+                  }}
                 >
                   {CATEGORY_DISPLAY[result.category] ?? result.category}
                 </div>

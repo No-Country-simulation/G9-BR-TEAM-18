@@ -21,6 +21,7 @@ import {
   createProperty,
   updateProperty,
   listAppliances,
+  fetchCategories,
   listPropertyAppliances,
   batchUpdateAppliances,
   analyzeEnergy,
@@ -74,11 +75,16 @@ export default function ProfilePage() {
   const [areaSqm, setAreaSqm] = useState(50);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
-  const [regularity, setRegularity] = useState<Regularity>("instantanea");
+  const [regularity, setRegularity] = useState<Regularity>(() => {
+    const saved = localStorage.getItem(REGULARITY_KEY);
+    return (saved as Regularity) || "instantanea";
+  });
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
 
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -97,11 +103,9 @@ export default function ProfilePage() {
       navigate("/login");
       return;
     }
-    const saved = localStorage.getItem(REGULARITY_KEY);
-    if (saved) setRegularity(saved as Regularity);
-
-    Promise.all([listAppliances(), listProperties()])
-      .then(([appls, props]) => {
+    Promise.all([listAppliances(), listProperties(), fetchCategories()])
+      .then(([appls, props, cats]) => {
+        if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
@@ -134,7 +138,7 @@ export default function ProfilePage() {
         setError(err instanceof Error ? err.message : "Erro ao carregar dados");
       })
       .finally(() => setLoading(false));
-  }, [user, navigate, setRegularity]);
+  }, [user, navigate]);
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -242,9 +246,7 @@ export default function ProfilePage() {
       const batchItems = selectedAppliances
         .map((item) => {
           const appliance = applianceTypes.find((t) => t.id === item.type);
-          return appliance
-            ? { appliance_id: Number(appliance.id), quantity: item.quantity }
-            : null;
+          return appliance ? { appliance_id: Number(appliance.id), quantity: item.quantity } : null;
         })
         .filter((x): x is { appliance_id: number; quantity: number } => x !== null);
 
@@ -590,7 +592,11 @@ export default function ProfilePage() {
               <div className="result-card">
                 <div
                   className="result-badge"
-                  style={{ backgroundColor: CATEGORY_COLORS[result.category] ?? "#6b7280" }}
+                  style={{
+                    backgroundColor:
+                      CATEGORY_COLORS[result.category] ??
+                      (backendCategorySet.has(result.category) ? "#6366f1" : "#6b7280"),
+                  }}
                 >
                   {CATEGORY_DISPLAY[result.category] ?? result.category}
                 </div>
@@ -627,7 +633,7 @@ export default function ProfilePage() {
                   style={{
                     backgroundColor:
                       CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
-                      "#6b7280",
+                      (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
                   }}
                 >
                   {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
