@@ -177,7 +177,8 @@
     "codigo",
     "medio",
     "reentrevistas",
-    "REGIAO"
+    "REGIAO",
+    "mockados"
   ],
   "ignorePaths": [
     "node_modules",
