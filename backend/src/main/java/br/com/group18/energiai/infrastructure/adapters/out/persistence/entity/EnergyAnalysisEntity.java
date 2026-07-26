@@ -34,6 +34,9 @@ public class EnergyAnalysisEntity {
     @Column(name = "estimated_monthly_cost", precision = 10, scale = 2)
     private BigDecimal estimatedMonthlyCost;
 
+    @Column(name = "property_type", length = 50)
+    private String propertyType;
+
     @Column(length = 50)
     private String category;
 
@@ -165,5 +168,13 @@ public class EnergyAnalysisEntity {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
     }
 }

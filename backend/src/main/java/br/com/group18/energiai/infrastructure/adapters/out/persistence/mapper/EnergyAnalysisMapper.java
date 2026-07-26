@@ -16,6 +16,9 @@ public class EnergyAnalysisMapper {
         EnergyAnalysisEntity entity = new EnergyAnalysisEntity();
         entity.setId(domain.getId());
         entity.setPropertyId(domain.getPropertyId());
+
+        entity.setPropertyType(domain.getPropertyType());
+
         entity.setConsumptionKwh(domain.getConsumptionKwh());
         entity.setPeakHourUsage(Boolean.TRUE.equals(domain.getPeakHourUsage()) ? 1 : 0);
         entity.setHighConsumptionHours(domain.getHighConsumptionHours());
@@ -40,6 +43,9 @@ public class EnergyAnalysisMapper {
                 Integer.valueOf(1).equals(entity.getPeakHourUsage()),
                 entity.getHighConsumptionHours());
         domain.setId(entity.getId());
+
+        domain.setPropertyType(entity.getPropertyType());
+
         domain.setCategory(entity.getCategory() != null ? new EfficiencyCategory(entity.getCategory()) : null);
         domain.setProbability(entity.getProbability());
         domain.setEstimatedMonthlyCost(entity.getEstimatedMonthlyCost());
