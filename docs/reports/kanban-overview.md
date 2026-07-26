@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 70 | | Backend (B) | 35 |
+| Done | 71 | | Backend (B) | 35 |
 | In review | 3 | | Infraestrutura (I) | 17 |
-| In progress | 0 | | Frontend (F) | 17 |
+| In progress | 0 | | Frontend (F) | 18 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **73** | | **Total** | **73** |
+| **Total** | **74** | | **Total** | **74** |
 
 ## Movimentações (24/07/2026)
 
@@ -111,6 +111,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
 | I021 | Infraestrutura/Base - ADR-0030 (session validation + mock removal) |
 | F040 | Frontend - Corrigir null safety no Dashboard e ProfilePage |
+| F041 | Frontend - Corrigir interpretTrend no Dashboard (NaN% com análises PENDENTE/FALHA) |
 
 ### In progress → In review
 
