@@ -1,6 +1,7 @@
 package br.com.group18.energiai.application.services;
 
 import br.com.group18.energiai.application.exception.InvalidRequestException;
+import br.com.group18.energiai.core.domain.model.ApplianceSnapshot;
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
 import br.com.group18.energiai.core.domain.model.MlResult;
 import br.com.group18.energiai.core.domain.model.Property;
@@ -52,8 +53,12 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             throw new InvalidRequestException("A propriedade está inativa e não pode receber análises.");
         }
 
-        EnergyAnalysis analysis = repository.save(new EnergyAnalysis(
-                property.getId(), scale(consumptionKwh), peakHourUsage, scale(highConsumptionHours)));
+        EnergyAnalysis analysis = new EnergyAnalysis(
+                property.getId(), scale(consumptionKwh), peakHourUsage, scale(highConsumptionHours));
+        analysis.setPropertyType(property.getPropertyType());
+        analysis.setAppliancesSnapshot(toSnapshots(appliances));
+
+        analysis = repository.save(analysis);
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
         try {
@@ -123,6 +128,18 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 mlResult.recommendations(),
                 null,
                 null);
+    }
+
+    private List<ApplianceSnapshot> toSnapshots(List<PropertyAppliance> appliances) {
+        return appliances.stream()
+                .map(pa -> new ApplianceSnapshot(
+                        pa.getAppliance().getName(),
+                        pa.getAppliance().getCategory().name(), // ajuste para .getCategory() puro se já for String
+                        pa.getQuantity(),
+                        pa.getAppliance().getAveragePowerWatts(),
+                        pa.getAppliance().getAverageDailyUseHours(),
+                        pa.getMonthlyConsumptionKwh()))
+                .toList();
     }
 
     private MlEnvelope buildMlRequest(
