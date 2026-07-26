@@ -174,7 +174,10 @@
     "discovery",
     "Tecnologia",
     "dagua",
-    "codigo"
+    "codigo",
+    "medio",
+    "reentrevistas",
+    "REGIAO"
   ],
   "ignorePaths": [
     "node_modules",
