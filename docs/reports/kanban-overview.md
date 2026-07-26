@@ -29,8 +29,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 64 | | Backend (B) | 35 |
-| In review | 6 | | Infraestrutura (I) | 17 |
+| Done | 65 | | Backend (B) | 35 |
+| In review | 5 | | Infraestrutura (I) | 17 |
 | In progress | 0 | | Frontend (F) | 14 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
@@ -110,6 +110,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F033 | Frontend - Validação de sessão na montagem (auth/me) |
 | F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
 | I021 | Infraestrutura/Base - ADR-0030 (session validation + mock removal) |
+
+### In review → Done
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories (Dashboard + AnalysisForm + ProfilePage) | 594c4cb, 036cb90 |
 
 ## Movimentações (27/07/2026)
 
