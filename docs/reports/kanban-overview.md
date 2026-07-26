@@ -118,4 +118,5 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Commits associados |
 |---|---|---|
 | F035 | Frontend - Alinhar categorias de aparelhos (normalização EN/PT) | 2119896 |
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories (rank dinâmico) | 594c4cb |
 | F037 | Frontend - Adicionar campo status nas análises | fcdcb65 |
