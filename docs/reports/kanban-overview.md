@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 86 | | Backend (B) | 40 |
+| Done | 87 | | Backend (B) | 40 |
 | In review | 2 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 26 |
+| In progress | 0 | | Frontend (F) | 27 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **88** | | **Total** | **88** |
+| **Total** | **89** | | **Total** | **89** |
 
 ## Movimentações (24/07/2026)
 
@@ -146,3 +146,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) | - |
 | F029 | Correções property_type e highestConsumptionCategory | - |
 | I019 | Documentação Swagger/OpenAPI da API | - |
+| F042 | Code splitting: React.lazy() para reduzir bundle de 1.15MB para 242kB | c16ae3a |
