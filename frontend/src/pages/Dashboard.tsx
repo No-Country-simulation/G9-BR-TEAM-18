@@ -187,9 +187,11 @@ export default function Dashboard() {
               {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
                 lastAnalysis.category}
             </span>
-            <span className="dash-last-consumo">{lastAnalysis.consumption_kwh.toFixed(0)} kWh</span>
+            <span className="dash-last-consumo">
+              {(lastAnalysis.consumption_kwh ?? 0).toFixed(0)} kWh
+            </span>
             <span className="dash-last-custo">
-              R$ {lastAnalysis.estimated_monthly_cost.toFixed(2)}
+              R$ {(lastAnalysis.estimated_monthly_cost ?? 0).toFixed(2)}
             </span>
             {trendInfo.trend !== "stable" && (
               <span className={`dash-trend dash-trend--${trendInfo.trend}`}>

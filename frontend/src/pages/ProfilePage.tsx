@@ -641,7 +641,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="profile-last-stats">
                   <span>Confiança: {(lastAnalysis.probability * 100).toFixed(0)}%</span>
-                  <span>Custo: R$ {lastAnalysis.cost.toFixed(2)}</span>
+                  <span>Custo: R$ {(lastAnalysis.cost ?? 0).toFixed(2)}</span>
                 </div>
                 <p className="profile-last-date">
                   {new Date(lastAnalysis.date).toLocaleDateString("pt-BR", {
