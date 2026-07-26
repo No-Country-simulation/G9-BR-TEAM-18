@@ -189,35 +189,35 @@ def _store_for_training(data: PredictRequest, ...):
 
 ### Fluxo de propagação automática
 
-```text
-ML SERVICE                               BACKEND                          FRONTEND
-─────────────────────                    ──────────────────────           ──────────────────────
+```mermaid
+sequenceDiagram
+    participant ML as ML Service
+    participant BE as Backend (Java)
+    participant FE as Frontend (React)
 
-Startup:                                 Startup:                          Startup:
-/contract  ─── JSON ───────→             MlSchemaDiscovery                GET /appliances
-  property_types: [                        consome /contract                (backend repassa
-    "RESIDENCIAL",                         MlSchemaRegistry                  catalogo do ML)
-    "APARTAMENTO",                         guarda valores                  GET /contract
-    "COMERCIAL"                          ]                                  (tipos/categorias)
-  consumption_categories:                Armazena em memoria              Renderiza
-    "REFRIGERATION",                     e expoe via API:                 dinamicamente:
-    "CLIMATE_CONTROL",                     GET /appliances                  select de tipos
-    "TECHNOLOGY",                          GET /contract-info               grid de aparelhos
-    "LIGHTING",
-    "APPLIANCES",                       Se ML adicionar                   Sem alteracao de
-    "SERVICES",                          "SOBRADO":                        codigo!
-    "OTHERS"                             Basta reiniciar                   Nova opcao aparece
-  ]                                       (ou refresh periodico)            automaticamente
-                                        Nova categoria "SERVICES"
-/appliance-catalog ─── JSON ───→         aparece nos selects!
-  appliances: [...]
+    rect rgb(200, 230, 255)
+        Note over ML,FE: Startup: Descoberta
+        BE->>ML: GET /contract
+        ML-->>BE: property_types, consumption_categories
+        BE->>ML: GET /appliance-catalog
+        ML-->>BE: appliance catalog
+        FE->>BE: GET /appliances
+        BE-->>FE: appliance catalog
+        FE->>BE: GET /contract-info
+        BE-->>FE: types and categories
+        Note over FE: Renderiza dinamicamente<br/>selects, grids, aparelhos
+        Note over BE: Se ML adicionar "SOBRADO":<br/>basta reiniciar (ou refresh)<br/>e nova opção aparece
+    end
 
-Predicao:                                Predicao:                        Envia:
-/predict                                 POST /energy-analysis            mlCategory em INGLES
-  property_type: "RESIDENCIAL" ──────→   property_type: "RESIDENCIAL"     property_type em INGLES
-  highest_consumption_category:           (sem switch!)                    (sem traducao!)
-    "REFRIGERATION"                    → /predict                        Recebe resposta
-                                          (ML traduz EN→PT)               em ingles
+    rect rgb(255, 230, 200)
+        Note over ML,FE: Predição
+        FE->>BE: Submit analysis
+        BE->>ML: POST /predict (EN: RESIDENCIAL, REFRIGERATION)
+        ML-->>BE: category, probability, recommendations
+        BE-->>FE: Analysis response
+        Note over ML: ML traduz EN→PT internamente
+        Note over BE: Switch de tradução ELIMINADO
+    end
 ```
 
 ### Efeito no backend

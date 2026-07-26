@@ -37,36 +37,52 @@ exclusiva do ML Service.
 
 ### 1. Fluxo completo de ponta a ponta
 
-```text
-┌─ BACKEND (Java) ───────────┐      ┌─ ML SERVICE ───────────────────────────────┐
-│                              │      │                                              │
-│  Startup:                    │      │  ┌── Camada de Contrato (inglês) ───────┐   │
-│  MlSchemaDiscovery           │      │  │  GET /contract                       │   │
-│  -> GET /contract            │      │  │  -> property_types, consumption_cat   │   │
-│  -> GET /appliance-catalog   │      │  │  GET /appliance-catalog              │   │
-│                              │      │  │  -> catálogo de aparelhos            │   │
-│  MlSchemaRegistry            │      │  │  POST /predict                       │   │
-│  -> guarda em memória        │      │  │  -> property_type: "RESIDENCIAL"     │   │
-│                              │      │  │  -> category: "REFRIGERATION"         │   │
-│  Expõe via REST:             │      │  │                                       │   │
-│  GET /appliances             │      │  │  _store_for_training()               │   │
-│  GET /contract-info          │      │  │  -> grava em PORTUGUÊS (traduzido)   │   │
-│                              │      │  └──────────────────────────────────────┘   │
-│  Predição:                   │      │                     ↓                      │
-│  POST /energy-analysis       │      │  ┌── Tradução EN->PT ─────────────────┐   │
-│  -> property_type direto     │      │  │  normalize_property_type()           │   │
-│  -> mlCategory direto        │──HTTP→│  │  translate_category() (nova)        │   │
-│  (sem switch!)               │      │  │  -> "Casa", "Refrigeracao"           │   │
-│                              │      │  └──────────────────────────────────────┘   │
-│  FRONTEND (React):           │      │                     ↓                      │
-│  GET /appliances             │      │  ┌── Camada Interna (português) ───────┐   │
-│  -> catálogo dinâmico        │      │  │  normalize_category() (existe,      │   │
-│  GET /contract-info          │      │  │  inalterada) -> acentos PT          │   │
-│  -> tipos, categorias        │      │  │  Modelo .joblib treinado PPH 2019   │   │
-│  Renderiza dinamicamente     │      │  │  Fallback _classify_rule_based()    │   │
-│                              │      │  │  BASE_CONSUMPTION_BY_TYPE (inglês)  │   │
-│                              │      │  │  (só main.py)                      │   │
-└──────────────────────────────┘      └──────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph FE[Frontend - React]
+        FE1[GET /appliances<br/>GET /contract-info]
+        FE2[Renderiza dinamicamente<br/>tipos, categorias, aparelhos]
+    end
+
+    subgraph BE[Backend - Java/Spring]
+        MSD[MlSchemaDiscovery<br/>consome /contract e /appliance-catalog]
+        MSR[MlSchemaRegistry<br/>guarda valores em memória]
+        EXP[Expõe via REST:<br/>GET /appliances<br/>GET /contract-info]
+        PRED["POST /energy-analysis<br/>property_type direto<br/>mlCategory direto<br/>(sem switch!)"]
+    end
+
+    subgraph ML[ML Service - Python/FastAPI]
+        subgraph CONTRACT[Camada de Contrato - Inglês]
+            C1[GET /contract<br/>property_types, consumption_cat]
+            C2[GET /appliance-catalog<br/>catálogo de aparelhos]
+            C3[POST /predict<br/>property_type: RESIDENCIAL<br/>category: REFRIGERATION]
+            ST["_store_for_training<br/>grava em PORTUGUÊS traduzido"]
+        end
+        subgraph TRANS["Tradução EN-PT"]
+            NPT[normalize_property_type]
+            TC[translate_category - nova]
+        end
+        subgraph INTERNAL[Camada Interna - Português]
+            NC["normalize_category<br/>existente, inalterada<br/>normaliza acentos PT"]
+            MODEL[Modelo .joblib<br/>treinado PPH 2019]
+            FALLBACK["Fallback rule-based<br/>_classify_rule_based<br/>BASE_CONSUMPTION: inglês só main.py"]
+        end
+    end
+
+    MSD -->|HTTP| C1
+    MSD -->|HTTP| C2
+    MSR --> EXP
+    EXP --> FE1
+    FE1 --> FE2
+
+    PRED -->|HTTP| C3
+    C3 --> ST
+    C3 --> NPT
+    C3 --> TC
+    NPT --> INTERNAL
+    TC --> NC
+    NC --> MODEL
+    NC --> FALLBACK
 ```
 
 ### 2. `BASE_CONSUMPTION_BY_TYPE` em três arquivos, apenas um muda
