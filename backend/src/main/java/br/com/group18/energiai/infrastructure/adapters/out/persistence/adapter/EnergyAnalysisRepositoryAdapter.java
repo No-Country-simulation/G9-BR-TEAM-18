@@ -51,7 +51,8 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
         }
 
         snapshotRepository.deleteByAnalysisId(savedEntity.getId());
-        if (analysis.getAppliancesSnapshot() != null && !analysis.getAppliancesSnapshot().isEmpty()) {
+        if (analysis.getAppliancesSnapshot() != null
+                && !analysis.getAppliancesSnapshot().isEmpty()) {
             List<AnalysisApplianceSnapshotEntity> snapshots = analysis.getAppliancesSnapshot().stream()
                     .map(snap -> new AnalysisApplianceSnapshotEntity(
                             savedEntity.getId(),
@@ -60,8 +61,8 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
                             snap.getQuantity(),
                             snap.getAveragePowerWatts(),
                             snap.getAverageDailyUseHours(),
-                            snap.getMonthlyConsumptionKwh()
-                    )).toList();
+                            snap.getMonthlyConsumptionKwh()))
+                    .toList();
             snapshotRepository.saveAll(snapshots);
         }
 
@@ -88,8 +89,8 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
                             snapEntity.getQuantity(),
                             snapEntity.getAveragePowerWatts(),
                             snapEntity.getAverageDailyUseHours(),
-                            snapEntity.getMonthlyConsumptionKwh()
-                    )).toList();
+                            snapEntity.getMonthlyConsumptionKwh()))
+                    .toList();
             analysis.setAppliancesSnapshot(snapshots);
 
             return analysis;
@@ -114,7 +115,8 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
             return List.of();
         }
 
-        List<Long> analysisIds = entities.stream().map(EnergyAnalysisEntity::getId).toList();
+        List<Long> analysisIds =
+                entities.stream().map(EnergyAnalysisEntity::getId).toList();
 
         // Agrupa as recomendações em lote
         Map<Long, List<String>> recommendationsByAnalysis =
@@ -128,14 +130,15 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
                 snapshotRepository.findByAnalysisIdIn(analysisIds).stream()
                         .collect(Collectors.groupingBy(
                                 AnalysisApplianceSnapshotEntity::getAnalysisId,
-                                Collectors.mapping(snapEntity -> new ApplianceSnapshot(
-                                        snapEntity.getApplianceName(),
-                                        snapEntity.getApplianceCategory(),
-                                        snapEntity.getQuantity(),
-                                        snapEntity.getAveragePowerWatts(),
-                                        snapEntity.getAverageDailyUseHours(),
-                                        snapEntity.getMonthlyConsumptionKwh()
-                                ), Collectors.toList())));
+                                Collectors.mapping(
+                                        snapEntity -> new ApplianceSnapshot(
+                                                snapEntity.getApplianceName(),
+                                                snapEntity.getApplianceCategory(),
+                                                snapEntity.getQuantity(),
+                                                snapEntity.getAveragePowerWatts(),
+                                                snapEntity.getAverageDailyUseHours(),
+                                                snapEntity.getMonthlyConsumptionKwh()),
+                                        Collectors.toList())));
 
         // Associa tudo de volta para a entidade
         return entities.stream()
