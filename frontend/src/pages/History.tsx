@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { listAnalyses } from "../services/api";
-import type { AnalysisHistory, AnalysisStatus } from "../types";
+import type { AnalysisHistory } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import {
   Clock,
@@ -39,8 +39,8 @@ export default function History() {
   }
 
   const STATUS_CONFIG: Record<
-    AnalysisStatus,
-    { label: string; color: string; icon: React.ReactNode }
+    string,
+    { label: string; color: string; icon: React.ReactNode } | undefined
   > = {
     CONCLUIDA: { label: "Concluida", color: "#10b981", icon: <CheckCircle size={14} /> },
     PENDENTE: { label: "Pendente", color: "#f59e0b", icon: <ClockIcon size={14} /> },
@@ -88,7 +88,7 @@ export default function History() {
                     <span
                       className="history-item-status"
                       style={{
-                        background: STATUS_CONFIG[a.status].color,
+                        background: STATUS_CONFIG[a.status]?.color ?? "#6b7280",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "0.25rem",
@@ -100,8 +100,8 @@ export default function History() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {STATUS_CONFIG[a.status].icon}
-                      {STATUS_CONFIG[a.status].label}
+                      {STATUS_CONFIG[a.status]?.icon}
+                      {STATUS_CONFIG[a.status]?.label ?? a.status}
                     </span>
                   )}
                   <span className="history-item-cat" style={badgeStyle(a.category)}>
