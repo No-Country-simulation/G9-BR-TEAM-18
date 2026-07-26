@@ -21,12 +21,15 @@ export interface ApplianceItem {
   quantity: number;
 }
 
+export type AnalysisStatus = "PENDENTE" | "CONCLUIDA" | "FALHA";
+
 export interface AnalysisResponse {
   category: EfficiencyClassification;
   probability: number;
   recommendations: string[];
   estimated_monthly_cost: number;
   source?: string;
+  status?: AnalysisStatus;
 }
 
 export type EfficiencyClassification = "EXCELENTE" | "BOM" | "MEDIANO" | "RUIM" | "CRITICO";
@@ -79,6 +82,7 @@ export interface AnalysisHistory {
   high_consumption_hours: number;
   created_at: string;
   recommendations: string[];
+  status?: AnalysisStatus;
 }
 
 export interface MonthlyConsumption {

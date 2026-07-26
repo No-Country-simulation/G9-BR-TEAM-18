@@ -2,9 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { listAnalyses } from "../services/api";
-import type { AnalysisHistory } from "../types";
+import type { AnalysisHistory, AnalysisStatus } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
-import { Clock, Zap, DollarSign, ArrowLeft } from "lucide-react";
+import {
+  Clock,
+  Zap,
+  DollarSign,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+  Clock as ClockIcon,
+} from "lucide-react";
 
 export default function History() {
   const { user } = useAuth();
@@ -29,6 +37,15 @@ export default function History() {
       </div>
     );
   }
+
+  const STATUS_CONFIG: Record<
+    AnalysisStatus,
+    { label: string; color: string; icon: React.ReactNode }
+  > = {
+    CONCLUIDA: { label: "Concluida", color: "#10b981", icon: <CheckCircle size={14} /> },
+    PENDENTE: { label: "Pendente", color: "#f59e0b", icon: <ClockIcon size={14} /> },
+    FALHA: { label: "Falha", color: "#ef4444", icon: <AlertCircle size={14} /> },
+  };
 
   const badgeStyle = (cat: string): React.CSSProperties => {
     const bg = CATEGORY_COLORS[cat as keyof typeof CATEGORY_COLORS] ?? "#ef4444";
@@ -67,6 +84,26 @@ export default function History() {
             <div key={a.id} className="history-item">
               <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  {a.status && a.status !== "CONCLUIDA" && (
+                    <span
+                      className="history-item-status"
+                      style={{
+                        background: STATUS_CONFIG[a.status].color,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.25rem",
+                        padding: "0.15rem 0.5rem",
+                        borderRadius: "999px",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        color: "#fff",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {STATUS_CONFIG[a.status].icon}
+                      {STATUS_CONFIG[a.status].label}
+                    </span>
+                  )}
                   <span className="history-item-cat" style={badgeStyle(a.category)}>
                     {CATEGORY_DISPLAY[a.category] ?? a.category}
                   </span>
