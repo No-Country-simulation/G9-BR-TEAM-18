@@ -90,3 +90,23 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título |
 |---|---|
 | I020 | Configuração de usuários DEV e TEST no Oracle DB com ORDS |
+
+## Movimentações (26/07/2026)
+
+### Backlog → In progress
+
+| ID | Título |
+|---|---|
+| F033 | Frontend - Validação de sessão na montagem (auth/me) |
+| F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
+| F035 | Frontend - Alinhar categorias de aparelhos para inglês (ADR-0027) |
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories |
+| F037 | Frontend - Adicionar campo status nas análises |
+
+### In progress → Done (Finalizados)
+
+| ID | Título |
+|---|---|
+| F033 | Frontend - Validação de sessão na montagem (auth/me) |
+| F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
+| I021 | Infraestrutura/Base - ADR-0030 (session validation + mock removal) |
