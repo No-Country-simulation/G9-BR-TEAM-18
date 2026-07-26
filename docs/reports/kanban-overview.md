@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 71 | | Backend (B) | 35 |
-| In review | 3 | | Infraestrutura (I) | 17 |
-| In progress | 0 | | Frontend (F) | 18 |
+| Done | 86 | | Backend (B) | 40 |
+| In review | 2 | | Infraestrutura (I) | 19 |
+| In progress | 0 | | Frontend (F) | 26 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **74** | | **Total** | **74** |
+| **Total** | **88** | | **Total** | **88** |
 
 ## Movimentações (24/07/2026)
 
@@ -130,3 +130,19 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F037 | Frontend - Adicionar campo status nas análises | fcdcb65 |
 | F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | aa7ba40 |
 | F039 | Frontend - Corrigir crash no Histórico com status desconhecido (STATUS_CONFIG) | 75f9a5a |
+| F007 | Centralizar PROPERTY_TYPES em types/index.ts | - |
+| B033 | Enriquecer contrato de análise (highestConsumptionCategory, source) | - |
+| B034 | Endpoint batch de aparelhos | - |
+| B035 | Expandir Property (address, residents, area) | - |
+| B036 | Endpoint de simulação de análise | - |
+| B037 | ML Service: endpoint /predict/simulate | - |
+| F008 | Unificar páginas de análise e remover dados avançados | - |
+| F009 | Reformular Dashboard (meta, simulação, progresso) | - |
+| I017 | Atualizar contrato-api.md e glossario.md | - |
+| F024 | Acessibilidade: indicador de foco visível (:focus-visible) | - |
+| F025 | Acessibilidade: touch targets mínimos de 36px | - |
+| F026 | Responsividade: breakpoints mobile | - |
+| F027 | Acessibilidade e tema: ARIA labels, variáveis CSS | - |
+| F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) | - |
+| F029 | Correções property_type e highestConsumptionCategory | - |
+| I019 | Documentação Swagger/OpenAPI da API | - |
