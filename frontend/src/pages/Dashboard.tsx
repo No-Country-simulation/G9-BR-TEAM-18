@@ -40,9 +40,10 @@ function interpretTrend(analyses: AnalysisHistory[]): {
   trend: "up" | "down" | "stable";
   percentage: number;
 } {
-  if (analyses.length < 2) return { trend: "stable", percentage: 0 };
-  const latest = analyses[analyses.length - 1];
-  const prev = analyses[analyses.length - 2];
+  const valid = analyses.filter((a) => a.consumption_kwh != null);
+  if (valid.length < 2) return { trend: "stable", percentage: 0 };
+  const latest = valid[valid.length - 1];
+  const prev = valid[valid.length - 2];
   const diff = latest.consumption_kwh - prev.consumption_kwh;
   const pct = prev.consumption_kwh > 0 ? (diff / prev.consumption_kwh) * 100 : 0;
   if (Math.abs(pct) < 3) return { trend: "stable", percentage: 0 };
