@@ -29,8 +29,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 66 | | Backend (B) | 35 |
-| In review | 5 | | Infraestrutura (I) | 17 |
+| Done | 68 | | Backend (B) | 35 |
+| In review | 3 | | Infraestrutura (I) | 17 |
 | In progress | 0 | | Frontend (F) | 15 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
@@ -111,15 +111,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK |
 | I021 | Infraestrutura/Base - ADR-0030 (session validation + mock removal) |
 
-### In review → Done
-
-| ID | Título | Commits associados |
-|---|---|---|
-| F036 | Frontend - Consumir endpoint /energy-analysis/categories (Dashboard + AnalysisForm + ProfilePage) | 594c4cb, 036cb90 |
-| F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | aa7ba40 |
-
-## Movimentações (27/07/2026)
-
 ### In progress → In review
 
 | ID | Título | Commits associados |
@@ -127,3 +118,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F035 | Frontend - Alinhar categorias de aparelhos (normalização EN/PT) | 2119896 |
 | F036 | Frontend - Consumir endpoint /energy-analysis/categories (rank dinâmico) | 594c4cb |
 | F037 | Frontend - Adicionar campo status nas análises | fcdcb65 |
+
+### In review → Done
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F035 | Frontend - Alinhar categorias de aparelhos (normalização EN/PT) | 2119896 |
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories (Dashboard + AnalysisForm + ProfilePage) | 594c4cb, 036cb90 |
+| F037 | Frontend - Adicionar campo status nas análises | fcdcb65 |
+| F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | aa7ba40 |
