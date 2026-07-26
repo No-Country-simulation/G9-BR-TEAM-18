@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -14,13 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-
 export default function App() {
-  useEffect(() => {
-    fetch(`${API_URL}/auth/me`, { mode: "no-cors" }).catch(() => {});
-  }, []);
-
   return (
     <AuthProvider>
       <Navbar />

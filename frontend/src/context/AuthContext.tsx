@@ -9,7 +9,7 @@ function restoreSession(): User | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const u: User = JSON.parse(raw);
-      if (u.id && u.name && document.cookie.includes("SESSION_TOKEN=")) {
+      if (u.id && u.name) {
         return u;
       }
     }
@@ -19,12 +19,29 @@ function restoreSession(): User | null {
   return null;
 }
 
+function clearSession(): void {
+  localStorage.removeItem(STORAGE_KEY);
+  document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(restoreSession);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(false);
+    const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+    fetch(`${url}/auth/me`, { credentials: "include" })
+      .then((res) => {
+        if (!res.ok) {
+          clearSession();
+          setUser(null);
+        }
+      })
+      .catch(() => {
+        // Network error — keep optimistically cached user so the UI is not blank
+        // on a transient outage; the first 401 from any API will redirect.
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
