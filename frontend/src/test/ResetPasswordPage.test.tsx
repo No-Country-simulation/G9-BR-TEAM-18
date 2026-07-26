@@ -5,6 +5,14 @@ import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
+globalThis.fetch = mockFetch;
+
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -61,8 +69,8 @@ describe("ResetPasswordPage", () => {
   });
 
   it("disables submit button while loading", async () => {
-    const mockFetch = vi.fn().mockImplementation(() => new Promise(() => {}));
-    globalThis.fetch = mockFetch;
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
+    mockFetch.mockImplementationOnce(() => new Promise(() => {}));
 
     localStorage.setItem(
       "energiai_user",

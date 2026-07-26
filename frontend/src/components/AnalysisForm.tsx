@@ -8,7 +8,6 @@ import {
   createProperty,
   addApplianceToProperty,
 } from "../services/api";
-import { APPLIANCE_FALLBACK } from "../data/appliances";
 
 const CATEGORIES: Record<string, { label: string; icon: string; color: string }> = {
   Refrigeracao: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
@@ -72,17 +71,10 @@ export default function AnalysisForm() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [usingFallback, setUsingFallback] = useState(true);
   useEffect(() => {
     listAppliances()
-      .then((data) => {
-        setApplianceTypes(data.length > 0 ? data : APPLIANCE_FALLBACK);
-        setUsingFallback(data.length === 0 || !data[0]?.backendId);
-      })
-      .catch(() => {
-        setApplianceTypes(APPLIANCE_FALLBACK);
-        setUsingFallback(true);
-      });
+      .then((data) => setApplianceTypes(data))
+      .catch((err) => setError(err.message));
   }, []);
 
   const filteredTypes = useMemo(() => {
@@ -160,7 +152,7 @@ export default function AnalysisForm() {
       ...prev,
       consumption_kwh: Math.round(applianceCalc.monthlyConsumptionKwh),
     }));
-  }, [selectedAppliances, applianceCalc]);
+  }, [selectedAppliances, applianceCalc, setForm]);
 
   function toggleCategory(cat: string) {
     setOpenCategories((prev) => {
@@ -206,11 +198,11 @@ export default function AnalysisForm() {
       const prop = await createProperty("Minha Residencia", form.property_type);
       const propId = prop.id;
 
-      if (!usingFallback && selectedAppliances.length > 0) {
+      if (selectedAppliances.length > 0) {
         for (const item of selectedAppliances) {
           const appliance = applianceTypes.find((t) => t.id === item.type);
-          if (appliance?.backendId) {
-            await addApplianceToProperty(propId, appliance.backendId, item.quantity);
+          if (appliance) {
+            await addApplianceToProperty(propId, Number(appliance.id), item.quantity);
           }
         }
       }

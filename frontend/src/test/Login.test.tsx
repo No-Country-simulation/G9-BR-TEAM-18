@@ -11,7 +11,12 @@ vi.mock("react-router-dom", async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 function renderPage() {
@@ -47,6 +52,7 @@ describe("Login", () => {
   });
 
   it("disables submit button while loading", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockImplementationOnce(() => new Promise(() => {}));
 
     renderPage();
@@ -59,10 +65,11 @@ describe("Login", () => {
   });
 
   it("shows error message on failed login", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Credenciais inválidas" }),
-    });
+    } as unknown as Response);
 
     renderPage();
 
@@ -74,10 +81,11 @@ describe("Login", () => {
   });
 
   it("navigates to home on successful login when no reset required", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Test", email: "a@a.com" }),
-    });
+    } as unknown as Response);
 
     renderPage();
 
@@ -91,6 +99,7 @@ describe("Login", () => {
   });
 
   it("navigates to reset-password when password reset is required", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -100,7 +109,7 @@ describe("Login", () => {
           email: "a@a.com",
           password_reset_required: true,
         }),
-    });
+    } as unknown as Response);
 
     renderPage();
 

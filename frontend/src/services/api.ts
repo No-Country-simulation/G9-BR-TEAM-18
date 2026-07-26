@@ -7,7 +7,7 @@ import type {
   PropertyAppliance,
 } from "../types";
 import { ApiError } from "../types";
-import { APPLIANCE_FALLBACK, mergeAppliancesWithBackend } from "../data/appliances";
+import { enrichAppliance } from "../data/appliances";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
@@ -235,18 +235,18 @@ export async function fetchDashboard(): Promise<DashboardData> {
 }
 
 export async function listAppliances(): Promise<ApplianceType[]> {
-  try {
-    const response = await authFetch("/appliances");
-    if (!response.ok) return APPLIANCE_FALLBACK;
-    const raw: Array<{
-      id: number;
-      name: string;
-      appliance_category: string;
-      average_power_watts: number;
-      average_daily_use_hours: number;
-    }> = await response.json();
-    return mergeAppliancesWithBackend(APPLIANCE_FALLBACK, raw);
-  } catch {
-    return APPLIANCE_FALLBACK;
+  const response = await authFetch("/appliances");
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    const err: ErrorResponse = await response.json();
+    throw new Error(err.message ?? "Erro ao carregar catálogo de aparelhos");
   }
+  const raw: Array<{
+    id: number;
+    name: string;
+    appliance_category: string;
+    average_power_watts: number;
+    average_daily_use_hours: number;
+  }> = await response.json();
+  return raw.map(enrichAppliance);
 }

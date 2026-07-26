@@ -4,6 +4,14 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../context/AuthContext";
 import PrivateRoute from "../components/PrivateRoute";
 
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
+globalThis.fetch = mockFetch;
+
 function TestChild() {
   return <div>protected content</div>;
 }
@@ -24,12 +32,20 @@ function renderWithState(state: AuthState) {
       JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: false }),
     );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
   } else if (state === "authenticated-needs-reset") {
     localStorage.setItem(
       "energiai_user",
       JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: true }),
     );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
   }
 
   return render(

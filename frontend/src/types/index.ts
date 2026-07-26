@@ -6,16 +6,14 @@ export interface User {
 }
 
 export interface ApplianceType {
+  /** ID numérico do backend convertido para string (ex.: "1", "2") */
   id: string;
   name: string;
   mlCategory: string;
   distributionField: string;
   powerWatts: number;
   dailyUsageHours: number;
-
   icon: string;
-
-  backendId?: number;
 }
 
 export interface ApplianceItem {

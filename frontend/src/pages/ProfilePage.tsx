@@ -102,7 +102,7 @@ export default function ProfilePage() {
 
     Promise.all([listAppliances(), listProperties()])
       .then(([appls, props]) => {
-        setApplianceTypes(appls.length > 0 ? appls : []);
+        setApplianceTypes(appls);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
@@ -130,8 +130,11 @@ export default function ProfilePage() {
           }
         });
       })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      })
       .finally(() => setLoading(false));
-  }, [user, navigate]);
+  }, [user, navigate, setRegularity]);
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -239,8 +242,8 @@ export default function ProfilePage() {
       const batchItems = selectedAppliances
         .map((item) => {
           const appliance = applianceTypes.find((t) => t.id === item.type);
-          return appliance?.backendId
-            ? { appliance_id: appliance.backendId, quantity: item.quantity }
+          return appliance
+            ? { appliance_id: Number(appliance.id), quantity: item.quantity }
             : null;
         })
         .filter((x): x is { appliance_id: number; quantity: number } => x !== null);

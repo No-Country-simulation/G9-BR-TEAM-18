@@ -6,7 +6,12 @@ import { AuthProvider } from "../context/AuthContext";
 import { useAuth } from "../context/useAuth";
 import type { ReactNode } from "react";
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 function TestConsumer() {
@@ -54,13 +59,13 @@ describe("AuthContext", () => {
   });
 
   it("successful login updates state", async () => {
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("login"));
 
@@ -69,19 +74,22 @@ describe("AuthContext", () => {
   });
 
   it("login error does not change state", async () => {
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Credenciais inválidas" }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("login"));
     await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
   });
 
   it("login with passwordResetRequired flag stores it in user state", async () => {
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -91,10 +99,7 @@ describe("AuthContext", () => {
           email: "a@a.com",
           password_reset_required: true,
         }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("login"));
 
@@ -110,7 +115,11 @@ describe("AuthContext", () => {
       JSON.stringify({ id: "1", name: "Alice", email: "a@a.com" }),
     );
     document.cookie = "SESSION_TOKEN=abc; Path=/";
-    mockFetch.mockResolvedValueOnce({ ok: true } as Response);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
 
     renderWithAuth(<TestConsumer />);
 
@@ -123,17 +132,17 @@ describe("AuthContext", () => {
   });
 
   it("successful register auto-logs in", async () => {
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({}),
-    });
+    } as unknown as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "2", name: "Bob", email: "b@b.com" }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("register"));
 
@@ -149,6 +158,15 @@ describe("AuthContext", () => {
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
+
+    renderWithAuth(<TestConsumer />);
+
+    await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
       json: () =>
         Promise.resolve({
           id: "1",
@@ -156,11 +174,7 @@ describe("AuthContext", () => {
           email: "a@a.com",
           password_reset_required: false,
         }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-
-    await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("reset password"));
 
@@ -177,13 +191,18 @@ describe("AuthContext", () => {
     document.cookie = "SESSION_TOKEN=abc; Path=/";
 
     mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ message: "Senha atual inválida" }),
-    });
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
 
     renderWithAuth(<TestConsumer />);
 
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ message: "Senha atual inválida" }),
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("reset password"));
 
@@ -202,10 +221,15 @@ describe("AuthContext", () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
-    });
+    } as unknown as Response);
 
     renderWithAuth(<TestConsumer />);
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("reset password"));
 

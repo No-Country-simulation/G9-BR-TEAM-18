@@ -5,7 +5,12 @@ import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import Navbar from "../components/Navbar";
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 Object.defineProperty(window, "matchMedia", {
@@ -34,6 +39,10 @@ function renderWithState(state: AuthState) {
       JSON.stringify({ id: "1", name: "Alice", email: "a@a.com" }),
     );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
   }
 
   return render(

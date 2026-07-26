@@ -204,19 +204,36 @@ describe("listPropertyAppliances", () => {
 describe("listAppliances", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("returns fallback on network error", async () => {
+  it("throws on network error", async () => {
     mockFetch.mockRejectedValueOnce(new Error("network"));
 
-    const result = await listAppliances();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
+    await expect(listAppliances()).rejects.toThrow();
   });
 
-  it("returns fallback when response is not ok", async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, []));
+  it("throws when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "API error" }));
+
+    await expect(listAppliances()).rejects.toThrow("API error");
+  });
+
+  it("returns enriched appliances on success", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, [
+        {
+          id: 1,
+          name: "Geladeira",
+          appliance_category: "Refrigeracao",
+          average_power_watts: 150,
+          average_daily_use_hours: 24,
+        },
+      ]),
+    );
 
     const result = await listAppliances();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("1");
+    expect(result[0].name).toBe("Geladeira");
+    expect(result[0].icon).toBe("Snowflake");
+    expect(result[0].distributionField).toBe("REFRIGERATION_WATTS");
   });
 });
