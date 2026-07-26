@@ -53,8 +53,8 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             throw new InvalidRequestException("A propriedade está inativa e não pode receber análises.");
         }
 
-        EnergyAnalysis analysis = new EnergyAnalysis(
-                property.getId(), scale(consumptionKwh), peakHourUsage, scale(highConsumptionHours));
+        EnergyAnalysis analysis =
+                new EnergyAnalysis(property.getId(), scale(consumptionKwh), peakHourUsage, scale(highConsumptionHours));
         analysis.setPropertyType(property.getPropertyType());
         analysis.setAppliancesSnapshot(toSnapshots(appliances));
 
@@ -134,7 +134,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         return appliances.stream()
                 .map(pa -> new ApplianceSnapshot(
                         pa.getAppliance().getName(),
-                        pa.getAppliance().getCategory().name(), // ajuste para .getCategory() puro se já for String
+                        pa.getAppliance().getApplianceCategory(),
                         pa.getQuantity(),
                         pa.getAppliance().getAveragePowerWatts(),
                         pa.getAppliance().getAverageDailyUseHours(),
