@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { fetchDashboard, listAnalyses } from "../services/api";
+import { fetchDashboard, listAnalyses, fetchCategories } from "../services/api";
 import type { DashboardData, AnalysisHistory } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -65,19 +65,32 @@ export default function Dashboard() {
   });
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState(goalKwh);
+  const [backendCategories, setBackendCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    Promise.all([fetchDashboard(), listAnalyses()])
-      .then(([dash, allAnalyses]) => {
+    Promise.all([fetchDashboard(), listAnalyses(), fetchCategories()])
+      .then(([dash, allAnalyses, cats]) => {
         setData(dash);
         setAnalyses(allAnalyses);
+        if (cats.length > 0) setBackendCategories(cats);
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
+
+  const dynamicCategoryRank = useMemo(() => {
+    if (backendCategories.length === 0) return CATEGORY_RANK;
+    const dynamic: Record<string, number> = {};
+    backendCategories.forEach((cat, idx) => {
+      dynamic[cat] = idx;
+    });
+    return dynamic;
+  }, [backendCategories]);
+
+  const backendCategorySet = useMemo(() => new Set(backendCategories), [backendCategories]);
 
   if (loading) {
     return (
@@ -124,7 +137,8 @@ export default function Dashboard() {
   const recentCategories = analyses.slice(-2).map((a) => a.category);
   const rankDiff =
     analyses.length >= 2
-      ? CATEGORY_RANK[recentCategories[1]] - CATEGORY_RANK[recentCategories[0]]
+      ? (dynamicCategoryRank[recentCategories[1]] ?? 999) -
+        (dynamicCategoryRank[recentCategories[0]] ?? 999)
       : 0;
 
   const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;
@@ -167,7 +181,7 @@ export default function Dashboard() {
               style={{
                 backgroundColor:
                   CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
-                  "#6b7280",
+                  (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
               }}
             >
               {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??

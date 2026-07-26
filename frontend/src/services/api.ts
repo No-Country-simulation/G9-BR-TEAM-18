@@ -234,6 +234,15 @@ export async function fetchDashboard(): Promise<DashboardData> {
   };
 }
 
+export async function fetchCategories(): Promise<string[]> {
+  const response = await authFetch("/energy-analysis/categories");
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    return [];
+  }
+  return response.json();
+}
+
 export async function listAppliances(): Promise<ApplianceType[]> {
   const response = await authFetch("/appliances");
   if (!response.ok) {
