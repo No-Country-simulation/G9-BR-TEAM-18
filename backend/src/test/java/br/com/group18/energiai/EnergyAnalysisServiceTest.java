@@ -132,8 +132,7 @@ class EnergyAnalysisServiceTest {
                 "model");
         when(mlClientMock.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(responseBody));
 
-        service.execute(
-                property, List.of(propertyAppliance), new BigDecimal("320.5"), true, new BigDecimal("4"), null);
+        service.execute(property, List.of(propertyAppliance), new BigDecimal("320.5"), true, new BigDecimal("4"), null);
 
         ArgumentCaptor<EnergyAnalysis> captor = ArgumentCaptor.forClass(EnergyAnalysis.class);
         verify(repoMock, times(2)).save(captor.capture());
@@ -187,15 +186,8 @@ class EnergyAnalysisServiceTest {
         Property property = new Property(1L, "Casa Vazia", "RESIDENCIAL");
 
         when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Map<String, Object> responseBody = Map.of(
-                "category",
-                "EXCELENTE",
-                "probability",
-                0.95,
-                "recommendations",
-                List.of(),
-                "source",
-                "model");
+        Map<String, Object> responseBody =
+                Map.of("category", "EXCELENTE", "probability", 0.95, "recommendations", List.of(), "source", "model");
         when(mlClientMock.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(responseBody));
 
         service.execute(property, List.of(), new BigDecimal("100"), false, new BigDecimal("0"), null);
