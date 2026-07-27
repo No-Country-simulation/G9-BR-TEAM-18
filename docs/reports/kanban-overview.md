@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 110 | | Backend (B) | 50 |
+| Done | 111 | | Backend (B) | 50 |
 | In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 39 |
+| In progress | 0 | | Frontend (F) | 40 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **110** | | **Total** | **120** |
+| **Total** | **111** | | **Total** | **121** |
 
 ## Movimentações (24/07/2026)
 
@@ -198,3 +198,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | dcf26f0, b790a2a, b4064c4, ADR-0040 |
 | F057 | Frontend - Excluir análise no Histórico com confirmação | In progress | Done | 28911de, ADR-0041 |
 | B046 | Backend (Manutenção) - Spotless: formatação automática AnalysisController.java | In progress | Done | 8a78485 |
+
+## Movimentações (27/07/2026) — Rodada 4
+
+### In progress → Done
+
+| ID | Título | Coluna inicial | Coluna final | Commits associados |
+|---|---|---|---|---|
+| F058 | Frontend/Backend - Alinhamento FE/BE: remover AnalysisForm, expor highestConsumptionProducts, Dashboard usar /simulate | In progress | Done | ada29a3, ADR-0042 |
+
