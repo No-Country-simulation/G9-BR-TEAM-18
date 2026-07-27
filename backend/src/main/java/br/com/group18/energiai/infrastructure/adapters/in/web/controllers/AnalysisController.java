@@ -223,6 +223,16 @@ public class AnalysisController {
     }
 
     private AnalysisResponseDTO toResponse(EnergyAnalysis analysis) {
+        List<AnalysisResponseDTO.ApplianceSnapshotDTO> snapshots = analysis.getAppliancesSnapshot().stream()
+                .map(snap -> new AnalysisResponseDTO.ApplianceSnapshotDTO(
+                        snap.getApplianceName(),
+                        snap.getApplianceCategory(),
+                        snap.getQuantity(),
+                        snap.getAveragePowerWatts(),
+                        snap.getAverageDailyUseHours(),
+                        snap.getMonthlyConsumptionKwh()))
+                .toList();
+
         return new AnalysisResponseDTO(
                 analysis.getId(),
                 analysis.getPropertyId(),
@@ -236,7 +246,8 @@ public class AnalysisController {
                 analysis.getSource(),
                 analysis.getRecommendations(),
                 analysis.getCreatedAt(),
-                analysis.getUpdatedAt());
+                analysis.getUpdatedAt(),
+                snapshots);
     }
 
     @Schema(description = "Dados consolidados do dashboard do usuário")

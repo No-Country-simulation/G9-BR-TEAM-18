@@ -114,6 +114,16 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         MlResult mlResult = analysisMapper.toMlResult(response);
         BigDecimal estimatedCost = consumptionKwh.multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP);
 
+        List<AnalysisResponseDTO.ApplianceSnapshotDTO> snapshots = toSnapshots(appliances).stream()
+                .map(snap -> new AnalysisResponseDTO.ApplianceSnapshotDTO(
+                        snap.getApplianceName(),
+                        snap.getApplianceCategory(),
+                        snap.getQuantity(),
+                        snap.getAveragePowerWatts(),
+                        snap.getAverageDailyUseHours(),
+                        snap.getMonthlyConsumptionKwh()))
+                .toList();
+
         return new AnalysisResponseDTO(
                 null,
                 property.getId(),
@@ -127,7 +137,8 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 mlResult.source(),
                 mlResult.recommendations(),
                 null,
-                null);
+                null,
+                snapshots);
     }
 
     private List<ApplianceSnapshot> toSnapshots(List<PropertyAppliance> appliances) {

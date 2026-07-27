@@ -35,4 +35,20 @@ public record AnalysisResponseDTO(
         @Schema(description = "Data e hora da criação da análise", example = "2026-07-25T10:30:00")
                 LocalDateTime createdAt,
         @Schema(description = "Data e hora da última atualização", example = "2026-07-25T10:30:00")
-                LocalDateTime updatedAt) {}
+                LocalDateTime updatedAt,
+        @Schema(description = "Lista de equipamentos capturados no momento da análise")
+                List<ApplianceSnapshotDTO> appliances) {
+
+    @Schema(description = "Snapshot de um equipamento no momento da análise")
+    public record ApplianceSnapshotDTO(
+            @Schema(description = "Nome do equipamento", example = "Geladeira") String name,
+            @Schema(description = "Categoria do equipamento", example = "Refrigeracao")
+                    String category,
+            @Schema(description = "Quantidade", example = "2") Integer quantity,
+            @Schema(description = "Potência média em watts", example = "150.0")
+                    BigDecimal averagePowerWatts,
+            @Schema(description = "Média de horas de uso por dia", example = "24.0")
+                    BigDecimal averageDailyUseHours,
+            @Schema(description = "Consumo mensal estimado em kWh", example = "108.0")
+                    BigDecimal monthlyConsumptionKwh) {}
+}
