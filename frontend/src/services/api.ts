@@ -203,7 +203,23 @@ export async function listAnalyses(): Promise<AnalysisHistory[]> {
     if (response.status === 401) redirectToLogin();
     return [];
   }
-  return response.json();
+  const raw: Array<Record<string, unknown>> = await response.json();
+  return raw.map((a) => ({
+    id: String(a.id),
+    propertyId: (a.property_id as number) ?? 0,
+    category: a.category as AnalysisHistory["category"],
+    probability: Number(a.probability ?? 0),
+    consumption_kwh: Number(a.consumption_kwh ?? 0),
+    estimated_monthly_cost: Number(a.estimated_monthly_cost ?? 0),
+    peak_hour_usage: Boolean(a.peak_hour_usage),
+    high_consumption_hours: Number(a.high_consumption_hours ?? 0),
+    created_at: String(a.created_at ?? ""),
+    recommendations: (a.recommendations as string[]) ?? [],
+    status: a.status as AnalysisHistory["status"],
+    appliances: (a.appliances as AnalysisHistory["appliances"]) ?? [],
+    highest_consumption_products:
+      (a.highest_consumption_products as string[]) ?? undefined,
+  }));
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {
@@ -269,6 +285,7 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
   const raw = await response.json();
   return {
     id: String(raw.id),
+    propertyId: (raw.property_id as number) ?? 0,
     category: raw.category,
     probability: raw.probability ?? 0,
     consumption_kwh: raw.consumption_kwh ?? 0,
@@ -295,6 +312,42 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
         monthly_consumption_kwh: s.monthly_consumption_kwh,
       }),
     ),
+    highest_consumption_products:
+      (raw.highest_consumption_products as string[]) ?? undefined,
+  };
+}
+
+export async function simulateEnergy(
+  propertyId: number,
+  consumptionKwh: number,
+  peakHourUsage: boolean,
+  highConsumptionHours: number,
+  highestConsumptionCategory?: string,
+): Promise<AnalysisResponse> {
+  const body: Record<string, unknown> = {
+    property_id: propertyId,
+    consumption_kwh: consumptionKwh,
+    peak_hour_usage: peakHourUsage,
+    high_consumption_hours: highConsumptionHours,
+  };
+  if (highestConsumptionCategory) {
+    body.highest_consumption_category = highestConsumptionCategory;
+  }
+  const response = await authFetch("/energy-analysis/simulate", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const err: ErrorResponse = await response.json();
+    throw new ApiError(err.message ?? "Erro ao simular consumo", err.fields ?? {});
+  }
+
+  const raw = await response.json();
+  return {
+    ...raw,
+    probability: Number(raw.probability ?? 0),
+    estimated_monthly_cost: Number(raw.estimated_monthly_cost ?? 0),
   };
 }
 

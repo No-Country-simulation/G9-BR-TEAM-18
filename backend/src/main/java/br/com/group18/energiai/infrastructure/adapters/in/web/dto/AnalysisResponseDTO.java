@@ -32,6 +32,8 @@ public record AnalysisResponseDTO(
                         allowableValues = {"ML", "FALLBACK"})
                 String source,
         @Schema(description = "Recomendações para melhoria da eficiência") List<String> recommendations,
+        @Schema(description = "Lista dos 3 equipamentos de maior consumo no momento da análise")
+                List<String> highestConsumptionProducts,
         @Schema(description = "Data e hora da criação da análise", example = "2026-07-25T10:30:00")
                 LocalDateTime createdAt,
         @Schema(description = "Data e hora da última atualização", example = "2026-07-25T10:30:00")

@@ -1,8 +1,17 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { fetchDashboard, listAnalyses, fetchCategories, fetchPreferences, updatePreferences } from "../services/api";
-import type { DashboardData, AnalysisHistory } from "../types";
+import {
+  fetchDashboard,
+  listAnalyses,
+  fetchCategories,
+  fetchPreferences,
+  updatePreferences,
+  listProperties,
+  simulateEnergy,
+} from "../services/api";
+import type { DashboardData, AnalysisHistory, AnalysisResponse } from "../types";
+import type { PropertyResponse } from "../services/api";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
@@ -16,10 +25,11 @@ import {
   ArrowUp,
   ArrowDown,
   Target,
-  Lightbulb,
   PiggyBank,
   Calendar,
   Clock,
+  Sparkles,
+  AlertCircle,
 } from "lucide-react";
 
 type TimeGranularity = "month" | "day" | "hour";
@@ -97,14 +107,6 @@ function aggregateByGranularity(
   return entries.map(({ label, consumptionKwh }) => ({ label, consumptionKwh }));
 }
 
-const KWH_TARIFF = 0.75;
-
-function savingsSimulation(currentKwh: number, reductionKwh: number) {
-  const saving = reductionKwh * KWH_TARIFF;
-  const newKwh = Math.max(0, currentKwh - reductionKwh);
-  return { saving, newKwh, reductionKwh };
-}
-
 const CATEGORY_RANK: Record<string, number> = {
   EXCELENTE: 0,
   BOM: 1,
@@ -127,7 +129,6 @@ function interpretTrend(analyses: AnalysisHistory[]): {
   return { trend: pct > 0 ? "up" : "down", percentage: Math.abs(pct) };
 }
 
-const SAVINGS_RATES = [0.1, 0.2, 0.3, 0.4];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -142,13 +143,30 @@ export default function Dashboard() {
   const [backendCategories, setBackendCategories] = useState<string[]>([]);
   const [granularity, setGranularity] = useState<TimeGranularity>("month");
 
+  const [simTargetKwh, setSimTargetKwh] = useState(0);
+  const [simResult, setSimResult] = useState<AnalysisResponse | null>(null);
+  const [simLoading, setSimLoading] = useState(false);
+  const [simError, setSimError] = useState<string | null>(null);
+  const [properties, setProperties] = useState<PropertyResponse[]>([]);
+
+  const activeProperty = useMemo(
+    () => properties.find((p) => p.active) ?? properties[0] ?? null,
+    [properties],
+  );
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    Promise.all([fetchDashboard(), listAnalyses(), fetchCategories(), fetchPreferences()])
-      .then(([dash, allAnalyses, cats, prefs]) => {
+    Promise.all([
+      fetchDashboard(),
+      listAnalyses(),
+      fetchCategories(),
+      fetchPreferences(),
+      listProperties(),
+    ])
+      .then(([dash, allAnalyses, cats, prefs, props]) => {
         setData(dash);
         setAnalyses(allAnalyses);
         if (cats.length > 0) setBackendCategories(cats);
@@ -156,6 +174,7 @@ export default function Dashboard() {
           setGoalKwh(prefs.consumption_goal);
           setGoalInput(prefs.consumption_goal);
         }
+        setProperties(props);
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
@@ -226,12 +245,6 @@ export default function Dashboard() {
       : 0;
 
   const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;
-  const savingsPresets = SAVINGS_RATES.map((rate) => Math.max(10, Math.round(currentKwh * rate)));
-  const simulations = savingsPresets.map((r) => ({
-    ...savingsSimulation(currentKwh, r),
-    label: `${r} kWh/mês - ${((r / currentKwh) * 100).toFixed(0)}%`,
-  }));
-
   const goalProgress = goalKwh > 0 ? Math.min(100, (currentKwh / goalKwh) * 100) : 0;
 
   return (
@@ -452,25 +465,125 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {lastAnalysis && currentKwh > 0 && (
+      {activeProperty && lastAnalysis && currentKwh > 0 && (
         <div className="dash-section">
           <h3>
             <PiggyBank size={20} /> Simule sua Economia
           </h3>
           <p className="dash-section-subtitle">
-            Veja quanto voce pode economizar reduzindo seu consumo mensal:
+            Informe um novo consumo para simular como sua classificacao mudaria com a reducao:
           </p>
-          <div className="dash-simulation-grid">
-            {simulations.map((sim) => (
-              <div key={sim.reductionKwh} className="dash-simulation-card">
-                <Lightbulb size={20} className="sim-icon" />
-                <div className="sim-details">
-                  <span className="sim-reduction">Reduza {sim.reductionKwh} kWh</span>
-                  <span className="sim-consumption">Novo consumo: {sim.newKwh.toFixed(0)} kWh</span>
-                </div>
-                <span className="sim-saving">+ R$ {sim.saving.toFixed(2)}/mes</span>
+          <div className="dash-sim-card">
+            <div className="dash-sim-row">
+              <div className="dash-sim-current">
+                <span className="dash-sim-label">Atual</span>
+                <span className="dash-sim-value">{currentKwh.toFixed(0)} kWh</span>
               </div>
-            ))}
+              <div className="dash-sim-arrow">
+                <ArrowDown size={20} />
+              </div>
+              <div className="dash-sim-target">
+                <span className="dash-sim-label">Novo consumo</span>
+                <div className="dash-sim-input-group">
+                  <input
+                    type="number"
+                    min={0}
+                    max={currentKwh}
+                    step={10}
+                    value={simTargetKwh || Math.round(currentKwh * 0.85)}
+                    onChange={(e) => {
+                      setSimTargetKwh(Number(e.target.value));
+                      setSimResult(null);
+                      setSimError(null);
+                    }}
+                    className="dash-sim-input"
+                  />
+                  <span className="dash-sim-unit">kWh</span>
+                </div>
+              </div>
+              <button
+                className="dash-btn dash-btn--primary"
+                onClick={async () => {
+                  const target = simTargetKwh || Math.round(currentKwh * 0.85);
+                  if (target >= currentKwh) return;
+                  setSimLoading(true);
+                  setSimError(null);
+                  setSimResult(null);
+                  try {
+                    const res = await simulateEnergy(
+                      activeProperty.id,
+                      target,
+                      lastAnalysis.peak_hour_usage,
+                      lastAnalysis.high_consumption_hours,
+                      undefined,
+                    );
+                    setSimResult(res);
+                  } catch (err) {
+                    setSimError(
+                      err instanceof Error ? err.message : "Erro ao simular",
+                    );
+                  } finally {
+                    setSimLoading(false);
+                  }
+                }}
+                disabled={
+                  simLoading ||
+                  (simTargetKwh || Math.round(currentKwh * 0.85)) >= currentKwh
+                }
+              >
+                {simLoading ? (
+                  "Simulando..."
+                ) : (
+                  <>
+                    <Sparkles size={16} /> Simular com IA
+                  </>
+                )}
+              </button>
+            </div>
+
+            {simError && (
+              <div className="dash-sim-error">
+                <AlertCircle size={14} />
+                <span>{simError}</span>
+              </div>
+            )}
+
+            {simResult && (
+              <div className="dash-sim-result">
+                <div className="dash-sim-result-header">
+                  <span
+                    className="dash-last-badge"
+                    style={{
+                      backgroundColor:
+                        CATEGORY_COLORS[
+                          simResult.category as keyof typeof CATEGORY_COLORS
+                        ] ?? "#6b7280",
+                    }}
+                  >
+                    {CATEGORY_DISPLAY[
+                      simResult.category as keyof typeof CATEGORY_DISPLAY
+                    ] ?? simResult.category}
+                  </span>
+                  <span className="dash-sim-stat">
+                    Confianca: {(simResult.probability * 100).toFixed(0)}%
+                  </span>
+                  <span className="dash-sim-stat">
+                    Custo: R$ {simResult.estimated_monthly_cost.toFixed(2)}
+                  </span>
+                </div>
+                {simResult.highest_consumption_products &&
+                  simResult.highest_consumption_products.length > 0 && (
+                    <div className="dash-sim-products">
+                      <span className="dash-sim-products-label">
+                        Maiores consumidores:
+                      </span>
+                      <span>
+                        {simResult.highest_consumption_products.join(", ")}
+                      </span>
+                    </div>
+                  )}
+              </div>
+            )}
           </div>
         </div>
       )}

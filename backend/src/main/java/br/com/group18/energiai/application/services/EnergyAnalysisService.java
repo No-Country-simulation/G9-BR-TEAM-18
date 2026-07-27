@@ -136,6 +136,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 "SIMULADO",
                 mlResult.source(),
                 mlResult.recommendations(),
+                aggregation.highestConsumptionProducts(),
                 null,
                 null,
                 snapshots);

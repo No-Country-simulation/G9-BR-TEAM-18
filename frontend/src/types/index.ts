@@ -30,6 +30,7 @@ export interface AnalysisResponse {
   estimated_monthly_cost: number;
   source?: string;
   status?: AnalysisStatus;
+  highest_consumption_products?: string[];
 }
 
 export type EfficiencyClassification = "EXCELENTE" | "BOM" | "MEDIANO" | "RUIM" | "CRITICO";
@@ -89,6 +90,7 @@ export interface ApplianceSnapshot {
 
 export interface AnalysisHistory {
   id: string;
+  propertyId: number;
   category: EfficiencyClassification;
   probability: number;
   consumption_kwh: number;
@@ -99,6 +101,7 @@ export interface AnalysisHistory {
   recommendations: string[];
   status?: AnalysisStatus;
   appliances?: ApplianceSnapshot[];
+  highest_consumption_products?: string[];
 }
 
 export interface MonthlyConsumption {

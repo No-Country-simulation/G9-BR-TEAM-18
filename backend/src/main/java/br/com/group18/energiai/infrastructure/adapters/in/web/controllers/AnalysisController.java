@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -257,6 +258,14 @@ public class AnalysisController {
                         snap.getMonthlyConsumptionKwh()))
                 .toList();
 
+        List<String> topProducts = snapshots.stream()
+                .sorted(Comparator.comparing(
+                        AnalysisResponseDTO.ApplianceSnapshotDTO::monthlyConsumptionKwh,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(3)
+                .map(AnalysisResponseDTO.ApplianceSnapshotDTO::name)
+                .toList();
+
         return new AnalysisResponseDTO(
                 analysis.getId(),
                 analysis.getPropertyId(),
@@ -269,6 +278,7 @@ public class AnalysisController {
                 analysis.getStatus(),
                 analysis.getSource(),
                 analysis.getRecommendations(),
+                topProducts,
                 analysis.getCreatedAt(),
                 analysis.getUpdatedAt(),
                 snapshots);
