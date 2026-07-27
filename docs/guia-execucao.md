@@ -348,8 +348,9 @@ Sem a chave, o serviço funciona apenas com o modelo de machine learning.
 na porta 5173, mas ele não está rodando. Os testes E2E com mocks de API não
 exigem o backend, mas precisam que o servidor do frontend esteja ativo.
 
-**Solução (Docker):** A imagem Docker já inclui o servidor embutido. Certifique-se
-de usar `docker run` com a imagem `energiaia-e2e`.
+**Solução (Docker):** O `playwright.config.ts` inicia automaticamente o servidor
+de desenvolvimento via `webServer` antes dos testes. Certifique-se de usar a
+imagem `energiaia-e2e` e executar `docker run --rm energiaia-e2e`.
 
 **Solução (npm local):** Inicie o servidor de desenvolvimento em outro terminal
 antes de executar os testes:

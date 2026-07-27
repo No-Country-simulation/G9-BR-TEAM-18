@@ -196,21 +196,27 @@ export default function ProfilePage() {
         totalEquipment: 0,
         monthlyConsumptionKwh: 0,
         highestConsumptionCategory: undefined,
+        highestConsumptionProducts: [] as string[],
       };
     }
     const aggregated: Record<string, number> = {};
     let totalConsumption = 0;
     let totalQty = 0;
+    const productConsumptions: { name: string; monthlyKwh: number }[] = [];
     for (const item of selectedAppliances) {
       const appliance = applianceTypes.find((t) => t.id === item.type);
       if (!appliance) continue;
       const dailyKwh = (appliance.powerWatts * appliance.dailyUsageHours * item.quantity) / 1000;
-      totalConsumption += dailyKwh * 30;
+      const monthlyKwh = dailyKwh * 30;
+      totalConsumption += monthlyKwh;
       totalQty += item.quantity;
       const totalW = appliance.powerWatts * item.quantity;
       const cat = appliance.mlCategory;
       aggregated[cat] = (aggregated[cat] ?? 0) + totalW;
+      productConsumptions.push({ name: appliance.name, monthlyKwh });
     }
+    productConsumptions.sort((a, b) => b.monthlyKwh - a.monthlyKwh);
+    const topProducts = productConsumptions.slice(0, 3).map((p) => p.name);
     let highestCat = "Outros";
     let maxValue = -1;
     for (const [cat, val] of Object.entries(aggregated)) {
@@ -223,6 +229,7 @@ export default function ProfilePage() {
       totalEquipment: totalQty,
       monthlyConsumptionKwh: totalConsumption,
       highestConsumptionCategory: highestCat,
+      highestConsumptionProducts: topProducts,
     };
   }, [selectedAppliances, applianceTypes]);
 
@@ -643,6 +650,18 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 </div>
+                {applianceCalc.highestConsumptionProducts.length > 0 && (
+                  <div className="result-products">
+                    <h4>
+                      <I.Zap size={14} /> Maiores Consumidores
+                    </h4>
+                    <ol className="product-list">
+                      {applianceCalc.highestConsumptionProducts.map((name, i) => (
+                        <li key={i}>{name}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
                 <div className="result-recs">
                   <h4>Recomendações</h4>
                   <ul>
