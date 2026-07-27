@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 98 | | Backend (B) | 43 |
-| In review | 0 | | Infraestrutura (I) | 19 |
+| Done | 102 | | Backend (B) | 45 |
+| In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 38 |
-| Ready | 0 | | Banco de Dados (M) | 6 |
+| Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **100** | | **Total** | **108** |
+| **Total** | **102** | | **Total** | **112** |
 
 ## Movimentações (24/07/2026)
 
@@ -172,3 +172,22 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | M005 | Migration V10 do histórico de análises | In review | Done | e11199c |
 | F049 | Frontend - Remover localStorage, preferências via backend | In progress | Done | 1b460ed, ADR-0033 |
 | F050 | Frontend - Melhoria visual: ícones específicos por aparelho + contraste tema escuro | In progress | Done | 72da15d |
+
+## Movimentações (27/07/2026)
+
+### Novos Cards + Conclusão
+
+| ID | Título | Coluna inicial | Coluna final | Commits associados |
+|---|---|---|---|---|
+| B042 | Backend - Correção V12 (ordem SQL: DROP antes de INSERT) | In progress | Done | f6dcd3f |
+| F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | In progress | Done | 709f725, a749de3, ADR-0034 |
+| B043 | Backend - Defaults ${VAR:default} para env vars do Flyway | In progress | Done | 709f725, a749de3 |
+| M006 | Manual: Deletar entrada V12 do flyway_schema_history | In progress | Done | - |
+
+## Movimentações (27/07/2026) — Rodada 2
+
+### Done → atualizados
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | f6dcd3f, 35ff7b6, 57cbb4a, 98acebc, 7f237ef, f8a863e, 709f725, a749de3, ADR-0034 |
