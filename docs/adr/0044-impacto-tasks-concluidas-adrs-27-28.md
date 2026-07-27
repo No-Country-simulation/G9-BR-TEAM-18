@@ -114,19 +114,19 @@ flowchart TD
     style JA fill:#3a3a3a,color:#aaa
 ```
 
-### 5. Prefixo dos cards
+### 5. Cards do ML Service
 
-Os cards de ML Service foram renomeados de M (Banco de Dados) para Q (ML Service),
-pois representam o serviço de machine learning, não migrações de banco de dados:
+Os cards do ML Service utilizam o prefixo Q (ML Service) para diferenciar de cards
+de banco de dados (M):
 
-| ID anterior | ID novo | Título |
-|---|---|---|
-| M006 | Q001 | Endpoints de descoberta: GET /contract e GET /appliance-catalog |
-| M007 | Q002 | Funções de normalização EN->PT (normalize_property_type + translate_category) |
-| M008 | Q003 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês |
-| M009 | Q004 | Atualizar _store_for_training() para gravar valores traduzidos |
-| M010 | Q005 | Aplicar normalize_property_type() no prompt da Groq |
-| M011 | Q006 | Aplicar translate_category() em _run_prediction() |
+| ID | Título |
+|---|---|
+| Q001 | Endpoints de descoberta: GET /contract e GET /appliance-catalog |
+| Q002 | Funções de normalização EN->PT (normalize_property_type + translate_category) |
+| Q003 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês |
+| Q004 | Atualizar _store_for_training() para gravar valores traduzidos |
+| Q005 | Aplicar normalize_property_type() no prompt da Groq |
+| Q006 | Aplicar translate_category() em _run_prediction() |
 
 ### 6. Tasks que podem ser executadas imediatamente
 
