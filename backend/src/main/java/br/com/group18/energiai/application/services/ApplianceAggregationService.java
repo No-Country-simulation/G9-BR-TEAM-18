@@ -44,7 +44,8 @@ public class ApplianceAggregationService {
                                     .doubleValue();
                     return new ProductConsumption(pa.getAppliance().getName(), monthlyKwh);
                 })
-                .sorted(Comparator.comparingDouble(ProductConsumption::monthlyKwh).reversed())
+                .sorted(Comparator.comparingDouble(ProductConsumption::monthlyKwh)
+                        .reversed())
                 .limit(3)
                 .map(ProductConsumption::name)
                 .toList();
