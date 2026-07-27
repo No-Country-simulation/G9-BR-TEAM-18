@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 90 | | Backend (B) | 40 |
+| Done | 90 | | Backend (B) | 41 |
 | In review | 1 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 30 |
+| In progress | 3 | | Frontend (F) | 33 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
-| Backlog | 0 | | Queries/Views (Q) | 2 |
-| **Total** | **90** | | **Total** | **90** |
+| Backlog | 3 | | Queries/Views (Q) | 2 |
+| **Total** | **97** | | **Total** | **97** |
 
 ## Movimentações (24/07/2026)
 
@@ -155,3 +155,16 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 |---|---|---|
 | F044 | Frontend (Testes) - Testes E2E com Playwright (67 testes) | d0984f9, 9d33533, ADR-0031 |
 | F045 | Frontend (Bug) - Corrigir 400 ao analisar por consumo com mais de 2 casas decimais | 6f2a784 |
+
+## Movimentações (26/07/2026) — Rodada 2
+
+### Novos Cards
+
+| ID | Título | Coluna |
+|---|---|---|
+| B039 | Backend - Calcular e enviar highest_consumption_products ao ML Service | In progress |
+| F046 | Frontend - Adicionar campos peakHourUsage e highConsumptionHours no ProfilePage | In progress |
+| F047 | Frontend - Adicionar Apartamento como tipo de imóvel | In progress |
+| B040 | Backend (Futuro) - Revisar mapeamento de categorias para distribuição de potência | Backlog |
+| B041 | ML Service (Futuro) - Usar highest_consumption_products no prompt do LLM | Backlog |
+| F048 | Frontend (Futuro) - Exibir highest_consumption_products no resultado da análise | Backlog |
