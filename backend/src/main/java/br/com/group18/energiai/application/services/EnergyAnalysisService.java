@@ -78,7 +78,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             analysis.setSource(mlResult.source());
             analysis.setEstimatedMonthlyCost(
                     analysis.getConsumptionKwh().multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP));
-            analysis.setStatus("FINALIZADO");
+            analysis.setStatus("CONCLUIDA");
             return repository.save(analysis);
         } catch (RuntimeException exception) {
             analysis.setStatus("FALHA");

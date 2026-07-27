@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 103 | | Backend (B) | 46 |
+| Done | 105 | | Backend (B) | 48 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 38 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **103** | | **Total** | **113** |
+| **Total** | **105** | | **Total** | **115** |
 
 ## Movimentações (24/07/2026)
 
@@ -184,3 +184,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B043 | Backend - Defaults `${VAR:default}` para env vars do Flyway | In progress | Done | 709f725, a749de3 |
 | M006 | Manual: Deletar entrada V12 do flyway_schema_history | In progress | Done | - |
 | B044 | Backend - Corrigir CHECK constraint chk_property_type (APARTAMENTO) | In progress | Done | eb3298d, ADR-0035 |
+
+## Movimentações (27/07/2026) — Rodada 3
+
+### Novos Cards + Conclusão
+
+| ID | Título | Coluna inicial | Coluna final | Commits associados |
+|---|---|---|---|---|
+| F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | (planejado: V14 + EnergyAnalysisService), ADR-0036 |
+| F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | (planejado: EquipmentCategory.java), ADR-0037 |
