@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 111 | | Backend (B) | 50 |
+| Done | 114 | | Backend (B) | 50 |
 | In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 40 |
+| In progress | 0 | | Frontend (F) | 43 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **111** | | **Total** | **121** |
+| **Total** | **114** | | **Total** | **124** |
 
 ## Movimentações (24/07/2026)
 
@@ -206,4 +206,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Coluna inicial | Coluna final | Commits associados |
 |---|---|---|---|---|
 | F058 | Frontend/Backend - Alinhamento FE/BE: remover AnalysisForm, expor highestConsumptionProducts, Dashboard usar /simulate | In progress | Done | ada29a3, ADR-0042 |
+| F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage (criar/trocar/editar) | In progress | Done | 2c04560 |
+| F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | In progress | Done | 007c8b2 |
+| F061 | Frontend - Seletor de imóveis no Dashboard para simulação correta | In progress | Done | cb37ed4, ADR-0043 |
+
 
