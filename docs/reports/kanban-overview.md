@@ -32,9 +32,10 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Done | 113 | | Backend (B) | 52 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 47 |
-| Ready | 0 | | ML Service / BD (M) | 13 |
-| Backlog | 15 | | Queries/Views (Q) | 2 |
-| **Total** | **113** | | **Total** | **136** |
+| Ready | 0 | | ML Service (Q) | 6 |
+| Backlog | 15 | | Banco de Dados (M) | 7 |
+| **Total** | **113** | | Queries/Views (Q) | 2 |
+| | | | **Total** | **134** |
 
 ## Movimentações (24/07/2026)
 
@@ -215,12 +216,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
-| M006 | Endpoints de descoberta: GET /contract e GET /appliance-catalog | #127 | ADR-0027, ADR-0028 |
-| M007 | Funções de normalização EN->PT (normalize_property_type + translate_category) | #136 | ADR-0027, ADR-0028 |
-| M008 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês | #124 | ADR-0027, ADR-0028 |
-| M009 | Atualizar _store_for_training() para gravar valores traduzidos | #125 | ADR-0027, ADR-0028 |
-| M010 | Aplicar normalize_property_type() no prompt da Groq | #126 | ADR-0027, ADR-0028 |
-| M011 | Aplicar translate_category() em _run_prediction() | #131 | ADR-0027, ADR-0028 |
+| Q001 | Endpoints de descoberta: GET /contract e GET /appliance-catalog | #127 | ADR-0027, ADR-0028, ADR-0044 |
+| Q002 | Funções de normalização EN->PT (normalize_property_type + translate_category) | #136 | ADR-0027, ADR-0028, ADR-0044 |
+| Q003 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês | #124 | ADR-0027, ADR-0028, ADR-0044 |
+| Q004 | Atualizar _store_for_training() para gravar valores traduzidos | #125 | ADR-0027, ADR-0028, ADR-0044 |
+| Q005 | Aplicar normalize_property_type() no prompt da Groq | #126 | ADR-0027, ADR-0028, ADR-0044 |
+| Q006 | Aplicar translate_category() em _run_prediction() | #131 | ADR-0027, ADR-0028, ADR-0044 |
 
 ### Novos Cards em Backlog — Backend (assignee: eduuardo1st)
 
