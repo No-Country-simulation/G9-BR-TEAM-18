@@ -101,7 +101,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
       <h4>
         <BarChart3 size={16} /> Consumo por Equipamento (kWh/mês)
       </h4>
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={Math.max(200, appliances.length * 42)}>
         <BarChart
           data={chartData}
           layout="vertical"
