@@ -40,6 +40,12 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
     (a, b) => b.monthly_consumption_kwh - a.monthly_consumption_kwh,
   );
 
+  // Adiciona a quantidade ao nome para exibicao: "Geladeira x2"
+  const chartData = sorted.map((a) => ({
+    ...a,
+    label: a.quantity > 1 ? `${a.name} x${a.quantity}` : a.name,
+  }));
+
   return (
     <div className="hist-chart-section">
       <h4>
@@ -47,9 +53,9 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
       </h4>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart
-          data={sorted}
+          data={chartData}
           layout="vertical"
-          margin={{ top: 4, right: 20, bottom: 4, left: 0 }}
+          margin={{ top: 4, right: 20, bottom: 4, left: 20 }}
         >
           <XAxis
             type="number"
@@ -59,11 +65,15 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
           />
           <YAxis
             type="category"
-            dataKey="name"
-            tick={{ fill: "var(--text-primary)", fontSize: 11 }}
+            dataKey="label"
+            tick={{
+              fill: "var(--text-primary)",
+              fontSize: 11,
+              width: 180,
+            }}
             axisLine={false}
             tickLine={false}
-            width={110}
+            width={180}
           />
           <Tooltip
             contentStyle={{
