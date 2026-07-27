@@ -191,6 +191,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Coluna inicial | Coluna final | Commits associados |
 |---|---|---|---|---|
-| F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | e65a6c6, ADR-0036 |
-| F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | e65a6c6, ADR-0037 |
+| F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | 74534a5, ADR-0036 |
+| F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | 74534a5, ADR-0037 |
 | B045 | Backend (Migration) - Correção V14: PL/SQL com search_condition_vc | In progress | Done | e65a6c6, ADR-0038 |
