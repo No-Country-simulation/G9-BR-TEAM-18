@@ -61,6 +61,63 @@ Para parar e remover os contêineres:
 docker compose down
 ```
 
+### Executando testes E2E com Playwright
+
+Os testes end-to-end (E2E) validam o comportamento do frontend no navegador sem
+dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
+
+#### Requisitos
+
+- Docker versão 24 ou superior (recomendado)
+- Ou Node.js 20 LTS + Playwright browsers instalados (para execução local)
+
+#### Via Docker (recomendado)
+
+```bash
+# A partir da raiz do projeto:
+
+# Construir a imagem de testes
+docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
+
+# Executar os 67 testes
+docker run --rm energiaia-e2e
+```
+
+A imagem inclui Playwright + Chromium em um ambiente isolado e reproduzível.
+A primeira execução pode demorar alguns minutos para baixar as dependências.
+
+#### Via npm (local)
+
+```bash
+cd frontend
+
+# Executar os testes E2E (requer Playwright browsers instalados)
+npm run test:e2e
+```
+
+Para instalar os browsers do Playwright localmente:
+
+```bash
+cd frontend
+npx playwright install chromium
+```
+
+#### Relatórios e artefatos
+
+Após a execução, os seguintes artefatos são gerados (não versionados):
+
+| Artefato | Descrição |
+|---|---|
+| `frontend/e2e/test-results/` | Screenshots, traces e vídeos de falha |
+| `frontend/e2e/playwright-report/` | Relatório HTML interativo com detalhes de cada teste |
+
+Para visualizar o relatório HTML interativo:
+
+```bash
+cd frontend
+npx playwright show-report playwright-report
+```
+
 ## Execução via script local
 
 ### Requisitos mínimos
@@ -148,8 +205,12 @@ Acessar em `<http://localhost:5173>`.
 # Testes do backend (JUnit 5):
 ./run.sh test:backend
 
-# Testes do frontend (Vitest + Testing Library):
+# Testes do frontend (Vitest + Testing Library - unitários):
 ./run.sh test:frontend
+
+# Testes E2E do frontend (Playwright via Docker):
+docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
+docker run --rm energiaia-e2e
 
 # Todos os testes:
 ./run.sh test
@@ -277,6 +338,41 @@ Sem a chave, o serviço funciona apenas com o modelo de machine learning.
 **Causa:** O H2 é um banco em memória. Dados e esquemas são perdidos ao reiniciar o backend.
 
 **Solução:** Verifique se a propriedade `spring.jpa.hibernate.ddl-auto=update` está presente no `application.properties`.
+
+### Testes E2E falham com erro de conexão
+
+**Erro:** `TimeoutError: page.goto: net::ERR_CONNECTION_REFUSED` ou
+`Error: page.goto: net::ERR_CONNECTION_RESET`.
+
+**Causa:** O Playwright tenta acessar o servidor de desenvolvimento do frontend
+na porta 5173, mas ele não está rodando. Os testes E2E com mocks de API não
+exigem o backend, mas precisam que o servidor do frontend esteja ativo.
+
+**Solução (Docker):** A imagem Docker já inclui o servidor embutido. Certifique-se
+de usar `docker run` com a imagem `energiaia-e2e`.
+
+**Solução (npm local):** Inicie o servidor de desenvolvimento em outro terminal
+antes de executar os testes:
+
+```bash
+cd frontend && npm run dev
+```
+
+Ou utilize a opção `webServer` integrada no Playwright, que inicia e derruba o
+servidor automaticamente.
+
+### Testes E2E: Playwright não encontra o Chromium
+
+**Erro:** `Browser chromium not found. Run npx playwright install chromium`.
+
+**Solução:**
+
+```bash
+cd frontend
+npx playwright install chromium
+```
+
+Em ambiente Docker, esse passo já está incluído no `Dockerfile.e2e`.
 
 ### Container do backend reinicia em loop
 
