@@ -148,10 +148,11 @@ export default function Dashboard() {
   const [simLoading, setSimLoading] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
   const [properties, setProperties] = useState<PropertyResponse[]>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
 
-  const activeProperty = useMemo(
-    () => properties.find((p) => p.active) ?? properties[0] ?? null,
-    [properties],
+  const selectedProperty = useMemo(
+    () => properties.find((p) => p.id === selectedPropertyId) ?? properties[0] ?? null,
+    [properties, selectedPropertyId],
   );
 
   useEffect(() => {
@@ -175,6 +176,8 @@ export default function Dashboard() {
           setGoalInput(prefs.consumption_goal);
         }
         setProperties(props);
+        const active = props.find((p) => p.active) ?? props[0] ?? null;
+        if (active) setSelectedPropertyId(active.id);
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
@@ -465,7 +468,31 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {activeProperty && lastAnalysis && currentKwh > 0 && (
+      {selectedProperty && properties.length > 1 && (
+        <div className="property-selector">
+          <span className="property-selector-label">
+            Simular para:
+          </span>
+          <div className="property-selector-row">
+            {properties.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`property-selector-btn ${selectedPropertyId === p.id ? "active" : ""}`}
+                onClick={() => {
+                  setSelectedPropertyId(p.id);
+                  setSimResult(null);
+                  setSimError(null);
+                }}
+              >
+                <span className="property-selector-name">{p.alias}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedProperty && lastAnalysis && currentKwh > 0 && (
         <div className="dash-section">
           <h3>
             <PiggyBank size={20} /> Simule sua Economia
@@ -511,7 +538,7 @@ export default function Dashboard() {
                   setSimResult(null);
                   try {
                     const res = await simulateEnergy(
-                      activeProperty.id,
+                      selectedProperty.id,
                       target,
                       lastAnalysis.peak_hour_usage,
                       lastAnalysis.high_consumption_hours,
