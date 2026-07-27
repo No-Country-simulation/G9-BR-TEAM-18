@@ -307,6 +307,17 @@ export async function fetchCategories(): Promise<string[]> {
   return response.json();
 }
 
+export async function deleteAnalysis(analysisId: string): Promise<void> {
+  const response = await authFetch(`/analyses/${analysisId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    const err = await response.json();
+    throw new Error(err.message ?? "Erro ao excluir análise");
+  }
+}
+
 export async function listAppliances(): Promise<ApplianceType[]> {
   const response = await authFetch("/appliances");
   if (!response.ok) {

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { listAnalyses, fetchAnalysisById } from "../services/api";
+import { listAnalyses, fetchAnalysisById, deleteAnalysis } from "../services/api";
 import type { AnalysisHistory, ApplianceSnapshot } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import {
@@ -19,6 +19,8 @@ import {
   Calendar,
   RotateCcw,
   ArrowUpDown,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -262,6 +264,9 @@ export default function History() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const filteredAnalyses = useMemo(() => {
     return analyses
@@ -448,6 +453,16 @@ export default function History() {
                   </span>
                 </div>
               </div>
+              <button
+                className="history-item-delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmDeleteId(a.id);
+                }}
+                title="Excluir análise"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
@@ -466,6 +481,61 @@ export default function History() {
 
       {detail && !loadingDetail && (
         <AnalysisDetail analysis={detail} onClose={() => setSelectedId(null)} />
+      )}
+
+      {confirmDeleteId && (
+        <div className="hist-modal-overlay" onClick={() => !deleting && setConfirmDeleteId(null)}>
+          <div className="hist-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="hist-confirm-icon">
+              <AlertTriangle size={32} />
+            </div>
+            <h3>Excluir análise?</h3>
+            <p>
+              Esta ação não pode ser desfeita. A análise e todos os seus dados
+              (recomendações, equipamentos) serão removidos permanentemente.
+            </p>
+            {deleteError && (
+              <p style={{ color: "var(--state-error)", fontSize: "0.8rem", marginBottom: "1rem" }}>
+                {deleteError}
+              </p>
+            )}
+            <div className="hist-confirm-actions">
+              <button
+                className="dash-btn dash-btn--secondary"
+                disabled={deleting}
+                onClick={() => setConfirmDeleteId(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="hist-btn-delete-confirm"
+                disabled={deleting}
+                onClick={async () => {
+                  if (!confirmDeleteId) return;
+                  setDeleteError("");
+                  setDeleting(true);
+                  try {
+                    await deleteAnalysis(confirmDeleteId);
+                    setAnalyses((prev) =>
+                      prev.filter((a) => a.id !== confirmDeleteId),
+                    );
+                    if (selectedId === confirmDeleteId) {
+                      setSelectedId(null);
+                      setDetail(null);
+                    }
+                    setConfirmDeleteId(null);
+                  } catch (err) {
+                    setDeleteError("Erro ao excluir análise. Tente novamente.");
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+              >
+                {deleting ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

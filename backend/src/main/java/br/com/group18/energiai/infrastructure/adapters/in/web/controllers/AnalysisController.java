@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -203,6 +204,29 @@ public class AnalysisController {
 
         return ResponseEntity.ok(new DashboardDTO(
                 analyses.size(), averageConsumptionKwh, totalEstimatedCost, totalCo2EmissionKg, monthlyConsumption));
+    }
+
+    @Operation(
+            summary = "Excluir análise",
+            description = "Remove uma análise energética pelo seu identificador. Apenas o proprietário da análise pode excluí-la.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Análise excluída com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Análise não encontrada")
+    })
+    @SecurityRequirement(name = "sessionCookie")
+    @DeleteMapping("/analyses/{analysisId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long analysisId, HttpServletRequest httpRequest) {
+        Long userId = AuthController.getUserId(httpRequest);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        EnergyAnalysis analysis = analysisRepository
+                .findById(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Análise não encontrada."));
+        propertyService.getOwned(analysis.getPropertyId(), userId);
+        analysisRepository.deleteById(analysisId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(

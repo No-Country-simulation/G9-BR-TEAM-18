@@ -110,6 +110,14 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
         return mapWithDetails(analysisRepository.findByPropertyIdInOrderByCreatedAtDesc(propertyIds));
     }
 
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        recommendationRepository.deleteByAnalysisId(id);
+        snapshotRepository.deleteByAnalysisId(id);
+        analysisRepository.deleteById(id);
+    }
+
     private List<EnergyAnalysis> mapWithDetails(List<EnergyAnalysisEntity> entities) {
         if (entities.isEmpty()) {
             return List.of();
