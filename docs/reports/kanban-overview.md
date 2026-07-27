@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 90 | | Backend (B) | 41 |
-| In review | 1 | | Infraestrutura (I) | 19 |
-| In progress | 3 | | Frontend (F) | 33 |
-| Ready | 0 | | Banco de Dados (M) | 5 |
-| Backlog | 3 | | Queries/Views (Q) | 2 |
-| **Total** | **97** | | **Total** | **97** |
+| Done | 96 | | Backend (B) | 43 |
+| In review | 0 | | Infraestrutura (I) | 19 |
+| In progress | 0 | | Frontend (F) | 36 |
+| Ready | 0 | | Banco de Dados (M) | 6 |
+| Backlog | 2 | | Queries/Views (Q) | 2 |
+| **Total** | **98** | | **Total** | **106** |
 
 ## Movimentações (24/07/2026)
 
@@ -158,13 +158,15 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 ## Movimentações (26/07/2026) — Rodada 2
 
-### Novos Cards
+### Novos Cards + Conclusão
 
-| ID | Título | Coluna |
-|---|---|---|
-| B039 | Backend - Calcular e enviar highest_consumption_products ao ML Service | In progress |
-| F046 | Frontend - Adicionar campos peakHourUsage e highConsumptionHours no ProfilePage | In progress |
-| F047 | Frontend - Adicionar Apartamento como tipo de imóvel | In progress |
-| B040 | Backend (Futuro) - Revisar mapeamento de categorias para distribuição de potência | Backlog |
-| B041 | ML Service (Futuro) - Usar highest_consumption_products no prompt do LLM | Backlog |
-| F048 | Frontend (Futuro) - Exibir highest_consumption_products no resultado da análise | Backlog |
+| ID | Título | Coluna inicial | Coluna final | Commits associados |
+|---|---|---|---|---|
+| B039 | Backend - Calcular e enviar highest_consumption_products ao ML Service | In progress | Done | 18d185c, b8198e9, 9fa00e8 |
+| F046 | Frontend - Adicionar campos peakHourUsage e highConsumptionHours no ProfilePage | In progress | Done | 18d185c, 9fa00e8 |
+| F047 | Frontend - Adicionar Apartamento como tipo de imóvel | In progress | Done | 18d185c, 9fa00e8 |
+| F048 | Frontend - Exibir highest_consumption_products no resultado da análise | Backlog | Done | 779b864, 18d185c |
+| B040 | Backend (Futuro) - Revisar mapeamento de categorias | Backlog | Backlog | - |
+| B041 | ML Service (Futuro) - Usar highest_consumption_products no prompt do LLM | Backlog | Backlog | - |
+| B038 | Backend - Salvar e retornar histórico de equipamentos | In review | Done | fa301d8, dd65ba8, 04cc961, 531ad45, 58ed788, e11199c |
+| M005 | Migration V10 do histórico de análises | In review | Done | e11199c |
