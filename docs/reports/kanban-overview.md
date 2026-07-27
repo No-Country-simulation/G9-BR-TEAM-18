@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 96 | | Backend (B) | 43 |
+| Done | 97 | | Backend (B) | 43 |
 | In review | 0 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 36 |
+| In progress | 0 | | Frontend (F) | 37 |
 | Ready | 0 | | Banco de Dados (M) | 6 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **98** | | **Total** | **106** |
+| **Total** | **99** | | **Total** | **107** |
 
 ## Movimentações (24/07/2026)
 
@@ -170,3 +170,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B041 | ML Service (Futuro) - Usar highest_consumption_products no prompt do LLM | Backlog | Backlog | - |
 | B038 | Backend - Salvar e retornar histórico de equipamentos | In review | Done | fa301d8, dd65ba8, 04cc961, 531ad45, 58ed788, e11199c |
 | M005 | Migration V10 do histórico de análises | In review | Done | e11199c |
+| F049 | Frontend - Remover localStorage, preferências via backend | In progress | Done | 1b460ed, ADR-0033 |
