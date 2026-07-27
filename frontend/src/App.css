@@ -2094,8 +2094,17 @@ body::after {
   }
 }
 
+.dash-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
 .dash-chart h3 {
-  margin: 0 0 1.5rem;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -2103,6 +2112,59 @@ body::after {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-size: 1rem;
+}
+
+.dash-granularity-tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--bg-base);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+
+.dash-gran-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.dash-gran-tab:hover {
+  color: var(--accent-cyan);
+  background: var(--bg-surface);
+}
+
+.dash-gran-tab--active {
+  background: var(--accent-green) !important;
+  color: var(--ink) !important;
+  border-color: var(--ink);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+@media (max-width: 480px) {
+  .dash-granularity-tabs {
+    width: 100%;
+  }
+  .dash-gran-tab {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.7rem;
+    padding: 0.35rem 0.5rem;
+  }
 }
 
 /* ─── History ─── */

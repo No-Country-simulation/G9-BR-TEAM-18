@@ -18,7 +18,84 @@ import {
   Target,
   Lightbulb,
   PiggyBank,
+  Calendar,
+  Clock,
 } from "lucide-react";
+
+type TimeGranularity = "month" | "day" | "hour";
+
+const GRANULARITY_OPTIONS: {
+  value: TimeGranularity;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { value: "month", label: "Mensal", icon: <Calendar size={14} /> },
+  { value: "day", label: "Diário", icon: <History size={14} /> },
+  { value: "hour", label: "Por hora", icon: <Clock size={14} /> },
+];
+
+interface GranularityEntry {
+  sortKey: number | string;
+  label: string;
+  consumptionKwh: number;
+}
+
+function aggregateByGranularity(
+  analyses: AnalysisHistory[],
+  granularity: TimeGranularity,
+): { label: string; consumptionKwh: number }[] {
+  const map = new Map<string | number, number>();
+  const labelMap = new Map<string | number, string>();
+
+  for (const a of analyses) {
+    if (a.consumption_kwh == null) continue;
+    const date = new Date(a.created_at);
+    let sortKey: string | number;
+    let label: string;
+
+    switch (granularity) {
+      case "month": {
+        sortKey = date.getFullYear() * 12 + date.getMonth();
+        label = date.toLocaleDateString("pt-BR", {
+          month: "short",
+          year: "numeric",
+        });
+        break;
+      }
+      case "day": {
+        sortKey = date.toISOString().slice(0, 10);
+        label = date.toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "short",
+        });
+        break;
+      }
+      case "hour": {
+        sortKey = date.getHours();
+        label = `${String(date.getHours()).padStart(2, "0")}h`;
+        break;
+      }
+    }
+
+    map.set(sortKey, (map.get(sortKey) ?? 0) + a.consumption_kwh);
+    labelMap.set(sortKey, label);
+  }
+
+  const entries: GranularityEntry[] = Array.from(map.entries())
+    .map(([sortKey, consumptionKwh]) => ({
+      sortKey,
+      label: labelMap.get(sortKey) ?? String(sortKey),
+      consumptionKwh,
+    }))
+    .sort((a, b) => {
+      if (typeof a.sortKey === "number" && typeof b.sortKey === "number") {
+        return a.sortKey - b.sortKey;
+      }
+      return String(a.sortKey).localeCompare(String(b.sortKey));
+    });
+
+  return entries.map(({ label, consumptionKwh }) => ({ label, consumptionKwh }));
+}
 
 const KWH_TARIFF = 0.75;
 
@@ -63,6 +140,7 @@ export default function Dashboard() {
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState(0);
   const [backendCategories, setBackendCategories] = useState<string[]>([]);
+  const [granularity, setGranularity] = useState<TimeGranularity>("month");
 
   useEffect(() => {
     if (!user) {
@@ -92,6 +170,11 @@ export default function Dashboard() {
   }, [backendCategories]);
 
   const backendCategorySet = useMemo(() => new Set(backendCategories), [backendCategories]);
+
+  const granularData = useMemo(
+    () => aggregateByGranularity(analyses, granularity),
+    [analyses, granularity],
+  );
 
   if (loading) {
     return (
@@ -392,15 +475,28 @@ export default function Dashboard() {
         </div>
       )}
 
-      {data.monthlyConsumption.length > 0 && (
+      {granularData.length > 0 && (
         <div className="dash-chart">
-          <h3>
-            <TrendingUp size={20} /> Consumo por Mês (kWh)
-          </h3>
+          <div className="dash-chart-header">
+            <h3>
+              <TrendingUp size={20} /> Consumo (kWh)
+            </h3>
+            <div className="dash-granularity-tabs">
+              {GRANULARITY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`dash-gran-tab ${granularity === opt.value ? "dash-gran-tab--active" : ""}`}
+                  onClick={() => setGranularity(opt.value)}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={data.monthlyConsumption}>
+            <BarChart data={granularData}>
               <XAxis
-                dataKey="month"
+                dataKey="label"
                 tick={{ fill: "var(--text-primary)", fontSize: 12, opacity: 0.7 }}
                 axisLine={false}
                 tickLine={false}
@@ -416,6 +512,10 @@ export default function Dashboard() {
                   border: "1px solid var(--ink)",
                   borderRadius: 8,
                   color: "var(--text-primary)",
+                }}
+                formatter={(value: unknown) => {
+                  const v = typeof value === "number" ? value : 0;
+                  return [`${v.toFixed(1)} kWh`, "Consumo"];
                 }}
               />
               <Bar dataKey="consumptionKwh" fill="var(--accent-green)" radius={[6, 6, 0, 0]} />
