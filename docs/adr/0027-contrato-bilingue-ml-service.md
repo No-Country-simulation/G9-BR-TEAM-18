@@ -137,7 +137,7 @@ def normalize_property_type(ptype: object) -> str:
 def translate_category(cat: object) -> str:
     """Traduz highest_consumption_category de ingles para portugues.
     Funcao separada da normalize_category() porque esta e usada no pipeline
-    sklearn (treino + inferencia) e nao deve ser alterada.
+    sklearn (treino + inferência) e não deve ser alterada.
     """
     if not isinstance(cat, str):
         return "Outros"

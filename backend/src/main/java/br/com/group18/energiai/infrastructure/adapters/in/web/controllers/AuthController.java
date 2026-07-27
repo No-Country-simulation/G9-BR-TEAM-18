@@ -210,8 +210,7 @@ public class AuthController {
     @SecurityRequirement(name = "sessionCookie")
     @PutMapping("/preferences")
     public ResponseEntity<?> updatePreferences(
-            @RequestBody Map<String, Object> preferences,
-            HttpServletRequest request) {
+            @RequestBody Map<String, Object> preferences, HttpServletRequest request) {
         Long userId = getUserId(request);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
