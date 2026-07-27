@@ -27,8 +27,9 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 | React Router | 7 | Roteamento SPA |
 | Recharts | ~2 | Gráficos (Dashboard) |
 | Lucide React | ~0.47 | Ícones |
-| Vitest | ~3 | Test runner |
+| Vitest | ~3 | Test runner (unitários) |
 | Testing Library | ~16 | Testes de componentes |
+| Playwright | ~1.50 | Testes E2E (navegador) |
 
 ## Estrutura de Diretórios
 
@@ -66,13 +67,23 @@ frontend/src/
 │   └── api.ts              # Todas as chamadas HTTP
 ├── types/             # Tipos e constantes
 │   └── index.ts            # Interfaces, tipos, constantes de UI
+├── e2e/               # Testes end-to-end (Playwright)
+│   ├── playwright.config.ts
+│   ├── helpers/
+│   │   └── mocks.ts
+│   ├── auth.spec.ts
+│   ├── navigation.spec.ts
+│   ├── dashboard.spec.ts
+│   ├── history.spec.ts
+│   ├── profile.spec.ts
+│   ├── error-handling.spec.ts
+│   └── Dockerfile.e2e
 ├── test/              # Testes unitários
 │   ├── setup.ts
 │   ├── api.test.ts
 │   ├── AuthContext.test.tsx
 │   ├── PrivateRoute.test.tsx
 │   ├── ResetPasswordPage.test.tsx
-│   ├── demo.test.ts
 │   └── types.test.ts
 ├── App.tsx            # Componente raiz com roteamento
 ├── App.css            # Estilos globais
@@ -215,6 +226,8 @@ A preferência é persistida em `localStorage` (chave `energiai-theme`) e respei
 
 ## Testes
 
+### Testes Unitários (Vitest + Testing Library)
+
 Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 
 | Arquivo | O que testa |
@@ -227,6 +240,31 @@ Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 | `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validacao, erros, navegacao) |
 | `Navbar.test.tsx` | Testes da barra de navegacao (6 testes: estados autenticado/anonimo) |
 | `types.test.ts` | Constantes de UI e classe ApiError |
+
+### Testes E2E (Playwright)
+
+Localizados em `frontend/e2e/` e executados com Playwright via Docker. Total: **67 testes**.
+
+| Categoria | Testes | Cenários Cobertos |
+|---|---|---|
+| Navegação e Páginas Públicas | 6 | Home, Navbar autenticado/não, alternador de tema, roteamento |
+| Autenticação | 13 | Login (sucesso, erro, loading, reset de senha), Registro (validação, sucesso, erro, duplicidade), Rotas privadas |
+| Dashboard | 12 | Loading, vazio, dados reais (cards, gráfico), tendência, meta, simulação, badges de status |
+| Histórico | 10 | Loading, vazio, lista com dados, badges (CONCLUIDA/PENDENTE/FALHA/DESCONHECIDO), navegação |
+| Profile Page | 17 | Loading, formulário de imóvel, catálogo, busca, adicionar/remover, regularidade, botões |
+| Tratamento de Erros | 7 | Falha de API, Error Boundary (chunk fallback), 404, tema resiliente |
+| Estados de Carregamento | 2 | Lazy loading de páginas, fallback de carregamento |
+
+Para executar os testes E2E:
+
+```bash
+# Via Docker (recomendado):
+docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
+docker run --rm energiaia-e2e
+
+# Via npm (requer browsers Playwright instalados):
+cd frontend && npm run test:e2e
+```
 
 ---
 

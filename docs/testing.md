@@ -20,6 +20,7 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 |---|---|---|
 | Backend | JUnit 5 + Spring Boot Test | Unitários, Integração, Contrato |
 | Frontend | Vitest + Testing Library | Unitários, Componentes |
+| Frontend | Playwright | End-to-End (67 testes via Docker) |
 | ML Service | pytest | Unitários, Integração |
 
 ## Backend - Testes Unitários
@@ -135,7 +136,69 @@ Testa a compatibilidade do contrato com o ML Service:
 
 Os testes de contrato validam a compatibilidade entre o ML Service e o backend sem exigir que o ML esteja rodando, testando diretamente o mapper e o value object.
 
-## Frontend - Testes
+## Frontend - Testes E2E (Playwright)
+
+### Estrutura
+
+```
+frontend/e2e/
+├── playwright.config.ts        # Config do Playwright
+├── helpers/
+│   └── mocks.ts                # Mock data, pt() helper, setupAuthenticatedMocks
+├── auth.spec.ts                # 13 testes - autenticação
+├── navigation.spec.ts          # 6 testes - navegação
+├── dashboard.spec.ts           # 12 testes - dashboard
+├── history.spec.ts             # 10 testes - histórico
+├── profile.spec.ts             # 17 testes - perfil
+├── error-handling.spec.ts      # 7 testes - erros
+├── loading.spec.ts             # 2 testes - carregamento
+└── Dockerfile.e2e              # Docker para execução isolada
+```
+
+### Mecanismo de Mock
+
+Todas as chamadas HTTP são interceptadas via `page.route()` com URLs exatas (`http://localhost:8080/...`):
+
+- **setupPublicMocks()**: Mocks para páginas públicas (appliances, categories).
+- **setupAuthenticatedMocks()**: Mocks para páginas autenticadas (auth/me, properties, analyses, dashboard).
+- **setLoggedIn()**: Usa `page.addInitScript()` para definir localStorage antes do carregamento, evitando `SecurityError`.
+
+### Helper pt()
+
+A função `pt()` converte texto em português para regex accent-insensitive:
+
+```
+pt("análise")  ->  /an[aáàâã]l[iíì]s[eéèê]/i
+```
+
+### Cobertura
+
+| Categoria | Testes | Cenários Cobertos |
+|---|---|---|
+| Navegação e Páginas Públicas | 6 | Home, Navbar autenticado/não, tema, roteamento |
+| Autenticação | 13 | Login (sucesso, erro, loading, reset), Registro (validação, sucesso, erro), Rotas privadas |
+| Dashboard | 12 | Loading, vazio, dados reais, tendência, meta, simulação, gráfico, badges de status |
+| Histórico | 10 | Loading, vazio, lista, badges (3 variações), status desconhecido |
+| Profile Page | 17 | Loading, formulário, catálogo, busca, adicionar/remover, regularidade, botões |
+| Tratamento de Erros | 7 | Falha de API, Error Boundary, 404, tema resiliente |
+| Estados de Carregamento | 2 | Lazy loading, fallback |
+
+### Como Executar
+
+```bash
+# Via Docker (recomendado):
+docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
+docker run --rm energiaia-e2e
+
+# Via npm (local):
+cd frontend && npm run test:e2e
+```
+
+### Resultado
+
+67/67 testes passando. Duração média: ~2-3 minutos.
+
+## Frontend - Testes Unitários
 
 Localizados em `frontend/src/test/`.
 

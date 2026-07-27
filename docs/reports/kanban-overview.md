@@ -29,9 +29,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 88 | | Backend (B) | 40 |
-| In review | 2 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 28 |
+| Done | 89 | | Backend (B) | 40 |
+| In review | 1 | | Infraestrutura (I) | 19 |
+| In progress | 0 | | Frontend (F) | 29 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
 | **Total** | **90** | | **Total** | **90** |
@@ -148,3 +148,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | I019 | Documentação Swagger/OpenAPI da API | - |
 | F042 | Code splitting: React.lazy() para reduzir bundle de 1.15MB para 242kB | c16ae3a |
 | F043 | ChunkErrorBoundary para capturar falhas de carregamento lazy | d480b7a |
+
+### Backlog/In progress/In review → Done
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F044 | Frontend (Testes) - Testes E2E com Playwright (67 testes) | d0984f9, 9d33533, ADR-0031 |
