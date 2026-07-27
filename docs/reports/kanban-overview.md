@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 108 | | Backend (B) | 49 |
+| Done | 109 | | Backend (B) | 49 |
 | In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 38 |
+| In progress | 0 | | Frontend (F) | 39 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **108** | | **Total** | **118** |
+| **Total** | **109** | | **Total** | **119** |
 
 ## Movimentações (24/07/2026)
 
@@ -196,3 +196,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B045 | Backend (Migration) - Correção V14: PL/SQL com search_condition_vc | In progress | Done | e65a6c6, ADR-0038 |
 | F055 | Frontend - Gráficos Dashboard com granularidade temporal (Mensal/Diário/Hora) | In progress | Done | c904986, ADR-0039 |
 | F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | (pendente), ADR-0040 |
+| F057 | Frontend - Excluir análise no Histórico com confirmação | In progress | Done | 28911de, ADR-0041 |
