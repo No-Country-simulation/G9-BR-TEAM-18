@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, type FormEvent, type ReactElement } from "react";
 import * as I from "lucide-react";
 import type { AnalysisResponse, ApplianceType, ApplianceItem, PropertyType } from "../types";
-import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES } from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES, PROPERTY_TYPE_LABELS } from "../types";
 import {
   analyzeEnergy,
   listAppliances,
@@ -262,7 +262,7 @@ export default function AnalysisForm() {
               >
                 {PROPERTY_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {PROPERTY_TYPE_LABELS[t]}
                   </option>
                 ))}
               </select>

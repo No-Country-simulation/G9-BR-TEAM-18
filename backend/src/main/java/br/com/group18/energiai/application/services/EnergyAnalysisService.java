@@ -174,9 +174,12 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         String mlPropertyType =
                 switch (propertyType.toUpperCase(Locale.ROOT)) {
                     case "RESIDENCIAL" -> "Casa";
+                    case "APARTAMENTO" -> "Apartamento";
                     case "COMERCIAL" -> "Comercial";
                     default -> propertyType;
                 };
+
+        List<String> topProducts = aggregation.highestConsumptionProducts();
 
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
         body.put("consumption_kwh", consumptionKwh);
@@ -188,6 +191,10 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
 
         if (highestConsumptionCategory != null && !highestConsumptionCategory.isBlank()) {
             body.put("highest_consumption_category", highestConsumptionCategory);
+        }
+
+        if (topProducts != null && !topProducts.isEmpty()) {
+            body.put("highest_consumption_products", topProducts);
         }
 
         return new MlEnvelope(body);

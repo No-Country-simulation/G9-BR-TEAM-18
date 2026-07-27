@@ -14,6 +14,7 @@ import {
   CATEGORY_COLORS,
   CATEGORY_DISPLAY,
   PROPERTY_TYPES,
+  PROPERTY_TYPE_LABELS,
   REGULARITY_OPTIONS,
 } from "../types";
 import {
@@ -73,6 +74,8 @@ export default function ProfilePage() {
   const [address, setAddress] = useState("");
   const [residentCount, setResidentCount] = useState(1);
   const [areaSqm, setAreaSqm] = useState(50);
+  const [peakHourUsage, setPeakHourUsage] = useState(false);
+  const [highConsumptionHours, setHighConsumptionHours] = useState(6);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>(() => {
@@ -274,8 +277,8 @@ export default function ProfilePage() {
       const res = await analyzeEnergy(
         property.id,
         consumptionKwh,
-        propertyType === "COMERCIAL",
-        Math.max(4, Math.round(consumptionKwh / 100)),
+        peakHourUsage,
+        highConsumptionHours,
         applianceCalc.highestConsumptionCategory,
       );
       setResult(res);
@@ -330,7 +333,7 @@ export default function ProfilePage() {
               >
                 {PROPERTY_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t === "RESIDENCIAL" ? "Residencial" : "Comercial"}
+                    {PROPERTY_TYPE_LABELS[t]}
                   </option>
                 ))}
               </select>
@@ -371,6 +374,33 @@ export default function ProfilePage() {
                   onChange={(e) => setAreaSqm(Math.max(10, Number(e.target.value)))}
                 />
               </div>
+            </div>
+
+            <h3 className="section-title">Hábitos de Consumo</h3>
+
+            <div className="form-group">
+              <label htmlFor="pico" className="checkbox-label">
+                <input
+                  id="pico"
+                  type="checkbox"
+                  checked={peakHourUsage}
+                  onChange={(e) => setPeakHourUsage(e.target.checked)}
+                />
+                Uso em horário de pico (18h às 21h)
+              </label>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="horas-alto-consumo">Horas de alto consumo por dia</label>
+              <input
+                id="horas-alto-consumo"
+                type="number"
+                min="0"
+                max="24"
+                step="0.5"
+                value={highConsumptionHours}
+                onChange={(e) => setHighConsumptionHours(Number(e.target.value))}
+              />
             </div>
 
             <h3 className="section-title">
