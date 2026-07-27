@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposta
+Aceito
 
 ## Contexto
 
@@ -109,13 +109,27 @@ A função normaliza variações de acentuação em português (`"Refrigeração
 Se reescrita para mapear inglês -> português, quebraria ambos os fluxos. A solução é
 criar `translate_category()` como função separada, chamada antes do pipeline.
 
-### 4. Por que o log de treinamento registra valores em português
+### 4. `_run_prediction()` aplica `translate_category()` antes do modelo
+
+O método `_run_prediction()` recebe `highest_consumption_category` em inglês
+(ex: `"REFRIGERATION"`) e precisa aplicar `translate_category()` antes de construir
+o DataFrame para o modelo ou pipeline sklearn. Isso garante que o modelo (treinado
+com `"Refrigeracao"`, `"Climatizacao"`, etc.) receba os valores no formato correto.
+
+### 5. Prompt Groq usa `normalize_property_type()`
+
+O método `_generate_recommendations_groq()` insere `data.property_type` diretamente
+no texto do prompt com regras em português (ex: "se for Apartamento, não sugere
+painel solar"). `normalize_property_type()` deve ser chamada antes de montar o
+prompt para que as regras em português funcionem.
+
+### 6. Por que o log de treinamento registra valores em português
 
 `load_feedback()` em `train_model.py` lê o campo `property_type` do log sem
 normalização e passa ao `OneHotEncoder`, que só reconhece categorias em português.
 `_store_for_training()` grava valores já traduzidos para garantir compatibilidade.
 
-### 5. Fronteira: o que fica em português vs inglês no ML Service
+### 7. Fronteira: o que fica em português vs inglês no ML Service
 
 | Componente | Idioma | Motivo |
 |---|---|---|
@@ -133,7 +147,7 @@ normalização e passa ao `OneHotEncoder`, que só reconhece categorias em portu
 | **Log de treinamento (`_store_for_training`)** | Português (traduzido) | Compatibilidade com `load_feedback()` + `OneHotEncoder` |
 | **Recomendações (Groq/rule-based)** | Português | Saída exibida ao usuário final |
 
-### 6. O backend nunca precisa saber disso
+### 8. O backend nunca precisa saber disso
 
 O backend se relaciona apenas com a **camada de contrato** do ML Service: endpoints
 `GET /contract`, `GET /appliance-catalog`, `POST /predict`. Tudo em inglês. O backend
@@ -143,6 +157,19 @@ ou armazena o log em português.
 
 Isso é o objetivo do ADR-0027: **o ML Service é o único ponto de normalização
 linguística**, e as demais camadas descobrem e enviam dados no idioma do contrato.
+
+### 9. Validação técnica da equipe de ML
+
+As alterações foram validadas pela equipe de ML (Guilherme Hermano), que confirmou
+que:
+
+1. `normalize_category()` em `features.py` **não pode ser modificada** — a abordagem
+   de criar `translate_category()` separada é a correta.
+2. `normalize_property_type()` deve ser aplicada em **três pontos**: pipeline de
+   predição, `_store_for_training()` e prompt da Groq.
+3. `translate_category()` deve ser aplicada em `_run_prediction()` (antes do modelo)
+   e `_store_for_training()`.
+4. Apenas a cópia de `main.py` do `BASE_CONSUMPTION_BY_TYPE` muda para inglês.
 
 ## Alternativas consideradas
 

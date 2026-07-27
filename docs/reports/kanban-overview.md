@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 113 | | Backend (B) | 49 |
+| Done | 113 | | Backend (B) | 52 |
 | In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 43 |
-| Ready | 0 | | Banco de Dados (M) | 7 |
-| Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **113** | | **Total** | **123** |
+| In progress | 0 | | Frontend (F) | 47 |
+| Ready | 0 | | ML Service / BD (M) | 13 |
+| Backlog | 15 | | Queries/Views (Q) | 2 |
+| **Total** | **113** | | **Total** | **136** |
 
 ## Movimentações (24/07/2026)
 
@@ -208,5 +208,35 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage (criar/trocar/editar) | In progress | Done | 2c04560 |
 | F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | In progress | Done | 007c8b2 |
 | F061 | Frontend - Seletor de imóveis no Dashboard para simulação correta | In progress | Done | cb37ed4, ADR-0043 |
+
+## Movimentações (27/07/2026) — ADRs 27/28: Contrato em Inglês e Descoberta ML
+
+### Novos Cards em Backlog — ML Service (assignee: guilherme-hermano)
+
+| ID | Título | Issue | ADRs |
+|---|---|---|---|
+| M006 | Endpoints de descoberta: GET /contract e GET /appliance-catalog | #127 | ADR-0027, ADR-0028 |
+| M007 | Funções de normalização EN->PT (normalize_property_type + translate_category) | #136 | ADR-0027, ADR-0028 |
+| M008 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês | #124 | ADR-0027, ADR-0028 |
+| M009 | Atualizar _store_for_training() para gravar valores traduzidos | #125 | ADR-0027, ADR-0028 |
+| M010 | Aplicar normalize_property_type() no prompt da Groq | #126 | ADR-0027, ADR-0028 |
+| M011 | Aplicar translate_category() em _run_prediction() | #131 | ADR-0027, ADR-0028 |
+
+### Novos Cards em Backlog — Backend (assignee: eduuardo1st)
+
+| ID | Título | Issue | ADRs |
+|---|---|---|---|
+| B048 | Consumir GET /contract e GET /appliance-catalog no startup | #128 | ADR-0027, ADR-0028 |
+| B049 | Remover switch de tradução em EnergyAnalysisService.buildMlRequest() | #129 | ADR-0027, ADR-0028 |
+| B050 | Expor GET /contract-info e GET /appliances para o frontend | #130 | ADR-0027, ADR-0028 |
+
+### Novos Cards em Backlog — Frontend (assignee: DessimA)
+
+| ID | Título | Issue | ADRs |
+|---|---|---|---|
+| F062 | Consumir GET /contract-info e GET /appliances do backend | #132 | ADR-0027, ADR-0028 |
+| F063 | Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | ADR-0027, ADR-0028 |
+| F064 | Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | ADR-0027, ADR-0028 |
+| F065 | Ajustar UI: nomes em português com mlCategory em inglês | #135 | ADR-0027, ADR-0028 |
 
 

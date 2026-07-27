@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposta
+Aceito
 
 ## Contexto
 
@@ -169,7 +169,46 @@ BASE_CONSUMPTION_BY_TYPE = {
 }
 ```
 
-#### B.3. Log de treinamento armazena valores traduzidos (português)
+#### B.3. `_run_prediction()` aplica `translate_category()` ao `highest_consumption_category`
+
+O fluxo de predição em `_run_prediction()` recebe `highest_consumption_category` em
+inglês (ex: `"REFRIGERATION"`, `"CLIMATE_CONTROL"`). Antes de construir o DataFrame
+para o modelo, a função aplica `translate_category()`:
+
+```python
+def _run_prediction(data: PredictRequest) -> dict:
+    normalized_category = translate_category(data.highest_consumption_category)
+    df = pd.DataFrame([{
+        "highest_consumption_category": normalized_category,
+        "property_type": normalize_property_type(data.property_type),
+        ...
+    }])
+    # Restante do pipeline sklearn
+```
+
+Isso garante que o modelo (treinado com categorias em português como `"Refrigeracao"`,
+`"Climatizacao"`) receba os valores no formato esperado.
+
+#### B.4. `normalize_property_type()` aplicada antes do prompt da Groq
+
+O método `_generate_recommendations_groq()` usa `data.property_type` diretamente no
+texto do prompt, incluindo regras em português como "se for Apartamento, não sugere
+painel solar". Se `property_type` chegar em inglês (`"RESIDENCIAL"`, `"APARTAMENTO"`),
+o prompt não funcionaria corretamente.
+
+Portanto, `normalize_property_type()` deve ser aplicada **antes** de montar o prompt:
+
+```python
+def _generate_recommendations_groq(data: PredictRequest) -> list[str]:
+    property_type = normalize_property_type(data.property_type)
+    prompt = f"""Tipo de imóvel: {property_type}
+Regras:
+- Se for Apartamento, não sugere painel solar
+- ..."""
+    # Restante da geração
+```
+
+#### B.5. Log de treinamento armazena valores traduzidos (português)
 
 `load_feedback()` em `train_model.py` lê o `property_type` do log sem normalização e
 passa ao `OneHotEncoder`, que só reconhece português. Portanto, `_store_for_training()`
@@ -187,7 +226,52 @@ def _store_for_training(data: PredictRequest, ...):
     }
 ```
 
-### Fluxo de propagação automática
+### Fluxo de propagação automática (com todos os pontos de normalização)
+
+```mermaid
+sequenceDiagram
+    participant ML as ML Service
+    participant BE as Backend (Java)
+    participant FE as Frontend (React)
+
+    Note over ML,BE: STARTUP: Descoberta
+    BE->>ML: GET /contract
+    ML-->>BE: property_types, consumption_categories
+    BE->>ML: GET /appliance-catalog
+    ML-->>BE: appliance catalog
+    Note over BE: Se ML adicionar "SOBRADO":<br/>basta reiniciar (ou refresh)<br/>e já aparece
+
+    Note over FE,BE: FRONTEND consome do BACKEND
+    FE->>BE: GET /appliances
+    BE-->>FE: appliance catalog
+    FE->>BE: GET /contract-info
+    BE-->>FE: types and categories
+    Note over FE: Renderiza dinamicamente<br/>selects, grids, aparelhos
+
+    Note over ML,FE: PREDIÇÃO
+    FE->>BE: Submit analysis
+    BE->>ML: POST /predict (EN: RESIDENCIAL, REFRIGERATION)
+    ML-->>ML: normalize_property_type() → prompt Groq
+    ML-->>ML: translate_category() → _run_prediction()
+    ML-->>BE: category, probability, recommendations
+    BE-->>FE: Analysis response
+    Note over ML: ML traduz EN→PT internamente<br/>em TODOS os pontos de uso
+    Note over BE: Switch de tradução ELIMINADO
+```
+
+### Validação técnica
+
+As alterações foram validadas pela equipe de ML (Guilherme Hermano), que confirmou:
+
+- `normalize_property_type()` precisa ser aplicada em **três pontos**: pipeline de
+  predição, `_store_for_training()` e **prompt da Groq**.
+- `translate_category()` precisa ser aplicada em **dois pontos**: `_run_prediction()`
+  (antes do modelo) e `_store_for_training()`.
+- `normalize_category()` existente em `features.py` **não é modificada** — a equipe
+  de ML confirmou que a abordagem de criar `translate_category()` separada é correta.
+- Apenas a cópia de `main.py` do `BASE_CONSUMPTION_BY_TYPE` muda para inglês.
+
+### Fluxo de propagação automática (versão original)
 
 ```mermaid
 sequenceDiagram
