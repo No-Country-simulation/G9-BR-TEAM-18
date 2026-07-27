@@ -2564,6 +2564,33 @@ body::after {
   border-color: var(--state-error);
 }
 
+.hist-filter-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: transparent;
+  border: 2px solid var(--ink);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.hist-filter-sort:hover {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: var(--bg-base);
+}
+
+.hist-filter-sort svg {
+  flex-shrink: 0;
+}
+
 .hist-filter-count {
   margin-left: auto;
   font-size: 0.7rem;

@@ -18,6 +18,7 @@ import {
   X,
   Calendar,
   RotateCcw,
+  ArrowUpDown,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -260,19 +261,26 @@ export default function History() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
   const filteredAnalyses = useMemo(() => {
-    return analyses.filter((a) => {
-      const d = new Date(a.created_at);
-      if (dateFrom && d < new Date(dateFrom)) return false;
-      if (dateTo) {
-        const end = new Date(dateTo);
-        end.setHours(23, 59, 59, 999);
-        if (d > end) return false;
-      }
-      return true;
-    });
-  }, [analyses, dateFrom, dateTo]);
+    return analyses
+      .filter((a) => {
+        const d = new Date(a.created_at);
+        if (dateFrom && d < new Date(dateFrom)) return false;
+        if (dateTo) {
+          const end = new Date(dateTo);
+          end.setHours(23, 59, 59, 999);
+          if (d > end) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.created_at).getTime();
+        const db = new Date(b.created_at).getTime();
+        return sortOrder === "desc" ? db - da : da - db;
+      });
+  }, [analyses, dateFrom, dateTo, sortOrder]);
 
   useEffect(() => {
     if (!user) {
@@ -341,6 +349,14 @@ export default function History() {
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
           />
+          <button
+            className="hist-filter-sort"
+            onClick={() => setSortOrder((o) => (o === "desc" ? "asc" : "desc"))}
+            title={sortOrder === "desc" ? "Mais antigas primeiro" : "Mais recentes primeiro"}
+          >
+            <ArrowUpDown size={14} />
+            <span>{sortOrder === "desc" ? "Recentes" : "Antigas"}</span>
+          </button>
           {(dateFrom || dateTo) && (
             <button
               className="hist-filter-clear"
