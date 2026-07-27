@@ -208,15 +208,15 @@ public class AnalysisController {
 
     @Operation(
             summary = "Excluir análise",
-            description = "Remove uma análise energética pelo seu identificador. Apenas o proprietário da análise pode excluí-la.")
+            description =
+                    "Remove uma análise energética pelo seu identificador. Apenas o proprietário da análise pode excluí-la.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Análise excluída com sucesso"),
         @ApiResponse(responseCode = "404", description = "Análise não encontrada")
     })
     @SecurityRequirement(name = "sessionCookie")
     @DeleteMapping("/analyses/{analysisId}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long analysisId, HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> delete(@PathVariable Long analysisId, HttpServletRequest httpRequest) {
         Long userId = AuthController.getUserId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
