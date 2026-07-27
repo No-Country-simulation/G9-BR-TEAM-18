@@ -38,7 +38,7 @@ public class ApplianceAggregationService {
                     double monthlyKwh = pa.getMonthlyConsumptionKwh() != null
                             ? pa.getMonthlyConsumptionKwh().doubleValue()
                             : pa.getTotalPowerWatts()
-                                    .multiply(BigDecimal.valueOf(pa.getAppliance().getAverageDailyUseHours()))
+                                    .multiply(pa.getAppliance().getAverageDailyUseHours())
                                     .divide(BigDecimal.valueOf(1000), RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(30))
                                     .doubleValue();
