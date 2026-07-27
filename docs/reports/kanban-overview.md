@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 102 | | Backend (B) | 45 |
+| Done | 103 | | Backend (B) | 46 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 38 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **102** | | **Total** | **112** |
+| **Total** | **103** | | **Total** | **113** |
 
 ## Movimentações (24/07/2026)
 
@@ -183,3 +183,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | In progress | Done | f6dcd3f, 35ff7b6, 57cbb4a, 98acebc, 7f237ef, f8a863e, 709f725, a749de3, ADR-0034 |
 | B043 | Backend - Defaults `${VAR:default}` para env vars do Flyway | In progress | Done | 709f725, a749de3 |
 | M006 | Manual: Deletar entrada V12 do flyway_schema_history | In progress | Done | - |
+| B044 | Backend - Corrigir CHECK constraint chk_property_type (APARTAMENTO) | In progress | Done | eb3298d, ADR-0035 |
