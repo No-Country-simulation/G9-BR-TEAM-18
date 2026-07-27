@@ -35,6 +35,12 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 
+# --- Playwright / E2E ---
+frontend/test-results/
+frontend/e2e/test-results/
+frontend/e2e/playwright-report/
+frontend/e2e/playwright/.cache/
+
 # --- Docker ---
 docker-data/
 
