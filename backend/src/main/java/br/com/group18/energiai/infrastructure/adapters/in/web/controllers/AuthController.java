@@ -9,7 +9,6 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseD
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ResetPasswordRequestDTO;
 import br.com.group18.energiai.infrastructure.config.JwtService;
-import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
