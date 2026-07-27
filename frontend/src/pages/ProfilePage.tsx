@@ -70,6 +70,9 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   const [property, setProperty] = useState<PropertyResponse | null>(null);
+  const [properties, setProperties] = useState<PropertyResponse[]>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
+  const [aliasInput, setAliasInput] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
   const [address, setAddress] = useState("");
   const [residentCount, setResidentCount] = useState(1);
@@ -79,6 +82,10 @@ export default function ProfilePage() {
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
+  const [showNewProperty, setShowNewProperty] = useState(false);
+  const [newPropertyAlias, setNewPropertyAlias] = useState("");
+  const [newPropertyType, setNewPropertyType] = useState<PropertyType>("RESIDENCIAL");
+  const [switchingProperty, setSwitchingProperty] = useState(false);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
@@ -107,9 +114,12 @@ export default function ProfilePage() {
       .then(([appls, props, cats, prefs]) => {
         if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
+        setProperties(props);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
+          setSelectedPropertyId(active.id);
+          setAliasInput(active.alias);
           setPropertyType(active.property_type as PropertyType);
           setAddress(active.address ?? "");
           setResidentCount(active.resident_count ?? 1);
@@ -238,10 +248,11 @@ export default function ProfilePage() {
     setError(null);
     try {
       let prop = property;
+      const aliasValue = aliasInput.trim() || "Meu Imóvel";
       if (prop) {
         prop = await updateProperty(
           prop.id,
-          "Meu Perfil",
+          aliasValue,
           propertyType,
           true,
           address,
@@ -249,9 +260,24 @@ export default function ProfilePage() {
           areaSqm,
         );
       } else {
-        prop = await createProperty("Meu Perfil", propertyType, address, residentCount, areaSqm);
+        prop = await createProperty(
+          aliasValue,
+          propertyType,
+          address,
+          residentCount,
+          areaSqm,
+        );
       }
       setProperty(prop);
+      setProperties((prev) => {
+        const idx = prev.findIndex((p) => p.id === prop.id);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = prop;
+          return updated;
+        }
+        return [...prev, prop];
+      });
 
       const batchItems = selectedAppliances
         .map((item) => {
@@ -304,6 +330,52 @@ export default function ProfilePage() {
 
   const appliancesByCategory = (cat: string) => filteredTypes.filter((t) => t.mlCategory === cat);
 
+  async function handlePropertyChange(propId: number) {
+    if (propId === selectedPropertyId) return;
+    setSwitchingProperty(true);
+    setResult(null);
+    setSelectedPropertyId(propId);
+    const prop = properties.find((p) => p.id === propId);
+    if (prop) {
+      setProperty(prop);
+      setAliasInput(prop.alias);
+      setPropertyType(prop.property_type as PropertyType);
+      setAddress(prop.address ?? "");
+      setResidentCount(prop.resident_count ?? 1);
+      setAreaSqm(prop.area_sqm ?? 50);
+      try {
+        const pa = await listPropertyAppliances(propId);
+        setSelectedAppliances(
+          pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
+        );
+      } catch {
+        setSelectedAppliances([]);
+      }
+    }
+    setSwitchingProperty(false);
+  }
+
+  async function handleAddProperty() {
+    if (!newPropertyAlias.trim()) return;
+    try {
+      const newProp = await createProperty(newPropertyAlias.trim(), newPropertyType);
+      setProperties((prev) => [...prev, newProp]);
+      setSelectedPropertyId(newProp.id);
+      setProperty(newProp);
+      setAliasInput(newProp.alias);
+      setPropertyType(newProp.property_type as PropertyType);
+      setAddress(newProp.address ?? "");
+      setResidentCount(newProp.resident_count ?? 1);
+      setAreaSqm(newProp.area_sqm ?? 50);
+      setSelectedAppliances([]);
+      setResult(null);
+      setShowNewProperty(false);
+      setNewPropertyAlias("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao criar imóvel");
+    }
+  }
+
   if (loading) {
     return (
       <div className="dash-page" style={{ display: "flex", justifyContent: "center" }}>
@@ -328,9 +400,107 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {properties.length > 1 && (
+          <div className="property-selector">
+            <label className="property-selector-label">
+              <I.Building2 size={16} /> Selecione o imóvel
+            </label>
+            <div className="property-selector-row">
+              {properties.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`property-selector-btn ${selectedPropertyId === p.id ? "active" : ""}`}
+                  onClick={() => handlePropertyChange(p.id)}
+                  disabled={switchingProperty}
+                  title={p.alias}
+                >
+                  <I.Home size={14} />
+                  <span className="property-selector-name">{p.alias}</span>
+                  <span className="property-selector-type">
+                    {PROPERTY_TYPE_LABELS[p.property_type as PropertyType]}
+                  </span>
+                </button>
+              ))}
+              <button
+                type="button"
+                className="property-selector-btn property-selector-btn--add"
+                onClick={() => setShowNewProperty(true)}
+              >
+                <I.Plus size={14} /> Novo
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showNewProperty && (
+          <div className="profile-new-property">
+            <h4>
+              <I.Plus size={16} /> Novo Imóvel
+            </h4>
+            <div className="new-property-form">
+              <div className="form-group">
+                <label htmlFor="new-alias">Nome do imóvel</label>
+                <input
+                  id="new-alias"
+                  type="text"
+                  placeholder="Ex: Minha Casa, Meu Apê"
+                  value={newPropertyAlias}
+                  onChange={(e) => setNewPropertyAlias(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="new-type">Tipo</label>
+                <select
+                  id="new-type"
+                  value={newPropertyType}
+                  onChange={(e) => setNewPropertyType(e.target.value as PropertyType)}
+                >
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {PROPERTY_TYPE_LABELS[t]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="new-property-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleAddProperty}
+                  disabled={!newPropertyAlias.trim()}
+                >
+                  <I.Plus size={16} /> Criar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowNewProperty(false);
+                    setNewPropertyAlias("");
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="profile-grid">
           <div className="profile-form">
             <h3 className="section-title">Dados do Imóvel</h3>
+
+            <div className="form-group">
+              <label>Nome do imóvel</label>
+              <input
+                type="text"
+                placeholder="Ex: Casa, Apartamento"
+                value={aliasInput}
+                onChange={(e) => setAliasInput(e.target.value)}
+              />
+            </div>
 
             <div className="form-group">
               <label>Tipo de imóvel</label>
