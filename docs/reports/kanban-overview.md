@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 109 | | Backend (B) | 49 |
+| Done | 110 | | Backend (B) | 50 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 39 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **109** | | **Total** | **119** |
+| **Total** | **110** | | **Total** | **120** |
 
 ## Movimentações (24/07/2026)
 
@@ -195,5 +195,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | 74534a5, ADR-0037 |
 | B045 | Backend (Migration) - Correção V14: PL/SQL com search_condition_vc | In progress | Done | e65a6c6, ADR-0038 |
 | F055 | Frontend - Gráficos Dashboard com granularidade temporal (Mensal/Diário/Hora) | In progress | Done | c904986, ADR-0039 |
-| F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | (pendente), ADR-0040 |
+| F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | dcf26f0, b790a2a, b4064c4, ADR-0040 |
 | F057 | Frontend - Excluir análise no Histórico com confirmação | In progress | Done | 28911de, ADR-0041 |
+| B046 | Backend (Manutenção) - Spotless: formatação automática AnalysisController.java | In progress | Done | 8a78485 |
