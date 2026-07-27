@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { listAnalyses, fetchAnalysisById } from "../services/api";
@@ -16,6 +16,8 @@ import {
   Lightbulb,
   Target,
   X,
+  Calendar,
+  RotateCcw,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -256,6 +258,21 @@ export default function History() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<AnalysisHistory | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const filteredAnalyses = useMemo(() => {
+    return analyses.filter((a) => {
+      const d = new Date(a.created_at);
+      if (dateFrom && d < new Date(dateFrom)) return false;
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        if (d > end) return false;
+      }
+      return true;
+    });
+  }, [analyses, dateFrom, dateTo]);
 
   useEffect(() => {
     if (!user) {
@@ -307,16 +324,57 @@ export default function History() {
         </button>
       </div>
 
-      {analyses.length === 0 ? (
+      {analyses.length > 0 && (
+        <div className="hist-filter-bar">
+          <Calendar size={16} className="hist-filter-icon" />
+          <label className="hist-filter-label">De</label>
+          <input
+            type="date"
+            className="hist-filter-input"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <label className="hist-filter-label">Ate</label>
+          <input
+            type="date"
+            className="hist-filter-input"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
+          {(dateFrom || dateTo) && (
+            <button
+              className="hist-filter-clear"
+              onClick={() => {
+                setDateFrom("");
+                setDateTo("");
+              }}
+              title="Limpar filtro"
+            >
+              <RotateCcw size={14} />
+            </button>
+          )}
+          <span className="hist-filter-count">
+            {filteredAnalyses.length} de {analyses.length}
+          </span>
+        </div>
+      )}
+
+      {filteredAnalyses.length === 0 ? (
         <div className="history-empty">
-          <p>Nenhuma análise encontrada.</p>
-          <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
-            Fazer primeira análise
-          </button>
+          {analyses.length === 0 ? (
+            <>
+              <p>Nenhuma análise encontrada.</p>
+              <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
+                Fazer primeira análise
+              </button>
+            </>
+          ) : (
+            <p>Nenhuma análise no período selecionado.</p>
+          )}
         </div>
       ) : (
         <div className="history-list">
-          {analyses.map((a) => (
+          {filteredAnalyses.map((a) => (
             <div
               key={a.id}
               className={`history-item ${selectedId === a.id ? "history-item--active" : ""}`}
