@@ -29,9 +29,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 89 | | Backend (B) | 40 |
+| Done | 90 | | Backend (B) | 40 |
 | In review | 1 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 29 |
+| In progress | 0 | | Frontend (F) | 30 |
 | Ready | 0 | | Banco de Dados (M) | 5 |
 | Backlog | 0 | | Queries/Views (Q) | 2 |
 | **Total** | **90** | | **Total** | **90** |
@@ -154,3 +154,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Commits associados |
 |---|---|---|
 | F044 | Frontend (Testes) - Testes E2E com Playwright (67 testes) | d0984f9, 9d33533, ADR-0031 |
+| F045 | Frontend (Bug) - Corrigir 400 ao analisar por consumo com mais de 2 casas decimais | 6f2a784 |
