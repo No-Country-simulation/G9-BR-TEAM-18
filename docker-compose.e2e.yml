@@ -1,0 +1,29 @@
+services:
+  # Extends the existing frontend service with a healthcheck
+  frontend:
+    extends:
+      file: docker-compose.yml
+      service: frontend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:5173"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: frontend/e2e/Dockerfile.e2e
+    container_name: energiaia-e2e
+    depends_on:
+      frontend:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://frontend:5173
+    networks:
+      - energiaia-net
+
+networks:
+  energiaia-net:
+    driver: bridge
