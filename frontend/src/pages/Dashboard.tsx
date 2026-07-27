@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { fetchDashboard, listAnalyses, fetchCategories } from "../services/api";
+import { fetchDashboard, listAnalyses, fetchCategories, fetchPreferences, updatePreferences } from "../services/api";
 import type { DashboardData, AnalysisHistory } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -51,7 +51,6 @@ function interpretTrend(analyses: AnalysisHistory[]): {
 }
 
 const SAVINGS_RATES = [0.1, 0.2, 0.3, 0.4];
-const GOAL_KEY = "energiai_goal_kwh";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -60,12 +59,9 @@ export default function Dashboard() {
   const [chartHeight] = useState(() => (window.innerWidth < 480 ? 200 : 300));
   const [loading, setLoading] = useState(true);
   const [analyses, setAnalyses] = useState<AnalysisHistory[]>([]);
-  const [goalKwh, setGoalKwh] = useState<number>(() => {
-    const saved = localStorage.getItem(GOAL_KEY);
-    return saved ? Number(saved) : 0;
-  });
+  const [goalKwh, setGoalKwh] = useState<number>(0);
   const [editingGoal, setEditingGoal] = useState(false);
-  const [goalInput, setGoalInput] = useState(goalKwh);
+  const [goalInput, setGoalInput] = useState(0);
   const [backendCategories, setBackendCategories] = useState<string[]>([]);
 
   useEffect(() => {
@@ -73,11 +69,15 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-    Promise.all([fetchDashboard(), listAnalyses(), fetchCategories()])
-      .then(([dash, allAnalyses, cats]) => {
+    Promise.all([fetchDashboard(), listAnalyses(), fetchCategories(), fetchPreferences()])
+      .then(([dash, allAnalyses, cats, prefs]) => {
         setData(dash);
         setAnalyses(allAnalyses);
         if (cats.length > 0) setBackendCategories(cats);
+        if (prefs.consumption_goal) {
+          setGoalKwh(prefs.consumption_goal);
+          setGoalInput(prefs.consumption_goal);
+        }
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
@@ -282,10 +282,14 @@ export default function Dashboard() {
               />
               <button
                 className="dash-btn dash-btn--primary"
-                onClick={() => {
-                  setGoalKwh(goalInput);
-                  localStorage.setItem(GOAL_KEY, String(goalInput));
-                  setEditingGoal(false);
+                onClick={async () => {
+                  try {
+                    await updatePreferences({ consumption_goal: goalInput });
+                    setGoalKwh(goalInput);
+                    setEditingGoal(false);
+                  } catch {
+                    // silently fail, goal stays unchanged
+                  }
                 }}
               >
                 Salvar

@@ -23,6 +23,8 @@ import {
   updateProperty,
   listAppliances,
   fetchCategories,
+  fetchPreferences,
+  updatePreferences,
   listPropertyAppliances,
   batchUpdateAppliances,
   analyzeEnergy,
@@ -47,8 +49,6 @@ const CATEGORY_ORDER = [
   "Eletrodomesticos",
   "Servicos",
 ];
-
-const REGULARITY_KEY = "energiai_regularity";
 
 function LucideIcon({
   name,
@@ -78,10 +78,7 @@ export default function ProfilePage() {
   const [highConsumptionHours, setHighConsumptionHours] = useState(6);
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
-  const [regularity, setRegularity] = useState<Regularity>(() => {
-    const saved = localStorage.getItem(REGULARITY_KEY);
-    return (saved as Regularity) || "instantanea";
-  });
+  const [regularity, setRegularity] = useState<Regularity>("instantanea");
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
@@ -106,8 +103,8 @@ export default function ProfilePage() {
       navigate("/login");
       return;
     }
-    Promise.all([listAppliances(), listProperties(), fetchCategories()])
-      .then(([appls, props, cats]) => {
+    Promise.all([listAppliances(), listProperties(), fetchCategories(), fetchPreferences()])
+      .then(([appls, props, cats, prefs]) => {
         if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
@@ -122,6 +119,9 @@ export default function ProfilePage() {
               pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
             );
           });
+        }
+        if (prefs.regularity) {
+          setRegularity(prefs.regularity as Regularity);
         }
       })
       .then(() => {
@@ -264,7 +264,7 @@ export default function ProfilePage() {
         await batchUpdateAppliances(prop.id, batchItems);
       }
 
-      localStorage.setItem(REGULARITY_KEY, regularity);
+      await updatePreferences({ regularity }).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar perfil");
     } finally {

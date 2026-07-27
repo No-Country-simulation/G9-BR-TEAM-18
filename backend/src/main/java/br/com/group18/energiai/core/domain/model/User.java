@@ -1,5 +1,7 @@
 package br.com.group18.energiai.core.domain.model;
 
+import java.math.BigDecimal;
+
 public class User {
 
     private Long id;
@@ -7,6 +9,8 @@ public class User {
     private String email;
     private String passwordHash;
     private boolean passwordResetRequired;
+    private BigDecimal consumptionGoal;
+    private String regularity;
 
     public User() {}
 
@@ -54,5 +58,21 @@ public class User {
 
     public void setPasswordResetRequired(boolean passwordResetRequired) {
         this.passwordResetRequired = passwordResetRequired;
+    }
+
+    public BigDecimal getConsumptionGoal() {
+        return consumptionGoal;
+    }
+
+    public void setConsumptionGoal(BigDecimal consumptionGoal) {
+        this.consumptionGoal = consumptionGoal;
+    }
+
+    public String getRegularity() {
+        return regularity;
+    }
+
+    public void setRegularity(String regularity) {
+        this.regularity = regularity;
     }
 }

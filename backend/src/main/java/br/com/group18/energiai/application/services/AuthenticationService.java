@@ -2,8 +2,10 @@ package br.com.group18.energiai.application.services;
 
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.UserRepositoryPort;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +92,32 @@ public class AuthenticationService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordResetRequired(false);
+        return userRepository.save(user);
+    }
+
+    public User updatePreferences(Long userId, Map<String, Object> preferences) {
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        if (preferences.containsKey("consumption_goal")) {
+            Object value = preferences.get("consumption_goal");
+            if (value instanceof Number) {
+                user.setConsumptionGoal(BigDecimal.valueOf(((Number) value).doubleValue()));
+            } else if (value == null) {
+                user.setConsumptionGoal(null);
+            }
+        }
+
+        if (preferences.containsKey("regularity")) {
+            Object value = preferences.get("regularity");
+            if (value instanceof String) {
+                user.setRegularity((String) value);
+            } else if (value == null) {
+                user.setRegularity(null);
+            }
+        }
+
         return userRepository.save(user);
     }
 

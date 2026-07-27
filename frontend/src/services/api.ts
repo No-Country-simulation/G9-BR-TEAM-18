@@ -12,7 +12,6 @@ import { enrichAppliance } from "../data/appliances";
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 function redirectToLogin(): void {
-  localStorage.removeItem("energiai_user");
   document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
   window.location.href = "/login";
 }
@@ -232,6 +231,32 @@ export async function fetchDashboard(): Promise<DashboardData> {
       }),
     ),
   };
+}
+
+export async function fetchPreferences(): Promise<{
+  consumption_goal?: number;
+  regularity?: string;
+}> {
+  const response = await authFetch("/auth/me");
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    return {};
+  }
+  return response.json();
+}
+
+export async function updatePreferences(preferences: {
+  consumption_goal?: number | null;
+  regularity?: string | null;
+}): Promise<void> {
+  const response = await authFetch("/auth/preferences", {
+    method: "PUT",
+    body: JSON.stringify(preferences),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message ?? "Erro ao salvar preferências");
+  }
 }
 
 export async function fetchCategories(): Promise<string[]> {

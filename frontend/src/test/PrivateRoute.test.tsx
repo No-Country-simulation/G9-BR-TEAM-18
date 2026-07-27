@@ -23,28 +23,25 @@ function TestResetPage() {
 type AuthState = "authenticated-no-reset" | "authenticated-needs-reset" | "unauthenticated";
 
 function renderWithState(state: AuthState) {
-  localStorage.clear();
   document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
 
   if (state === "authenticated-no-reset") {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: false }),
-    );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
     } as unknown as Response);
   } else if (state === "authenticated-needs-reset") {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: true }),
-    );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+      json: () =>
+        Promise.resolve({
+          id: "1",
+          name: "Alice",
+          email: "a@a.com",
+          password_reset_required: true,
+        }),
     } as unknown as Response);
   }
 
