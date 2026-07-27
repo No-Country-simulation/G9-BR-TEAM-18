@@ -10,7 +10,7 @@ public record ApplianceResponseDTO(
         @Schema(
                         description = "Categoria do eletrodoméstico",
                         example = "REFRIGERATION",
-                        allowableValues = {"LIGHTING", "REFRIGERATION", "CLIMATE_CONTROL", "APPLIANCES", "TECHNOLOGY"})
+                        allowableValues = {"LIGHTING", "REFRIGERATION", "CLIMATE_CONTROL", "APPLIANCES", "TECHNOLOGY", "SERVICES"})
                 String applianceCategory,
         @Schema(description = "Potência média em Watts", example = "150.00") BigDecimal averagePowerWatts,
         @Schema(description = "Média de uso diário em horas", example = "8.0") BigDecimal averageDailyUseHours) {}

@@ -12,7 +12,10 @@ public enum ApplianceType {
     ELECTRIC_SHOWER(EquipmentCategory.APPLIANCES),
     COMPUTERS(EquipmentCategory.TECHNOLOGY),
     VIDEO_GAME(EquipmentCategory.TECHNOLOGY),
-    TV(EquipmentCategory.TECHNOLOGY);
+    TV(EquipmentCategory.TECHNOLOGY),
+    WATER_PUMP(EquipmentCategory.SERVICES),
+    ELECTRIC_GATE(EquipmentCategory.SERVICES),
+    POOL_MOTOR(EquipmentCategory.SERVICES);
 
     private final EquipmentCategory category;
 

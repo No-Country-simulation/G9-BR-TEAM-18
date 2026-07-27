@@ -5,5 +5,6 @@ public enum EquipmentCategory {
     REFRIGERATION,
     CLIMATE_CONTROL,
     APPLIANCES,
-    TECHNOLOGY
+    TECHNOLOGY,
+    SERVICES
 }

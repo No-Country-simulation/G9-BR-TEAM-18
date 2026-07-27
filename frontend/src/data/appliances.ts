@@ -30,6 +30,11 @@ const METADATA_BY_NAME: Record<string, { icon: string; distributionField: string
   "micro-ondas": { icon: "Home", distributionField: "NONE" },
   microondas: { icon: "Home", distributionField: "NONE" },
   "air fryer": { icon: "Home", distributionField: "NONE" },
+  "bomba d'água": { icon: "Droplets", distributionField: "NONE" },
+  "bomba d'agua": { icon: "Droplets", distributionField: "NONE" },
+  "portão elétrico": { icon: "DoorOpen", distributionField: "NONE" },
+  "portao eletrico": { icon: "DoorOpen", distributionField: "NONE" },
+  "motor de piscina": { icon: "Waves", distributionField: "NONE" },
 };
 
 function normalizeName(name: string): string {
