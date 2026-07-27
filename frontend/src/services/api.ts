@@ -259,6 +259,45 @@ export async function updatePreferences(preferences: {
   }
 }
 
+export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHistory> {
+  const response = await authFetch(`/analyses/${analysisId}`);
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    const err = await response.json();
+    throw new Error(err.message ?? "Erro ao carregar análise");
+  }
+  const raw = await response.json();
+  return {
+    id: String(raw.id),
+    category: raw.category,
+    probability: raw.probability ?? 0,
+    consumption_kwh: raw.consumption_kwh ?? 0,
+    estimated_monthly_cost: raw.estimated_monthly_cost ?? 0,
+    peak_hour_usage: raw.peak_hour_usage ?? false,
+    high_consumption_hours: raw.high_consumption_hours ?? 0,
+    created_at: raw.created_at,
+    recommendations: raw.recommendations ?? [],
+    status: raw.status,
+    appliances: (raw.appliances ?? []).map(
+      (s: {
+        name: string;
+        category: string;
+        quantity: number;
+        average_power_watts: number;
+        average_daily_use_hours: number;
+        monthly_consumption_kwh: number;
+      }) => ({
+        name: s.name,
+        category: s.category,
+        quantity: s.quantity,
+        average_power_watts: s.average_power_watts,
+        average_daily_use_hours: s.average_daily_use_hours,
+        monthly_consumption_kwh: s.monthly_consumption_kwh,
+      }),
+    ),
+  };
+}
+
 export async function fetchCategories(): Promise<string[]> {
   const response = await authFetch("/energy-analysis/categories");
   if (!response.ok) {

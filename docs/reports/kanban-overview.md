@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 107 | | Backend (B) | 49 |
+| Done | 108 | | Backend (B) | 49 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 38 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **107** | | **Total** | **117** |
+| **Total** | **108** | | **Total** | **118** |
 
 ## Movimentações (24/07/2026)
 
@@ -194,4 +194,5 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | 74534a5, ADR-0036 |
 | F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | 74534a5, ADR-0037 |
 | B045 | Backend (Migration) - Correção V14: PL/SQL com search_condition_vc | In progress | Done | e65a6c6, ADR-0038 |
-| F055 | Frontend - Gráficos Dashboard com granularidade temporal (Mensal/Diário/Hora) | In progress | Done | (pendente), ADR-0039 |
+| F055 | Frontend - Gráficos Dashboard com granularidade temporal (Mensal/Diário/Hora) | In progress | Done | c904986, ADR-0039 |
+| F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | (pendente), ADR-0040 |

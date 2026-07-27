@@ -78,6 +78,15 @@ export class ApiError extends Error {
   }
 }
 
+export interface ApplianceSnapshot {
+  name: string;
+  category: string;
+  quantity: number;
+  average_power_watts: number;
+  average_daily_use_hours: number;
+  monthly_consumption_kwh: number;
+}
+
 export interface AnalysisHistory {
   id: string;
   category: EfficiencyClassification;
@@ -89,6 +98,7 @@ export interface AnalysisHistory {
   created_at: string;
   recommendations: string[];
   status?: AnalysisStatus;
+  appliances?: ApplianceSnapshot[];
 }
 
 export interface MonthlyConsumption {
