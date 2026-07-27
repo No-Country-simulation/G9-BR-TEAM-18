@@ -1463,6 +1463,41 @@ body::after {
   line-height: 1.5;
 }
 
+.result-products {
+  padding: 0 1.5rem 0.5rem;
+}
+
+.result-products h4 {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.65rem;
+  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.product-list li {
+  padding: 0.15rem 0;
+}
+
+.product-list li::marker {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
 .result-origem {
   font-size: 0.7rem;
   color: var(--text-secondary);
