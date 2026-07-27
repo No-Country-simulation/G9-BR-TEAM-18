@@ -33,6 +33,54 @@ function badgeStyle(cat: string): React.CSSProperties {
   return { background: bg };
 }
 
+function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
+  if (!appliances.length) return null;
+
+  const sorted = [...appliances].sort(
+    (a, b) => b.monthly_consumption_kwh - a.monthly_consumption_kwh,
+  );
+
+  return (
+    <div className="hist-table-section">
+      <h4>
+        <BarChart3 size={16} /> Detalhamento por Equipamento
+      </h4>
+      <div className="hist-table-wrapper">
+        <table className="hist-table">
+          <thead>
+            <tr>
+              <th>Equipamento</th>
+              <th>Qtd</th>
+              <th>Potência (W)</th>
+              <th>Uso/dia (h)</th>
+              <th>kWh/mês</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((a, i) => (
+              <tr key={i}>
+                <td className="hist-td-name">{a.name}</td>
+                <td>{a.quantity}</td>
+                <td>{a.average_power_watts.toFixed(0)}</td>
+                <td>{a.average_daily_use_hours.toFixed(1)}</td>
+                <td className="hist-td-kwh">{a.monthly_consumption_kwh.toFixed(1)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={4} className="hist-tfoot-label">Total</td>
+              <td className="hist-td-kwh">
+                {sorted.reduce((s, a) => s + a.monthly_consumption_kwh, 0).toFixed(1)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
   if (!appliances.length) return null;
 
@@ -177,7 +225,10 @@ function AnalysisDetail({
         </div>
 
         {analysis.appliances && analysis.appliances.length > 0 && (
-          <ApplianceChart appliances={analysis.appliances} />
+          <>
+            <ApplianceChart appliances={analysis.appliances} />
+            <ApplianceTable appliances={analysis.appliances} />
+          </>
         )}
 
         {analysis.recommendations && analysis.recommendations.length > 0 && (
