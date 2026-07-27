@@ -693,6 +693,12 @@ body::after {
 .category-icon {
   font-size: 1.2rem;
   line-height: 1;
+  color: var(--cat-color, var(--accent-cyan));
+  transition: color 0.2s, transform 0.2s;
+}
+
+.appliance-category-header:hover .category-icon {
+  transform: scale(1.15);
 }
 
 .category-label {
@@ -771,6 +777,17 @@ body::after {
 .appliance-card-icon {
   font-size: 1.3rem;
   line-height: 1;
+  color: var(--text-primary);
+  transition: color 0.2s, transform 0.2s;
+}
+
+.appliance-card:hover .appliance-card-icon {
+  color: var(--accent-cyan);
+  transform: scale(1.15);
+}
+
+.appliance-card.selected .appliance-card-icon {
+  color: var(--accent-green);
 }
 
 .appliance-card-name {
@@ -850,6 +867,7 @@ body::after {
 .selected-icon {
   font-size: 1rem;
   line-height: 1;
+  color: var(--accent-cyan);
 }
 
 .selected-name {
