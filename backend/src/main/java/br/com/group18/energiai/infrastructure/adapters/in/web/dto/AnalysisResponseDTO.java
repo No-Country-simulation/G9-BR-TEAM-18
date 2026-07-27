@@ -46,5 +46,6 @@ public record AnalysisResponseDTO(
             @Schema(description = "Quantidade", example = "2") Integer quantity,
             @Schema(description = "Potência média em watts", example = "150.0") BigDecimal averagePowerWatts,
             @Schema(description = "Média de horas de uso por dia", example = "24.0") BigDecimal averageDailyUseHours,
-            @Schema(description = "Consumo mensal estimado em kWh", example = "108.0") BigDecimal monthlyConsumptionKwh) {}
+            @Schema(description = "Consumo mensal estimado em kWh", example = "108.0")
+                    BigDecimal monthlyConsumptionKwh) {}
 }
