@@ -180,14 +180,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Coluna inicial | Coluna final | Commits associados |
 |---|---|---|---|---|
 | B042 | Backend - Correção V12 (ordem SQL: DROP antes de INSERT) | In progress | Done | f6dcd3f |
-| F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | In progress | Done | 709f725, a749de3, ADR-0034 |
-| B043 | Backend - Defaults ${VAR:default} para env vars do Flyway | In progress | Done | 709f725, a749de3 |
+| F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | In progress | Done | f6dcd3f, 35ff7b6, 57cbb4a, 98acebc, 7f237ef, f8a863e, 709f725, a749de3, ADR-0034 |
+| B043 | Backend - Defaults `${VAR:default}` para env vars do Flyway | In progress | Done | 709f725, a749de3 |
 | M006 | Manual: Deletar entrada V12 do flyway_schema_history | In progress | Done | - |
-
-## Movimentações (27/07/2026) — Rodada 2
-
-### Done → atualizados
-
-| ID | Título | Commits associados |
-|---|---|---|
-| F051 | Infra/Base - Correção deploy: Flyway baseline repair + defaults env var | f6dcd3f, 35ff7b6, 57cbb4a, 98acebc, 7f237ef, f8a863e, 709f725, a749de3, ADR-0034 |
