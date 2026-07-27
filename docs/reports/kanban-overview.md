@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 105 | | Backend (B) | 48 |
+| Done | 106 | | Backend (B) | 49 |
 | In review | 0 | | Infraestrutura (I) | 20 |
 | In progress | 0 | | Frontend (F) | 38 |
 | Ready | 0 | | Banco de Dados (M) | 7 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **105** | | **Total** | **115** |
+| **Total** | **106** | | **Total** | **116** |
 
 ## Movimentações (24/07/2026)
 
@@ -191,5 +191,6 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Coluna inicial | Coluna final | Commits associados |
 |---|---|---|---|---|
-| F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | (planejado: V14 + EnergyAnalysisService), ADR-0036 |
-| F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | (planejado: EquipmentCategory.java), ADR-0037 |
+| F053 | Backend - Alinhar status análise: FINALIZADO -> CONCLUIDA (DB/backend/frontend) | In progress | Done | e65a6c6, ADR-0036 |
+| F054 | Backend - Mapeamento EquipmentCategory inglês -> português (DB/ML) | In progress | Done | e65a6c6, ADR-0037 |
+| B045 | Backend (Migration) - Correção V14: PL/SQL com search_condition_vc | In progress | Done | e65a6c6, ADR-0038 |
