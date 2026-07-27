@@ -647,6 +647,7 @@ export default function Dashboard() {
                 tickLine={false}
               />
               <Tooltip
+                cursor={{ fill: "var(--bg-surface-alt)" }}
                 contentStyle={{
                   background: "var(--bg-surface)",
                   border: "1px solid var(--ink)",

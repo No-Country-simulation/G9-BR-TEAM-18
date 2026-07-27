@@ -129,6 +129,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
             width={180}
           />
           <Tooltip
+            cursor={{ fill: "var(--bg-surface-alt)" }}
             contentStyle={{
               background: "var(--bg-surface)",
               border: "1px solid var(--ink)",
