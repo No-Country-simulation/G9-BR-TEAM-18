@@ -212,8 +212,9 @@ export default function AnalysisForm() {
         }
       }
 
-      const consumptionKwh =
+      const rawConsumption =
         selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : form.consumption_kwh;
+      const consumptionKwh = Number(rawConsumption.toFixed(2));
 
       const res = await analyzeEnergy(
         propId,

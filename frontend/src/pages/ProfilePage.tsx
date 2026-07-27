@@ -268,8 +268,9 @@ export default function ProfilePage() {
     setError(null);
     setResult(null);
     try {
-      const consumptionKwh =
+      const rawConsumption =
         selectedAppliances.length > 0 ? applianceCalc.monthlyConsumptionKwh : 300;
+      const consumptionKwh = Number(rawConsumption.toFixed(2));
       const res = await analyzeEnergy(
         property.id,
         consumptionKwh,

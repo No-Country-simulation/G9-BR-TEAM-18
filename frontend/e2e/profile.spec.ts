@@ -136,6 +136,37 @@ test.describe("Profile Page", () => {
     await expect(page.getByRole("button", { name: pt("Executar analise energetica") })).toBeVisible();
   });
 
+  test("analise envia consumption_kwh com no maximo 2 casas decimais", async ({ page }) => {
+    let capturedBody: string | null = null;
+    // Intercept the analysis POST BEFORE navigation to avoid race
+    await page.route(`http://localhost:8080/energy-analysis`, async (route, request) => {
+      capturedBody = request.postData();
+      await route.fulfill({
+        status: 201,
+        json: { category: "BOM", probability: 0.78, recommendations: [], estimated_monthly_cost: 100, status: "CONCLUIDA" },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Add an appliance to trigger calculation with potential float issues
+    await page.getByRole("button", { name: pt("Adicionar Televisao") }).click();
+    // Click "Analisar Agora"
+    await page.getByRole("button", { name: pt("Executar analise energetica") }).click();
+    // Wait for the result to appear (Bom badge), proving the request succeeded
+    await expect(page.getByText("Bom")).toBeVisible({ timeout: 10000 });
+    // Validate payload has at most 2 decimal places
+    expect(capturedBody).not.toBeNull();
+    if (capturedBody) {
+      const parsed = JSON.parse(capturedBody);
+      expect(parsed).toHaveProperty("consumption_kwh");
+      const str = String(parsed.consumption_kwh);
+      const decimalPart = str.includes(".") ? str.split(".")[1] : "";
+      expect(decimalPart.length).toBeLessThanOrEqual(2);
+    }
+  });
+
   test("exibe placeholder quando nao ha ultima analise", async ({ page }) => {
     await setupAuthenticatedMocks(page, { analyses: [] });
     await page.goto("/profile");
