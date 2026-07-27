@@ -15,7 +15,7 @@ public class PropertyRequestDTO {
     @Schema(
             description = "Tipo da propriedade",
             example = "RESIDENCIAL",
-            allowableValues = {"RESIDENCIAL", "COMERCIAL"})
+            allowableValues = {"RESIDENCIAL", "APARTAMENTO", "COMERCIAL"})
     private PropertyType propertyType;
 
     @Schema(description = "Indica se a propriedade está ativa", example = "true", defaultValue = "true")
