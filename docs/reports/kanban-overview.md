@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 97 | | Backend (B) | 43 |
+| Done | 98 | | Backend (B) | 43 |
 | In review | 0 | | Infraestrutura (I) | 19 |
-| In progress | 0 | | Frontend (F) | 37 |
+| In progress | 0 | | Frontend (F) | 38 |
 | Ready | 0 | | Banco de Dados (M) | 6 |
 | Backlog | 2 | | Queries/Views (Q) | 2 |
-| **Total** | **99** | | **Total** | **107** |
+| **Total** | **100** | | **Total** | **108** |
 
 ## Movimentações (24/07/2026)
 
@@ -171,3 +171,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B038 | Backend - Salvar e retornar histórico de equipamentos | In review | Done | fa301d8, dd65ba8, 04cc961, 531ad45, 58ed788, e11199c |
 | M005 | Migration V10 do histórico de análises | In review | Done | e11199c |
 | F049 | Frontend - Remover localStorage, preferências via backend | In progress | Done | 1b460ed, ADR-0033 |
+| F050 | Frontend - Melhoria visual: ícones específicos por aparelho + contraste tema escuro | In progress | Done | 72da15d |
