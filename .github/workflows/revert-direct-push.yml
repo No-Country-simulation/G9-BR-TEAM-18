@@ -38,21 +38,21 @@ jobs:
           # If no BEFORE (first push to branch), allow
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             echo "is_legitimate=true" >> $GITHUB_OUTPUT
-            echo "No previous commit — allowing"
+            echo "No previous commit - allowing"
             exit 0
           fi
 
           # If no AFTER, reject
           if [ -z "$AFTER" ] || [ "$AFTER" = "0000000000000000000000000000000000000000" ]; then
             echo "is_legitimate=false" >> $GITHUB_OUTPUT
-            echo "No target commit — rejecting"
+            echo "No target commit - rejecting"
             exit 0
           fi
 
           # Check if branch moved backward (safe revert/force-push to undo)
           if git merge-base --is-ancestor "$AFTER" "$BEFORE" 2>/dev/null; then
             echo "is_legitimate=true" >> $GITHUB_OUTPUT
-            echo "Branch moving backward — allowing (revert/undo)"
+            echo "Branch moving backward - allowing (revert/undo)"
             exit 0
           fi
 
@@ -60,7 +60,7 @@ jobs:
           PARENTS=$(git cat-file -p "$AFTER" 2>/dev/null | grep -c "^parent " || true)
           if [ "$PARENTS" -gt 1 ]; then
             echo "is_legitimate=true" >> $GITHUB_OUTPUT
-            echo "Merge commit ($PARENTS parents) — allowing"
+            echo "Merge commit ($PARENTS parents) - allowing"
             exit 0
           fi
 
@@ -71,7 +71,7 @@ jobs:
           # Allow standard merge PR messages
           if echo "$MESSAGE" | grep -qE "^(Merge pull request|Merge branch)"; then
             echo "is_legitimate=true" >> $GITHUB_OUTPUT
-            echo "Standard merge message — allowing"
+            echo "Standard merge message - allowing"
             exit 0
           fi
 
@@ -84,7 +84,7 @@ jobs:
             PR_MERGED_AT=$(echo "$PR_JSON" | jq -r '.mergedAt // empty')
             if [ "$PR_STATE" = "MERGED" ] && [ "$PR_BASE" = "$BRANCH" ]; then
               echo "is_legitimate=true" >> $GITHUB_OUTPUT
-              echo "Verified PR #$PR_NUMBER merged into $BRANCH — allowing"
+              echo "Verified PR #$PR_NUMBER merged into $BRANCH - allowing"
               exit 0
             fi
           fi
@@ -92,13 +92,13 @@ jobs:
           # Also check if commit exists in dev or homolog (might be a cherry-pick)
           if echo "$MESSAGE" | grep -qi "cherry.pick" || echo "$MESSAGE" | grep -qi "hotfix"; then
             echo "is_legitimate=false" >> $GITHUB_OUTPUT
-            echo "Cherry-pick/hotfix detected — still rejecting without PR"
+            echo "Cherry-pick/hotfix detected - still rejecting without PR"
             exit 0
           fi
 
-          # Direct push detected — reject
+          # Direct push detected - reject
           echo "is_legitimate=false" >> $GITHUB_OUTPUT
-          echo "DIRECT PUSH DETECTED — will revert"
+          echo "DIRECT PUSH DETECTED - will revert"
 
       - name: Revert direct push
         if: steps.inspect.outputs.is_legitimate == 'false'
@@ -109,7 +109,7 @@ jobs:
           BEFORE: ${{ github.event.before }}
           AFTER: ${{ github.event.after }}
         run: |
-          echo "⚠️  DIRECT PUSH DETECTED on $BRANCH by $ACTOR"
+          echo "!! DIRECT PUSH DETECTED on $BRANCH by $ACTOR"
           echo "   Commit: $AFTER"
 
           # Get commit info for the issue
@@ -124,7 +124,7 @@ jobs:
 
           # Attempt revert
           if git push origin "$BEFORE:$BRANCH" --force 2>&1; then
-            echo "✅ Branch $BRANCH reverted to $BEFORE"
+            echo "** Branch $BRANCH reverted to $BEFORE"
 
             # Create alert issue
             gh issue create \
@@ -146,17 +146,17 @@ jobs:
 3. Teste em \`homolog\`
 4. Abra PR de \`homolog\` para \`main\`
 
-Push direto para \`$BRANCH\$ não é permitido." || echo "⚠️  Could not create issue"
+Push direto para \`$BRANCH\` não é permitido." ||          echo "!! Could not create issue"
 
             # Set commit status to failure
             curl -s -X POST \
               -H "Authorization: token $GH_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/statuses/$AFTER" \
-              -d '{"state":"failure","description":"Push direto revertido — use PR","context":"revert-direct-push"}' || true
+              -d '{"state":"failure","description":"Push direto revertido - use PR","context":"revert-direct-push"}' || true
 
           else
-            echo "❌ FAILED to revert $BRANCH"
+            echo "!! FAILED to revert $BRANCH"
 
             # Create urgent issue
             gh issue create \
@@ -176,7 +176,7 @@ Push direto para \`$BRANCH\$ não é permitido." || echo "⚠️  Could not crea
 Execute manualmente:
 \`\`\`bash
 git push origin $BEFORE:$BRANCH --force
-\`\`\``" || echo "⚠️  Could not create issue"
+\`\`\``" ||          echo "!! Could not create issue"
 
             exit 1
           fi
@@ -184,4 +184,4 @@ git push origin $BEFORE:$BRANCH --force
       - name: Log success
         if: steps.inspect.outputs.is_legitimate == 'true'
         run: |
-          echo "✅ Push to ${{ github.ref_name }} is legitimate — no action needed"
+          echo "** Push to ${{ github.ref_name }} is legitimate - no action needed"
