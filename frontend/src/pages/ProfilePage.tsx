@@ -6,11 +6,10 @@ import { LucideIcon } from "../components/LucideIcon";
 import type {
   ApplianceType,
   ApplianceItem,
-  PropertyType,
   Regularity,
   AnalysisResponse,
 } from "../types";
-import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPE_LABELS, REGULARITY_OPTIONS } from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES, PROPERTY_TYPE_LABELS, REGULARITY_OPTIONS } from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import {
   listProperties,
@@ -27,11 +26,7 @@ import {
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
 
-const PROPERTY_TYPES: PropertyType[] = [
-  "RESIDENCIAL",
-  "APARTAMENTO",
-  "COMERCIAL",
-];
+
 
 export default function ProfilePage() {
   const { user } = useAuth();
