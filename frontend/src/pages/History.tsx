@@ -91,7 +91,6 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
   const chartData = sorted.map((a) => ({
     ...a,
     label: a.quantity > 1 ? `${a.name} x${a.quantity}` : a.name,
-    iconName: resolveApplianceIcon(a.name, a.category),
   }));
 
   return (
@@ -114,32 +113,9 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <YAxis
             type="category"
             dataKey="label"
-            tick={(props: {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              x: any;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              y: any;
-              payload: {
-                value: string;
-                payload?: { iconName?: string };
-              };
-            }) => {
-              const { x, y, payload } = props;
-              const iconName = payload.payload?.iconName ?? resolveApplianceIcon(payload.value, "");
-              return (
-                <g transform={`translate(${x},${y})`}>
-                  <g transform="translate(2, -10) scale(0.6)">
-                    <LucideIcon name={iconName} size={24} />
-                  </g>
-                  <text x={22} y={4} fill="var(--text-primary)" fontSize={11}>
-                    {payload.value}
-                  </text>
-                </g>
-              );
-            }}
+            tick={{ fill: "var(--text-primary)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            width={160}
           />
           <Tooltip
             cursor={{ fill: "var(--bg-surface-alt)" }}
