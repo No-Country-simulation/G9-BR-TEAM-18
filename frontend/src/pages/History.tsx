@@ -99,11 +99,11 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
       <h4>
         <LucideIcon name="BarChart3" size={16} /> Consumo por Equipamento (kWh/mês)
       </h4>
-      <ResponsiveContainer width="100%" height={Math.max(200, appliances.length * 42)}>
+      <ResponsiveContainer width="100%" height={Math.max(250, appliances.length * 48)}>
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 4, right: 20, bottom: 4, left: 20 }}
+          margin={{ top: 8, right: 24, bottom: 8, left: 8 }}
         >
           <XAxis
             type="number"
@@ -125,10 +125,9 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
               };
             }) => {
               const { x, y, payload } = props;
-              // Usa iconName pre-computado do chartData, fallback para resolucao por keyword
               const iconName = payload.payload?.iconName ?? resolveApplianceIcon(payload.value, "");
               return (
-                <g transform={`translate(${x - 4},${y})`}>
+                <g transform={`translate(${x},${y})`}>
                   <g transform="translate(2, -10) scale(0.6)">
                     <LucideIcon name={iconName} size={24} />
                   </g>
@@ -140,7 +139,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
             }}
             axisLine={false}
             tickLine={false}
-            width={180}
+            width={160}
           />
           <Tooltip
             cursor={{ fill: "var(--bg-surface-alt)" }}
