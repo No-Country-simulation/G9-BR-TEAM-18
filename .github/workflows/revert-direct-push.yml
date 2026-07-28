@@ -78,8 +78,8 @@ jobs:
           if git push origin "$BEFORE:$BRANCH" --force 2>&1; then
             echo "OK Branch $BRANCH revertida"
 
-            # Cria issue usando printf para evitar problemas de indentacao YAML
-            BODY="## Push Direto Revertido Automaticamente\n\nBranch: \`$BRANCH\`\nAutor: $ACTOR\nCommit: $AFTER\nMensagem: $MESSAGE\n\nPush direto em \`$BRANCH\` nao e permitido. Apenas merges de PR sao aceitos.\n\nFluxo correto: \`dev\` -> \`homolog\` -> \`main\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*"
+            # Usa printf -v para construir body com \n reais e variaveis expandidas
+            printf -v BODY "## Push Direto Revertido Automaticamente\n\nBranch: \`%s\`\nAutor: %s\nCommit: %s\nMensagem: %s\n\nPush direto em \`%s\` nao e permitido. Apenas merges de PR sao aceitos.\n\nFluxo correto: \`dev\` -> \`homolog\` -> \`main\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*" "$BRANCH" "$ACTOR" "$AFTER" "$MESSAGE" "$BRANCH"
 
             gh issue create \
               --title "Revertido push direto em $BRANCH" \
@@ -92,7 +92,7 @@ jobs:
           else
             echo "FALHA ao reverter $BRANCH"
 
-            BODY="## Falha ao Reverter Push Direto\n\nBranch: \`$BRANCH\`\nAutor: $ACTOR\nCommit: $AFTER\n\nO workflow tentou reverter automaticamente mas falhou.\n\nAcao necessaria: Reverter manualmente:\n\`\`\`\ngit push origin $BEFORE:$BRANCH --force\n\`\`\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*"
+            printf -v BODY "## Falha ao Reverter Push Direto\n\nBranch: \`%s\`\nAutor: %s\nCommit: %s\n\nO workflow tentou reverter automaticamente mas falhou.\n\nAcao necessaria: Reverter manualmente:\n\`\`\`\ngit push origin %s:%s --force\n\`\`\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*" "$BRANCH" "$ACTOR" "$AFTER" "$BEFORE" "$BRANCH"
 
             gh issue create \
               --title "Falha ao reverter push direto em $BRANCH" \
