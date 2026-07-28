@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import * as I from "lucide-react";
@@ -10,7 +10,7 @@ import type {
   Regularity,
   AnalysisResponse,
 } from "../types";
-import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, REGULARITY_OPTIONS } from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPE_LABELS, REGULARITY_OPTIONS } from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import {
   listProperties,
@@ -28,23 +28,16 @@ import {
 import type { PropertyResponse } from "../services/api";
 
 const PROPERTY_TYPES: PropertyType[] = [
-  "Casa",
-  "Apartamento",
-  "Comercial",
-  "Industria",
-  "Rural",
-  "Outro",
+  "RESIDENCIAL",
+  "APARTAMENTO",
+  "COMERCIAL",
 ];
-
-const REGULARITY_KEY = "energiai_regularity";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [property, setProperty] = useState<PropertyResponse | null>(null);
-  const [properties, setProperties] = useState<PropertyResponse[]>([]);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
   const [aliasInput, setAliasInput] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
   const [address, setAddress] = useState("");
@@ -55,7 +48,9 @@ export default function ProfilePage() {
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
-  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+  const [openCategories, setOpenCategories] = useState<Set<string>>(
+    new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
   const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
@@ -81,11 +76,9 @@ export default function ProfilePage() {
       .then(([appls, props, cats, prefs]) => {
         if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
-        setProperties(props);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
-          setSelectedPropertyId(active.id);
           setAliasInput(active.alias);
           setPropertyType(active.property_type as PropertyType);
           setAddress(active.address ?? "");
@@ -125,12 +118,15 @@ export default function ProfilePage() {
     return sortCategories(Array.from(cats));
   }, [applianceTypes]);
 
+  const categoriesLoaded = useRef(false);
+
   // Abre automaticamente as 3 primeiras categorias quando os dados carregam
   useEffect(() => {
-    if (dynamicCategoryOrder.length > 0 && openCategories.size === 0) {
+    if (dynamicCategoryOrder.length > 0 && !categoriesLoaded.current) {
+      categoriesLoaded.current = true;
       setOpenCategories(new Set(dynamicCategoryOrder.slice(0, 3)));
     }
-  }, [dynamicCategoryOrder, openCategories.size]);
+  }, [dynamicCategoryOrder]);
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -242,15 +238,6 @@ export default function ProfilePage() {
         prop = await createProperty(aliasValue, propertyType, address, residentCount, areaSqm);
       }
       setProperty(prop);
-      setProperties((prev) => {
-        const idx = prev.findIndex((p) => p.id === prop.id);
-        if (idx >= 0) {
-          const updated = [...prev];
-          updated[idx] = prop;
-          return updated;
-        }
-        return [...prev, prop];
-      });
 
       const batchItems = selectedAppliances
         .map((item) => {
@@ -300,54 +287,7 @@ export default function ProfilePage() {
       setAnalyzing(false);
     }
   }
-
   const appliancesByCategory = (cat: string) => filteredTypes.filter((t) => t.mlCategory === cat);
-
-  async function handlePropertyChange(propId: number) {
-    if (propId === selectedPropertyId) return;
-    setSwitchingProperty(true);
-    setResult(null);
-    setSelectedPropertyId(propId);
-    const prop = properties.find((p) => p.id === propId);
-    if (prop) {
-      setProperty(prop);
-      setAliasInput(prop.alias);
-      setPropertyType(prop.property_type as PropertyType);
-      setAddress(prop.address ?? "");
-      setResidentCount(prop.resident_count ?? 1);
-      setAreaSqm(prop.area_sqm ?? 50);
-      try {
-        const pa = await listPropertyAppliances(propId);
-        setSelectedAppliances(
-          pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
-        );
-      } catch {
-        setSelectedAppliances([]);
-      }
-    }
-    setSwitchingProperty(false);
-  }
-
-  async function handleAddProperty() {
-    if (!newPropertyAlias.trim()) return;
-    try {
-      const newProp = await createProperty(newPropertyAlias.trim(), newPropertyType);
-      setProperties((prev) => [...prev, newProp]);
-      setSelectedPropertyId(newProp.id);
-      setProperty(newProp);
-      setAliasInput(newProp.alias);
-      setPropertyType(newProp.property_type as PropertyType);
-      setAddress(newProp.address ?? "");
-      setResidentCount(newProp.resident_count ?? 1);
-      setAreaSqm(newProp.area_sqm ?? 50);
-      setSelectedAppliances([]);
-      setResult(null);
-      setShowNewProperty(false);
-      setNewPropertyAlias("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar imóvel");
-    }
-  }
 
   if (loading) {
     return (
@@ -370,94 +310,6 @@ export default function ProfilePage() {
           <div className="profile-error">
             <I.AlertCircle size={16} />
             <span>{error}</span>
-          </div>
-        )}
-
-        {properties.length > 1 && (
-          <div className="property-selector">
-            <label className="property-selector-label">
-              <I.Building2 size={16} /> Selecione o imóvel
-            </label>
-            <div className="property-selector-row">
-              {properties.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={`property-selector-btn ${selectedPropertyId === p.id ? "active" : ""}`}
-                  onClick={() => handlePropertyChange(p.id)}
-                  disabled={switchingProperty}
-                  title={p.alias}
-                >
-                  <I.Home size={14} />
-                  <span className="property-selector-name">{p.alias}</span>
-                  <span className="property-selector-type">
-                    {PROPERTY_TYPE_LABELS[p.property_type as PropertyType]}
-                  </span>
-                </button>
-              ))}
-              <button
-                type="button"
-                className="property-selector-btn property-selector-btn--add"
-                onClick={() => setShowNewProperty(true)}
-              >
-                <I.Plus size={14} /> Novo
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showNewProperty && (
-          <div className="profile-new-property">
-            <h4>
-              <I.Plus size={16} /> Novo Imóvel
-            </h4>
-            <div className="new-property-form">
-              <div className="form-group">
-                <label htmlFor="new-alias">Nome do imóvel</label>
-                <input
-                  id="new-alias"
-                  type="text"
-                  placeholder="Ex: Minha Casa, Meu Apê"
-                  value={newPropertyAlias}
-                  onChange={(e) => setNewPropertyAlias(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="new-type">Tipo</label>
-                <select
-                  id="new-type"
-                  value={newPropertyType}
-                  onChange={(e) => setNewPropertyType(e.target.value as PropertyType)}
-                >
-                  {PROPERTY_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {PROPERTY_TYPE_LABELS[t]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="new-property-actions">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleAddProperty}
-                  disabled={!newPropertyAlias.trim()}
-                >
-                  <I.Plus size={16} /> Criar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowNewProperty(false);
-                    setNewPropertyAlias("");
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
