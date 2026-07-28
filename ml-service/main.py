@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from groq import Groq
 from pydantic import BaseModel
+from features import normalize_property_type, translate_category
 
 load_dotenv()
 
@@ -107,9 +108,9 @@ def _groq_register_call() -> None:
 # -------------------------------------------------------------
 
 BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250.0,
-    "Apartamento": 150.0,
-    "Comercial": 500.0,
+    "RESIDENCIAL": 250.0,
+    "APARTAMENTO": 150.0,
+    "COMERCIAL": 500.0,
 }
 
 
@@ -283,10 +284,11 @@ def _run_prediction(data: "PredictRequest") -> dict:
                         "consumption_kwh": data.consumption_kwh,
                         "peak_hour_usage": int(data.peak_hour_usage),
                         "equipment_quantity": data.equipment_quantity,
-                        "property_type": data.property_type,
+                        "property_type": normalize_property_type(data.property_type),
                         "high_consumption_hours": data.high_consumption_hours,
-                        "highest_consumption_category": data.highest_consumption_category
-                        or "Outros",
+                        "highest_consumption_category": translate_category(
+                            data.highest_consumption_category or "Outros"
+                        ),
                         "refrigeration_watts": dc.REFRIGERATION_WATTS,
                         "heating_watts": dc.HEATING_WATTS,
                         "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
