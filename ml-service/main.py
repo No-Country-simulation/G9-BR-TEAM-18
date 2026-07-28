@@ -216,6 +216,7 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
 
 
 def _generate_recommendations_groq(data: PredictRequest, category: str) -> list[str]:
+    property_type_pt = normalize_property_type(data.property_type)
     prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas\
  e realmente úteis para melhorar a eficiência energética do imóvel.
 
@@ -235,7 +236,7 @@ Dados do imóvel:
 - Consumo mensal: {data.consumption_kwh} kWh
 - Uso em horário de pico: {"Sim" if data.peak_hour_usage else "Não"}
 - Quantidade de equipamentos: {data.equipment_quantity}
-- Tipo de imóvel: {data.property_type}
+- Tipo de imóvel: {property_type_pt}
 - Horas de alto consumo por dia: {data.high_consumption_hours}
 - Categoria de eficiência: {category}
 
