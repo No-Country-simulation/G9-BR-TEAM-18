@@ -139,6 +139,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
             }}
             axisLine={false}
             tickLine={false}
+            width={160}
           />
           <Tooltip
             cursor={{ fill: "var(--bg-surface-alt)" }}
