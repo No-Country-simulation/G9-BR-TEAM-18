@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import * as I from "lucide-react";
 import { LucideIcon } from "../components/LucideIcon";
 import type {
   ApplianceType,
@@ -297,14 +296,14 @@ export default function ProfilePage() {
     <div className="profile-page">
       <div className="profile-container">
         <div className="profile-header">
-          <I.UserCog size={28} />
+          <LucideIcon name="UserCog" size={28} />
           <h1>Meu Perfil</h1>
           <p>Configure seu tipo de residência e os aparelhos que você possui.</p>
         </div>
 
         {error && (
           <div className="profile-error">
-            <I.AlertCircle size={16} />
+            <LucideIcon name="AlertCircle" size={16} />
             <span>{error}</span>
           </div>
         )}
@@ -412,7 +411,7 @@ export default function ProfilePage() {
             </p>
 
             <div className="appliance-search">
-              <I.Search size={16} className="search-icon" />
+              <LucideIcon name="Search" size={16} className="search-icon" />
               <input
                 type="text"
                 className="search-input"
@@ -451,7 +450,7 @@ export default function ProfilePage() {
                       </span>
                       <span className="category-label">{catInfo.label}</span>
                       <span className="category-count">{appliances.length}</span>
-                      {isOpen ? <I.ChevronDown size={16} /> : <I.ChevronRight size={16} />}
+                      {isOpen ? <LucideIcon name="ChevronDown" size={16} /> : <LucideIcon name="ChevronRight" size={16} />}
                     </button>
                     {isOpen && (
                       <div className="appliance-grid">
@@ -505,7 +504,7 @@ export default function ProfilePage() {
                             disabled={item.quantity <= 1}
                             aria-label={`Reduzir quantidade de ${info.name}`}
                           >
-                            <I.Minus size={14} />
+                            <LucideIcon name="Minus" size={14} />
                           </button>
                           <span className="qty-value">{item.quantity}</span>
                           <button
@@ -514,7 +513,7 @@ export default function ProfilePage() {
                             onClick={() => changeQuantity(item.type, 1)}
                             aria-label={`Aumentar quantidade de ${info.name}`}
                           >
-                            <I.Plus size={14} />
+                            <LucideIcon name="Plus" size={14} />
                           </button>
                         </div>
                         <button
@@ -523,7 +522,7 @@ export default function ProfilePage() {
                           onClick={() => removeAppliance(item.type)}
                           aria-label={`Remover ${info.name} da lista`}
                         >
-                          <I.Trash2 size={14} />
+                          <LucideIcon name="Trash2" size={14} />
                         </button>
                       </div>
                     );
@@ -561,10 +560,10 @@ export default function ProfilePage() {
                   onClick={() => setRegularity(opt.value)}
                   aria-label={`Regularidade: ${opt.label}`}
                 >
-                  {opt.value === "instantanea" && <I.Zap size={16} />}
-                  {opt.value === "diaria" && <I.Sun size={16} />}
-                  {opt.value === "semanal" && <I.Calendar size={16} />}
-                  {opt.value === "mensal" && <I.CalendarDays size={16} />}
+                  {opt.value === "instantanea" && <LucideIcon name="Zap" size={16} />}
+                  {opt.value === "diaria" && <LucideIcon name="Sun" size={16} />}
+                  {opt.value === "semanal" && <LucideIcon name="Calendar" size={16} />}
+                  {opt.value === "mensal" && <LucideIcon name="CalendarDays" size={16} />}
                   <span>{opt.label}</span>
                 </button>
               ))}
@@ -581,7 +580,7 @@ export default function ProfilePage() {
                 "Salvando..."
               ) : (
                 <>
-                  <I.Save size={18} /> Salvar Perfil
+                  <LucideIcon name="Save" size={18} /> Salvar Perfil
                 </>
               )}
             </button>
@@ -599,7 +598,7 @@ export default function ProfilePage() {
                   "Analisando..."
                 ) : (
                   <>
-                    <I.BarChart3 size={18} /> Analisar Agora
+                    <LucideIcon name="BarChart3" size={18} /> Analisar Agora
                   </>
                 )}
               </button>
@@ -672,7 +671,7 @@ export default function ProfilePage() {
             {!result && !analyzing && lastAnalysis && (
               <div className="profile-last-analysis">
                 <h3>
-                  <I.Clock size={18} /> Última Análise
+                  <LucideIcon name="Clock" size={18} /> Última Análise
                 </h3>
                 <div
                   className="profile-last-badge"
@@ -711,7 +710,7 @@ export default function ProfilePage() {
 
             {!result && !analyzing && !lastAnalysis && (
               <div className="result-placeholder">
-                <I.UserCog size={48} className="placeholder-icon" />
+                <LucideIcon name="UserCog" size={48} className="placeholder-icon" />
                 <p>Configure seu perfil e clique em "Analisar Agora" para ver o resultado.</p>
               </div>
             )}
