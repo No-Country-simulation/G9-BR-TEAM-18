@@ -694,7 +694,9 @@ body::after {
   font-size: 1.2rem;
   line-height: 1;
   color: var(--cat-color, var(--accent-cyan));
-  transition: color 0.2s, transform 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
 }
 
 .appliance-category-header:hover .category-icon {
@@ -778,7 +780,25 @@ body::after {
   font-size: 1.3rem;
   line-height: 1;
   color: var(--text-primary);
-  transition: color 0.2s, transform 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+
+/* Ensure icons have enough stroke weight for visibility in dark mode */
+.appliance-card-icon svg,
+.selected-icon svg,
+.category-icon svg {
+  stroke-width: 2.5;
+}
+
+/* Stronger default icon color for better contrast */
+.selected-icon {
+  color: var(--accent-cyan);
+}
+
+.category-icon {
+  filter: brightness(1.15);
 }
 
 .appliance-card:hover .appliance-card-icon {
@@ -1522,6 +1542,20 @@ body::after {
   margin-top: 0.75rem;
   text-align: right;
   font-style: italic;
+}
+
+/* ─── Recharts overrides ─── */
+
+.recharts-tooltip-cursor {
+  fill: var(--bg-surface-alt) !important;
+  opacity: 0.6;
+}
+
+.recharts-default-tooltip {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--ink) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-hard-sm) !important;
 }
 
 /* ─── Spinner ─── */
@@ -2333,8 +2367,12 @@ body::after {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .hist-modal {
@@ -2351,8 +2389,14 @@ body::after {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .hist-modal-close {

@@ -31,24 +31,7 @@ import {
   listAnalyses,
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
-
-const CATEGORIES: Record<string, { label: string; icon: string; color: string }> = {
-  Refrigeracao: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
-  Climatizacao: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
-  Tecnologia: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
-  Iluminacao: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
-  Eletrodomesticos: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
-  Servicos: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
-};
-
-const CATEGORY_ORDER = [
-  "Refrigeracao",
-  "Climatizacao",
-  "Tecnologia",
-  "Iluminacao",
-  "Eletrodomesticos",
-  "Servicos",
-];
+import { getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 
 function LucideIcon({
   name,
@@ -86,9 +69,19 @@ export default function ProfilePage() {
   const [newPropertyAlias, setNewPropertyAlias] = useState("");
   const [newPropertyType, setNewPropertyType] = useState<PropertyType>("RESIDENCIAL");
   const [switchingProperty, setSwitchingProperty] = useState(false);
-  const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
-  );
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+
+  const dynamicCategoryOrder = useMemo(() => {
+    const cats = new Set(applianceTypes.map((t) => t.mlCategory));
+    return sortCategories(Array.from(cats));
+  }, [applianceTypes]);
+
+  // Abre automaticamente as 3 primeiras categorias quando os dados carregam
+  useEffect(() => {
+    if (dynamicCategoryOrder.length > 0 && openCategories.size === 0) {
+      setOpenCategories(new Set(dynamicCategoryOrder.slice(0, 3)));
+    }
+  }, [dynamicCategoryOrder, openCategories.size]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
@@ -260,13 +253,7 @@ export default function ProfilePage() {
           areaSqm,
         );
       } else {
-        prop = await createProperty(
-          aliasValue,
-          propertyType,
-          address,
-          residentCount,
-          areaSqm,
-        );
+        prop = await createProperty(aliasValue, propertyType, address, residentCount, areaSqm);
       }
       setProperty(prop);
       setProperties((prev) => {
@@ -612,8 +599,8 @@ export default function ProfilePage() {
             </div>
 
             <div className="appliance-catalog">
-              {CATEGORY_ORDER.map((cat) => {
-                const catInfo = CATEGORIES[cat];
+              {dynamicCategoryOrder.map((cat) => {
+                const catInfo = getCategoryDisplay(cat);
                 const appliances = appliancesByCategory(cat);
                 if (appliances.length === 0) return null;
                 const isOpen = openCategories.has(cat);
