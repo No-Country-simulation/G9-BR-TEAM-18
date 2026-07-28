@@ -405,6 +405,44 @@ def predict_schema() -> dict:
     """Retorna o schema JSON do PredictRequest para descoberta dinâmica pelo backend."""
     return PredictRequest.model_json_schema()
 
+@app.get("/contract")
+def contract() -> dict:
+    """Retorna o contrato completo do ML Service para descoberta dinâmica."""
+    return {
+        "version": "3.0.0",
+        "property_types": ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
+        "efficiency_categories": VALID_CATEGORIES,
+        "consumption_categories": [
+            "REFRIGERATION", "CLIMATE_CONTROL", "TECHNOLOGY",
+            "LIGHTING", "APPLIANCES", "SERVICES", "OTHERS",
+        ],
+        "request_schema": PredictRequest.model_json_schema(),
+        "response_schema": PredictResponse.model_json_schema(),
+    }
+
+
+@app.get("/appliance-catalog")
+def appliance_catalog() -> dict:
+    """Retorna o catálogo de aparelhos que o modelo reconhece."""
+    df_pph = pd.read_csv(os.path.join(BASE_DIR, "data", "pph-data-complete.csv"))
+    catalog = []
+    APPLIANCE_COLUMNS = {
+        "qtd_geladeira":         {"name": "Geladeira",        "ml_category": "REFRIGERATION",  "watts": 150,  "hours": 24},
+        "qtd_ar_condicionado":   {"name": "Ar-condicionado",  "ml_category": "CLIMATE_CONTROL", "watts": 1500, "hours": 8},
+        "qtd_ventilador":        {"name": "Ventilador",       "ml_category": "CLIMATE_CONTROL", "watts": 100,  "hours": 8},
+        "qtd_lampadas":          {"name": "Lampada",          "ml_category": "LIGHTING",        "watts": 12,   "hours": 6},
+        "qtd_microondas":        {"name": "Micro-ondas",      "ml_category": "APPLIANCES",      "watts": 1200, "hours": 0.5},
+        "qtd_air_fryer":         {"name": "Air fryer",        "ml_category": "APPLIANCES",      "watts": 1500, "hours": 0.75},
+        "qtd_lavar_secar":       {"name": "Maquina de lavar", "ml_category": "APPLIANCES",      "watts": 500,  "hours": 1.5},
+        "qtd_chuveiro_eletrico": {"name": "Chuveiro eletrico","ml_category": "APPLIANCES",      "watts": 5500, "hours": 0.5},
+        "qtd_tv":                {"name": "Televisao",        "ml_category": "TECHNOLOGY",      "watts": 150,  "hours": 6},
+        "qtd_computadores":      {"name": "Computador",       "ml_category": "TECHNOLOGY",      "watts": 150,  "hours": 8},
+        "qtd_videogame":         {"name": "Videogame",        "ml_category": "TECHNOLOGY",      "watts": 200,  "hours": 4},
+    }
+    for col, info in APPLIANCE_COLUMNS.items():
+        if col in df_pph.columns:
+            catalog.append(info)
+    return {"appliances": catalog}
 
 @app.get("/categories")
 def categories() -> dict:
