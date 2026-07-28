@@ -40,6 +40,36 @@ def normalize_category(cat: object) -> str:
     }
     return mapping.get(cat_lower, "Outros")
 
+def normalize_property_type(ptype: object) -> str:
+    """Normaliza property_type de ingles para portugues (formato do modelo)."""
+    if not isinstance(ptype, str):
+        return "Casa"
+    mapping = {
+        "residencial": "Casa",
+        "apartamento": "Apartamento",
+        "comercial": "Comercial",
+    }
+    return mapping.get(ptype.strip().lower(), "Casa")
+
+
+def translate_category(cat: object) -> str:
+    """Traduz highest_consumption_category de ingles para portugues.
+    Funcao separada da normalize_category() porque esta e usada no pipeline
+    sklearn (treino + inferência) e não deve ser alterada.
+    """
+    if not isinstance(cat, str):
+        return "Outros"
+    mapping = {
+        "refrigeration": "Refrigeracao",
+        "climate_control": "Climatizacao",
+        "climatization": "Climatizacao",
+        "technology": "Tecnologia",
+        "lighting": "Iluminacao",
+        "appliances": "Eletrodomesticos",
+        "services": "Servicos",
+        "others": "Outros",
+    }
+    return mapping.get(cat.strip().lower(), "Outros")
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
