@@ -26,25 +26,22 @@ import {
   ArrowDown,
   Target,
   PiggyBank,
-  Calendar,
-  Clock,
   Sparkles,
   AlertCircle,
 } from "lucide-react";
 import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
 
-
 type TimeGranularity = "month" | "day" | "hour";
 
 const GRANULARITY_OPTIONS: {
   value: TimeGranularity;
   label: string;
-  icon: React.ReactNode;
+  icon: string;
 }[] = [
-  { value: "month", label: "Mensal", icon: <Calendar size={14} /> },
-  { value: "day", label: "Diário", icon: <History size={14} /> },
-  { value: "hour", label: "Por hora", icon: <Clock size={14} /> },
+  { value: "month", label: "Mensal", icon: "Calendar" },
+  { value: "day", label: "Diário", icon: "History" },
+  { value: "hour", label: "Por hora", icon: "Clock" },
 ];
 
 interface GranularityEntry {
@@ -131,7 +128,6 @@ function interpretTrend(analyses: AnalysisHistory[]): {
   if (Math.abs(pct) < 3) return { trend: "stable", percentage: 0 };
   return { trend: pct > 0 ? "up" : "down", percentage: Math.abs(pct) };
 }
-
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -473,9 +469,7 @@ export default function Dashboard() {
 
       {selectedProperty && properties.length > 1 && (
         <div className="property-selector">
-          <span className="property-selector-label">
-            Simular para:
-          </span>
+          <span className="property-selector-label">Simular para:</span>
           <div className="property-selector-row">
             {properties.map((p) => (
               <button
@@ -549,16 +543,13 @@ export default function Dashboard() {
                     );
                     setSimResult(res);
                   } catch (err) {
-                    setSimError(
-                      err instanceof Error ? err.message : "Erro ao simular",
-                    );
+                    setSimError(err instanceof Error ? err.message : "Erro ao simular");
                   } finally {
                     setSimLoading(false);
                   }
                 }}
                 disabled={
-                  simLoading ||
-                  (simTargetKwh || Math.round(currentKwh * 0.85)) >= currentKwh
+                  simLoading || (simTargetKwh || Math.round(currentKwh * 0.85)) >= currentKwh
                 }
               >
                 {simLoading ? (
@@ -585,14 +576,12 @@ export default function Dashboard() {
                     className="dash-last-badge"
                     style={{
                       backgroundColor:
-                        CATEGORY_COLORS[
-                          simResult.category as keyof typeof CATEGORY_COLORS
-                        ] ?? "#6b7280",
+                        CATEGORY_COLORS[simResult.category as keyof typeof CATEGORY_COLORS] ??
+                        "#6b7280",
                     }}
                   >
-                    {CATEGORY_DISPLAY[
-                      simResult.category as keyof typeof CATEGORY_DISPLAY
-                    ] ?? simResult.category}
+                    {CATEGORY_DISPLAY[simResult.category as keyof typeof CATEGORY_DISPLAY] ??
+                      simResult.category}
                   </span>
                   <span className="dash-sim-stat">
                     Confianca: {(simResult.probability * 100).toFixed(0)}%
@@ -604,9 +593,7 @@ export default function Dashboard() {
                 {simResult.highest_consumption_products &&
                   simResult.highest_consumption_products.length > 0 && (
                     <div className="dash-sim-products">
-                      <span className="dash-sim-products-label">
-                        Maiores consumidores:
-                      </span>
+                      <span className="dash-sim-products-label">Maiores consumidores:</span>
                       <span className="dash-sim-products-list">
                         {simResult.highest_consumption_products.map((product, i) => (
                           <span key={i} className="dash-sim-product-tag">
@@ -640,7 +627,7 @@ export default function Dashboard() {
                   className={`dash-gran-tab ${granularity === opt.value ? "dash-gran-tab--active" : ""}`}
                   onClick={() => setGranularity(opt.value)}
                 >
-                  {opt.icon} {opt.label}
+                  <LucideIcon name={opt.icon} size={14} /> {opt.label}
                 </button>
               ))}
             </div>
