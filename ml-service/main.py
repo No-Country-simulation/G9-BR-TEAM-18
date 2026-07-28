@@ -352,9 +352,11 @@ def _store_for_training(
             "consumption_kwh": data.consumption_kwh,
             "peak_hour_usage": data.peak_hour_usage,
             "equipment_quantity": data.equipment_quantity,
-            "property_type": data.property_type,
+            "property_type": normalize_property_type(data.property_type),
             "high_consumption_hours": data.high_consumption_hours,
-            "highest_consumption_category": data.highest_consumption_category or "Outros",
+            "highest_consumption_category": translate_category(
+                data.highest_consumption_category or "Outros"
+            ),
             "refrigeration_watts": dc.REFRIGERATION_WATTS,
             "heating_watts": dc.HEATING_WATTS,
             "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
