@@ -22,57 +22,103 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if push is a legitimate PR merge
+      - name: Check if push is legitimate
         id: check_merge
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          COMMITTER="${{ github.event.head_commit.committer.name }}"
-          USERNAME="${{ github.event.head_commit.committer.username }}"
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after }}"
           MESSAGE="${{ github.event.head_commit.message }}"
-          PARENTS=$(git cat-file -p ${{ github.event.after }} 2>/dev/null | grep "^parent " | wc -l || echo 0)
 
-          echo "Committer: $COMMITTER"
-          echo "Username: $USERNAME"
-          echo "Message: $MESSAGE"
-          echo "Parents: $PARENTS"
-
-          # PR merges via GitHub UI are always committed by "GitHub" (bot)
-          # This covers: merge commit (2 parents), squash merge (1 parent),
-          # and rebase merge (multiple commits, 1 parent each)
-          if [ "$COMMITTER" = "GitHub" ] || [ "$USERNAME" = "web-flow" ]; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          elif echo "$MESSAGE" | grep -qE "^(Merge pull request|Merge branch)"; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          elif [ "$PARENTS" -gt 1 ]; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_pr_merge=false" >> $GITHUB_OUTPUT
+          # Allow if branch is moving backward (revert from a previous enforcement)
+          if git merge-base --is-ancestor "$AFTER" "$BEFORE" 2>/dev/null; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            echo "Branch moving backward — allowing revert push"
+            exit 0
           fi
 
-      - name: Reject direct push
-        if: steps.check_merge.outputs.is_pr_merge == 'false'
+          # Allow merge commits (2+ parents)
+          PARENTS=$(git cat-file -p "$AFTER" 2>/dev/null | grep -c "^parent " || echo 0)
+          if [ "$PARENTS" -gt 1 ]; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            echo "Merge commit (2+ parents) — allowing"
+            exit 0
+          fi
+
+          # Allow standard PR merge messages
+          if echo "$MESSAGE" | grep -qE "^(Merge pull request|Merge branch)"; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            echo "Standard merge message — allowing"
+            exit 0
+          fi
+
+          # Allow squash/rebase merges via PR (message contains PR number)
+          PR_NUMBER=$(echo "$MESSAGE" | grep -oP '\(#\K\d+(?=\))' | head -1)
+          if [ -n "$PR_NUMBER" ]; then
+            PR_JSON=$(gh pr view "$PR_NUMBER" --json state,baseRefName 2>/dev/null || echo '{}')
+            PR_STATE=$(echo "$PR_JSON" | jq -r '.state // empty')
+            PR_BASE=$(echo "$PR_JSON" | jq -r '.baseRefName // empty')
+            if [ "$PR_STATE" = "MERGED" ] && [ "$PR_BASE" = "${{ github.ref_name }}" ]; then
+              echo "is_legitimate=true" >> $GITHUB_OUTPUT
+              echo "Verified PR #$PR_NUMBER merged into ${{ github.ref_name }} — allowing"
+              exit 0
+            fi
+          fi
+
+          # Direct push detected
+          echo "is_legitimate=false" >> $GITHUB_OUTPUT
+
+      - name: Revert direct push
+        if: steps.check_merge.outputs.is_legitimate == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
-          COMMITTER: ${{ github.event.head_commit.committer.name }}
+          ACTOR: ${{ github.actor }}
           MESSAGE: ${{ github.event.head_commit.message }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
         run: |
-          echo "❌ Push direto detectado em $BRANCH por $COMMITTER"
-          echo ""
-          echo "Apenas merges de PR sao permitidos em $BRANCH."
-          echo "Criando Issue de alerta..."
+          echo "Direct push detected on $BRANCH by $ACTOR"
+          echo "Commit: ${{ github.event.after }}"
+          echo "Message: $MESSAGE"
+          echo "Reverting to previous state ($BEFORE)..."
 
+          if ! git push origin "$BEFORE:$BRANCH" --force 2>&1; then
+            echo "ERROR: Failed to revert branch $BRANCH"
+            gh issue create \
+              --title "FAILED to revert direct push to $BRANCH" \
+              --label "tipo/fix" \
+              --body "**Branch:** $BRANCH
+          **Author:** $ACTOR
+          **Commit:** $AFTER
+          **Message:** $MESSAGE
+
+          Automatic revert FAILED. Manual intervention required.
+          Run: git push origin $BEFORE:$BRANCH --force"
+            exit 1
+          fi
+
+          echo "Branch reverted to $BEFORE. Creating alert issue..."
           gh issue create \
-            --title "🚫 Push direto detectado em $BRANCH" \
+            --title "Reverted direct push to $BRANCH" \
             --label "tipo/fix" \
             --body "**Branch:** $BRANCH
-          **Autor:** $COMMITTER
-          **Commit:** ${{ github.event.after }}
-          **Mensagem:** $MESSAGE
+          **Author:** $ACTOR
+          **Commit:** $AFTER
+          **Reverted to:** $BEFORE
+          **Message:** $MESSAGE
 
-          Push direto em $BRANCH nao e permitido. Crie um PR a partir da branch correta:
-          - **dev** -> **homolog** (para features)
-          - **homolog** -> **main** (para releases)
+          Direct push to \`$BRANCH\` was automatically reverted.
+          Please follow the correct workflow:
+          - \`dev\` -> \`homolog\` (features)
+          - \`homolog\` -> \`main\` (releases)
 
-          Se este push foi acidental, reverta manualmente ou feche esta Issue apos correcao."
+          If this was a legitimate change, submit a PR from the correct source branch."
 
-          exit 1
+          # Notify via commit status
+          curl -s -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/$AFTER" \
+            -d '{"state":"failure","description":"Direct push reverted — use PR from correct branch","context":"revert-direct-push"}' || true
