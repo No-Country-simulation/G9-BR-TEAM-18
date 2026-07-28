@@ -22,27 +22,9 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { resolveApplianceIcon } from "../data/appliance-icons";
+import { LucideIcon } from "../components/LucideIcon";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
-function LucideIcon({
-  name,
-  size = 16,
-  className,
-}: {
-  name: string;
-  size?: number;
-  className?: string;
-}) {
-  const IconComponent = (
-    Icons as unknown as Record<
-      string,
-      React.ComponentType<{ size?: number; className?: string }>
-    >
-  )[name];
-  return IconComponent ? <IconComponent size={size} className={className} /> : null;
-}
 
 const STATUS_CONFIG: Record<
   string,

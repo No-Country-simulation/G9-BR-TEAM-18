@@ -32,21 +32,7 @@ import {
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
 import { getCategoryDisplay, sortCategories } from "../data/appliance-icons";
-
-function LucideIcon({
-  name,
-  size = 16,
-  className,
-}: {
-  name: string;
-  size?: number;
-  className?: string;
-}) {
-  const IconComponent = (
-    I as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>
-  )[name];
-  return IconComponent ? <IconComponent size={size} className={className} /> : null;
-}
+import { LucideIcon } from "../components/LucideIcon";
 
 export default function ProfilePage() {
   const { user } = useAuth();

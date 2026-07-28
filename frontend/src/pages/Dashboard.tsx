@@ -31,26 +31,8 @@ import {
   Sparkles,
   AlertCircle,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { resolveApplianceIcon } from "../data/appliance-icons";
-
-function LucideIcon({
-  name,
-  size = 16,
-  className,
-}: {
-  name: string;
-  size?: number;
-  className?: string;
-}) {
-  const IconComponent = (
-    Icons as unknown as Record<
-      string,
-      React.ComponentType<{ size?: number; className?: string }>
-    >
-  )[name];
-  return IconComponent ? <IconComponent size={size} className={className} /> : null;
-}
+import { LucideIcon } from "../components/LucideIcon";
 
 
 type TimeGranularity = "month" | "day" | "hour";
