@@ -99,11 +99,11 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
       <h4>
         <LucideIcon name="BarChart3" size={16} /> Consumo por Equipamento (kWh/mês)
       </h4>
-      <ResponsiveContainer width="100%" height={Math.max(280, appliances.length * 52)}>
+      <ResponsiveContainer width="100%" height={Math.max(260, appliances.length * 48)}>
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 8, right: 32, bottom: 8, left: 16 }}
+          margin={{ top: 8, right: 16, bottom: 8, left: 4 }}
         >
           <XAxis
             type="number"
@@ -139,7 +139,6 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
             }}
             axisLine={false}
             tickLine={false}
-            width={200}
           />
           <Tooltip
             cursor={{ fill: "var(--bg-surface-alt)" }}
