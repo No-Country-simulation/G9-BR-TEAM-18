@@ -22,7 +22,27 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
+import * as Icons from "lucide-react";
+import { resolveApplianceIcon } from "../data/appliance-icons";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
+function LucideIcon({
+  name,
+  size = 16,
+  className,
+}: {
+  name: string;
+  size?: number;
+  className?: string;
+}) {
+  const IconComponent = (
+    Icons as unknown as Record<
+      string,
+      React.ComponentType<{ size?: number; className?: string }>
+    >
+  )[name];
+  return IconComponent ? <IconComponent size={size} className={className} /> : null;
+}
 
 const STATUS_CONFIG: Record<
   string,
@@ -54,6 +74,7 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
         <table className="hist-table">
           <thead>
             <tr>
+              <th className="hist-th-icon"></th>
               <th>Equipamento</th>
               <th>Qtd</th>
               <th>Potência (W)</th>
@@ -64,6 +85,13 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <tbody>
             {sorted.map((a, i) => (
               <tr key={i}>
+                <td className="hist-td-icon">
+                  <LucideIcon
+                    name={resolveApplianceIcon(a.name, a.category)}
+                    size={16}
+                    className="appliance-icon-inline"
+                  />
+                </td>
                 <td className="hist-td-name">{a.name}</td>
                 <td>{a.quantity}</td>
                 <td>{a.average_power_watts.toFixed(0)}</td>
@@ -74,7 +102,7 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={4} className="hist-tfoot-label">Total</td>
+              <td colSpan={5} className="hist-tfoot-label">Total</td>
               <td className="hist-td-kwh">
                 {sorted.reduce((s, a) => s + a.monthly_consumption_kwh, 0).toFixed(1)}
               </td>
@@ -97,6 +125,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
   const chartData = sorted.map((a) => ({
     ...a,
     label: a.quantity > 1 ? `${a.name} x${a.quantity}` : a.name,
+    iconName: resolveApplianceIcon(a.name, a.category),
   }));
 
   return (
@@ -119,10 +148,36 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <YAxis
             type="category"
             dataKey="label"
-            tick={{
-              fill: "var(--text-primary)",
-              fontSize: 11,
-              width: 180,
+            tick={(props: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              x: any;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              y: any;
+              payload: {
+                value: string;
+                payload?: { iconName?: string };
+              };
+            }) => {
+              const { x, y, payload } = props;
+              // Usa iconName pre-computado do chartData, fallback para resolucao por keyword
+              const iconName =
+                payload.payload?.iconName ??
+                resolveApplianceIcon(payload.value, "");
+              return (
+                <g transform={`translate(${x - 4},${y})`}>
+                  <g transform="translate(2, -10) scale(0.6)">
+                    <LucideIcon name={iconName} size={24} />
+                  </g>
+                  <text
+                    x={22}
+                    y={4}
+                    fill="var(--text-primary)"
+                    fontSize={11}
+                  >
+                    {payload.value}
+                  </text>
+                </g>
+              );
             }}
             axisLine={false}
             tickLine={false}

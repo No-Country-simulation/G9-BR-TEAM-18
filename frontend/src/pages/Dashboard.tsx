@@ -31,6 +31,27 @@ import {
   Sparkles,
   AlertCircle,
 } from "lucide-react";
+import * as Icons from "lucide-react";
+import { resolveApplianceIcon } from "../data/appliance-icons";
+
+function LucideIcon({
+  name,
+  size = 16,
+  className,
+}: {
+  name: string;
+  size?: number;
+  className?: string;
+}) {
+  const IconComponent = (
+    Icons as unknown as Record<
+      string,
+      React.ComponentType<{ size?: number; className?: string }>
+    >
+  )[name];
+  return IconComponent ? <IconComponent size={size} className={className} /> : null;
+}
+
 
 type TimeGranularity = "month" | "day" | "hour";
 
@@ -604,8 +625,17 @@ export default function Dashboard() {
                       <span className="dash-sim-products-label">
                         Maiores consumidores:
                       </span>
-                      <span>
-                        {simResult.highest_consumption_products.join(", ")}
+                      <span className="dash-sim-products-list">
+                        {simResult.highest_consumption_products.map((product, i) => (
+                          <span key={i} className="dash-sim-product-tag">
+                            <LucideIcon
+                              name={resolveApplianceIcon(product, "")}
+                              size={14}
+                              className="appliance-icon-inline"
+                            />
+                            {product}
+                          </span>
+                        ))}
                       </span>
                     </div>
                   )}
