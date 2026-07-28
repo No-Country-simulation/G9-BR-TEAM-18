@@ -2438,7 +2438,6 @@ body::after {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  overflow-x: hidden;
   box-shadow: var(--shadow-hard-lg);
   position: relative;
   animation: slideUp 0.25s ease;
