@@ -10,7 +10,6 @@ export interface ApplianceType {
   id: string;
   name: string;
   mlCategory: string;
-  distributionField: string;
   powerWatts: number;
   dailyUsageHours: number;
   icon: string;

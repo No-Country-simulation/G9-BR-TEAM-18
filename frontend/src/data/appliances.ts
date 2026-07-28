@@ -22,6 +22,5 @@ export function enrichAppliance(raw: {
     powerWatts: raw.average_power_watts,
     dailyUsageHours: raw.average_daily_use_hours,
     icon: resolveApplianceIcon(raw.name, raw.appliance_category),
-    distributionField: "NONE",
   };
 }
