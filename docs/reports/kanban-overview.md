@@ -246,8 +246,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Issue | Commits |
 |---|---|---|---|
-| F066 | Catálogo de ícones por palavra-chave (appliance-icons.ts) + remover METADATA_BY_NAME | #138 | _(pendente)_ |
-| F067 | CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | _(pendente)_ |
-| F068 | Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | _(pendente)_ |
+| F066 | Catálogo de ícones por palavra-chave (appliance-icons.ts) + remover METADATA_BY_NAME | #138 | 6e588db |
+| F067 | CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | 6e588db |
+| F068 | Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | 6e588db |
 
 
