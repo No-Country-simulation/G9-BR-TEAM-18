@@ -6,6 +6,7 @@ import { LucideIcon } from "../components/LucideIcon";
 import type {
   ApplianceType,
   ApplianceItem,
+  PropertyType,
   Regularity,
   AnalysisResponse,
 } from "../types";
