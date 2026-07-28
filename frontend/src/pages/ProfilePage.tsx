@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import * as I from "lucide-react";
+import { LucideIcon } from "../components/LucideIcon";
 import type {
   ApplianceType,
   ApplianceItem,
@@ -9,14 +9,8 @@ import type {
   Regularity,
   AnalysisResponse,
 } from "../types";
-import {
-  ApiError,
-  CATEGORY_COLORS,
-  CATEGORY_DISPLAY,
-  PROPERTY_TYPES,
-  PROPERTY_TYPE_LABELS,
-  REGULARITY_OPTIONS,
-} from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES, PROPERTY_TYPE_LABELS, REGULARITY_OPTIONS } from "../types";
+import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import {
   listProperties,
   createProperty,
@@ -32,46 +26,13 @@ import {
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
 
-const CATEGORIES: Record<string, { label: string; icon: string; color: string }> = {
-  Refrigeracao: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
-  Climatizacao: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
-  Tecnologia: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
-  Iluminacao: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
-  Eletrodomesticos: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
-  Servicos: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
-};
 
-const CATEGORY_ORDER = [
-  "Refrigeracao",
-  "Climatizacao",
-  "Tecnologia",
-  "Iluminacao",
-  "Eletrodomesticos",
-  "Servicos",
-];
-
-function LucideIcon({
-  name,
-  size = 16,
-  className,
-}: {
-  name: string;
-  size?: number;
-  className?: string;
-}) {
-  const IconComponent = (
-    I as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>
-  )[name];
-  return IconComponent ? <IconComponent size={size} className={className} /> : null;
-}
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [property, setProperty] = useState<PropertyResponse | null>(null);
-  const [properties, setProperties] = useState<PropertyResponse[]>([]);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
   const [aliasInput, setAliasInput] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
   const [address, setAddress] = useState("");
@@ -82,10 +43,6 @@ export default function ProfilePage() {
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
-  const [showNewProperty, setShowNewProperty] = useState(false);
-  const [newPropertyAlias, setNewPropertyAlias] = useState("");
-  const [newPropertyType, setNewPropertyType] = useState<PropertyType>("RESIDENCIAL");
-  const [switchingProperty, setSwitchingProperty] = useState(false);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
   );
@@ -114,11 +71,9 @@ export default function ProfilePage() {
       .then(([appls, props, cats, prefs]) => {
         if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
-        setProperties(props);
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
-          setSelectedPropertyId(active.id);
           setAliasInput(active.alias);
           setPropertyType(active.property_type as PropertyType);
           setAddress(active.address ?? "");
@@ -152,6 +107,21 @@ export default function ProfilePage() {
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
+
+  const dynamicCategoryOrder = useMemo(() => {
+    const cats = new Set(applianceTypes.map((t) => t.mlCategory));
+    return sortCategories(Array.from(cats));
+  }, [applianceTypes]);
+
+  const categoriesLoaded = useRef(false);
+
+  // Abre automaticamente as 3 primeiras categorias quando os dados carregam
+  useEffect(() => {
+    if (dynamicCategoryOrder.length > 0 && !categoriesLoaded.current) {
+      categoriesLoaded.current = true;
+      setOpenCategories(new Set(dynamicCategoryOrder.slice(0, 3)));
+    }
+  }, [dynamicCategoryOrder]);
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -260,24 +230,9 @@ export default function ProfilePage() {
           areaSqm,
         );
       } else {
-        prop = await createProperty(
-          aliasValue,
-          propertyType,
-          address,
-          residentCount,
-          areaSqm,
-        );
+        prop = await createProperty(aliasValue, propertyType, address, residentCount, areaSqm);
       }
       setProperty(prop);
-      setProperties((prev) => {
-        const idx = prev.findIndex((p) => p.id === prop.id);
-        if (idx >= 0) {
-          const updated = [...prev];
-          updated[idx] = prop;
-          return updated;
-        }
-        return [...prev, prop];
-      });
 
       const batchItems = selectedAppliances
         .map((item) => {
@@ -327,54 +282,7 @@ export default function ProfilePage() {
       setAnalyzing(false);
     }
   }
-
   const appliancesByCategory = (cat: string) => filteredTypes.filter((t) => t.mlCategory === cat);
-
-  async function handlePropertyChange(propId: number) {
-    if (propId === selectedPropertyId) return;
-    setSwitchingProperty(true);
-    setResult(null);
-    setSelectedPropertyId(propId);
-    const prop = properties.find((p) => p.id === propId);
-    if (prop) {
-      setProperty(prop);
-      setAliasInput(prop.alias);
-      setPropertyType(prop.property_type as PropertyType);
-      setAddress(prop.address ?? "");
-      setResidentCount(prop.resident_count ?? 1);
-      setAreaSqm(prop.area_sqm ?? 50);
-      try {
-        const pa = await listPropertyAppliances(propId);
-        setSelectedAppliances(
-          pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
-        );
-      } catch {
-        setSelectedAppliances([]);
-      }
-    }
-    setSwitchingProperty(false);
-  }
-
-  async function handleAddProperty() {
-    if (!newPropertyAlias.trim()) return;
-    try {
-      const newProp = await createProperty(newPropertyAlias.trim(), newPropertyType);
-      setProperties((prev) => [...prev, newProp]);
-      setSelectedPropertyId(newProp.id);
-      setProperty(newProp);
-      setAliasInput(newProp.alias);
-      setPropertyType(newProp.property_type as PropertyType);
-      setAddress(newProp.address ?? "");
-      setResidentCount(newProp.resident_count ?? 1);
-      setAreaSqm(newProp.area_sqm ?? 50);
-      setSelectedAppliances([]);
-      setResult(null);
-      setShowNewProperty(false);
-      setNewPropertyAlias("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar imóvel");
-    }
-  }
 
   if (loading) {
     return (
@@ -388,103 +296,15 @@ export default function ProfilePage() {
     <div className="profile-page">
       <div className="profile-container">
         <div className="profile-header">
-          <I.UserCog size={28} />
+          <LucideIcon name="UserCog" size={28} />
           <h1>Meu Perfil</h1>
           <p>Configure seu tipo de residência e os aparelhos que você possui.</p>
         </div>
 
         {error && (
           <div className="profile-error">
-            <I.AlertCircle size={16} />
+            <LucideIcon name="AlertCircle" size={16} />
             <span>{error}</span>
-          </div>
-        )}
-
-        {properties.length > 1 && (
-          <div className="property-selector">
-            <label className="property-selector-label">
-              <I.Building2 size={16} /> Selecione o imóvel
-            </label>
-            <div className="property-selector-row">
-              {properties.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={`property-selector-btn ${selectedPropertyId === p.id ? "active" : ""}`}
-                  onClick={() => handlePropertyChange(p.id)}
-                  disabled={switchingProperty}
-                  title={p.alias}
-                >
-                  <I.Home size={14} />
-                  <span className="property-selector-name">{p.alias}</span>
-                  <span className="property-selector-type">
-                    {PROPERTY_TYPE_LABELS[p.property_type as PropertyType]}
-                  </span>
-                </button>
-              ))}
-              <button
-                type="button"
-                className="property-selector-btn property-selector-btn--add"
-                onClick={() => setShowNewProperty(true)}
-              >
-                <I.Plus size={14} /> Novo
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showNewProperty && (
-          <div className="profile-new-property">
-            <h4>
-              <I.Plus size={16} /> Novo Imóvel
-            </h4>
-            <div className="new-property-form">
-              <div className="form-group">
-                <label htmlFor="new-alias">Nome do imóvel</label>
-                <input
-                  id="new-alias"
-                  type="text"
-                  placeholder="Ex: Minha Casa, Meu Apê"
-                  value={newPropertyAlias}
-                  onChange={(e) => setNewPropertyAlias(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="new-type">Tipo</label>
-                <select
-                  id="new-type"
-                  value={newPropertyType}
-                  onChange={(e) => setNewPropertyType(e.target.value as PropertyType)}
-                >
-                  {PROPERTY_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {PROPERTY_TYPE_LABELS[t]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="new-property-actions">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleAddProperty}
-                  disabled={!newPropertyAlias.trim()}
-                >
-                  <I.Plus size={16} /> Criar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowNewProperty(false);
-                    setNewPropertyAlias("");
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
@@ -591,7 +411,7 @@ export default function ProfilePage() {
             </p>
 
             <div className="appliance-search">
-              <I.Search size={16} className="search-icon" />
+              <LucideIcon name="Search" size={16} className="search-icon" />
               <input
                 type="text"
                 className="search-input"
@@ -612,8 +432,8 @@ export default function ProfilePage() {
             </div>
 
             <div className="appliance-catalog">
-              {CATEGORY_ORDER.map((cat) => {
-                const catInfo = CATEGORIES[cat];
+              {dynamicCategoryOrder.map((cat) => {
+                const catInfo = getCategoryDisplay(cat);
                 const appliances = appliancesByCategory(cat);
                 if (appliances.length === 0) return null;
                 const isOpen = openCategories.has(cat);
@@ -623,9 +443,6 @@ export default function ProfilePage() {
                       type="button"
                       className="appliance-category-header"
                       onClick={() => toggleCategory(cat)}
-                      aria-label={
-                        isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
-                      }
                       style={{ "--cat-color": catInfo.color } as React.CSSProperties}
                     >
                       <span className="category-icon">
@@ -633,7 +450,7 @@ export default function ProfilePage() {
                       </span>
                       <span className="category-label">{catInfo.label}</span>
                       <span className="category-count">{appliances.length}</span>
-                      {isOpen ? <I.ChevronDown size={16} /> : <I.ChevronRight size={16} />}
+                      {isOpen ? <LucideIcon name="ChevronDown" size={16} /> : <LucideIcon name="ChevronRight" size={16} />}
                     </button>
                     {isOpen && (
                       <div className="appliance-grid">
@@ -687,7 +504,7 @@ export default function ProfilePage() {
                             disabled={item.quantity <= 1}
                             aria-label={`Reduzir quantidade de ${info.name}`}
                           >
-                            <I.Minus size={14} />
+                            <LucideIcon name="Minus" size={14} />
                           </button>
                           <span className="qty-value">{item.quantity}</span>
                           <button
@@ -696,7 +513,7 @@ export default function ProfilePage() {
                             onClick={() => changeQuantity(item.type, 1)}
                             aria-label={`Aumentar quantidade de ${info.name}`}
                           >
-                            <I.Plus size={14} />
+                            <LucideIcon name="Plus" size={14} />
                           </button>
                         </div>
                         <button
@@ -705,7 +522,7 @@ export default function ProfilePage() {
                           onClick={() => removeAppliance(item.type)}
                           aria-label={`Remover ${info.name} da lista`}
                         >
-                          <I.Trash2 size={14} />
+                          <LucideIcon name="Trash2" size={14} />
                         </button>
                       </div>
                     );
@@ -743,10 +560,10 @@ export default function ProfilePage() {
                   onClick={() => setRegularity(opt.value)}
                   aria-label={`Regularidade: ${opt.label}`}
                 >
-                  {opt.value === "instantanea" && <I.Zap size={16} />}
-                  {opt.value === "diaria" && <I.Sun size={16} />}
-                  {opt.value === "semanal" && <I.Calendar size={16} />}
-                  {opt.value === "mensal" && <I.CalendarDays size={16} />}
+                  {opt.value === "instantanea" && <LucideIcon name="Zap" size={16} />}
+                  {opt.value === "diaria" && <LucideIcon name="Sun" size={16} />}
+                  {opt.value === "semanal" && <LucideIcon name="Calendar" size={16} />}
+                  {opt.value === "mensal" && <LucideIcon name="CalendarDays" size={16} />}
                   <span>{opt.label}</span>
                 </button>
               ))}
@@ -763,7 +580,7 @@ export default function ProfilePage() {
                 "Salvando..."
               ) : (
                 <>
-                  <I.Save size={18} /> Salvar Perfil
+                  <LucideIcon name="Save" size={18} /> Salvar Perfil
                 </>
               )}
             </button>
@@ -781,7 +598,7 @@ export default function ProfilePage() {
                   "Analisando..."
                 ) : (
                   <>
-                    <I.BarChart3 size={18} /> Analisar Agora
+                    <LucideIcon name="BarChart3" size={18} /> Analisar Agora
                   </>
                 )}
               </button>
@@ -820,18 +637,26 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 </div>
-                {applianceCalc.highestConsumptionProducts.length > 0 && (
-                  <div className="result-products">
-                    <h4>
-                      <I.Zap size={14} /> Maiores Consumidores
-                    </h4>
-                    <ol className="product-list">
-                      {applianceCalc.highestConsumptionProducts.map((name, i) => (
-                        <li key={i}>{name}</li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
+                {result.highest_consumption_products &&
+                  result.highest_consumption_products.length > 0 && (
+                    <div className="dash-sim-products" style={{ marginTop: "1rem" }}>
+                      <span className="dash-sim-products-label">
+                        Maiores consumidores:
+                      </span>
+                      <span className="dash-sim-products-list">
+                        {result.highest_consumption_products.map((product, i) => (
+                          <span key={i} className="dash-sim-product-tag">
+                            <LucideIcon
+                              name={resolveApplianceIcon(product, "")}
+                              size={14}
+                              className="appliance-icon-inline"
+                            />
+                            {product}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  )}
                 <div className="result-recs">
                   <h4>Recomendações</h4>
                   <ul>
@@ -846,7 +671,7 @@ export default function ProfilePage() {
             {!result && !analyzing && lastAnalysis && (
               <div className="profile-last-analysis">
                 <h3>
-                  <I.Clock size={18} /> Última Análise
+                  <LucideIcon name="Clock" size={18} /> Última Análise
                 </h3>
                 <div
                   className="profile-last-badge"
@@ -885,7 +710,7 @@ export default function ProfilePage() {
 
             {!result && !analyzing && !lastAnalysis && (
               <div className="result-placeholder">
-                <I.UserCog size={48} className="placeholder-icon" />
+                <LucideIcon name="UserCog" size={48} className="placeholder-icon" />
                 <p>Configure seu perfil e clique em "Analisar Agora" para ver o resultado.</p>
               </div>
             )}

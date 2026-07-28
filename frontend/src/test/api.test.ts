@@ -233,7 +233,8 @@ describe("listAppliances", () => {
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("1");
     expect(result[0].name).toBe("Geladeira");
-    expect(result[0].icon).toBe("Snowflake");
-    expect(result[0].distributionField).toBe("REFRIGERATION_WATTS");
+    expect(result[0].icon).toBe("Refrigerator");
+    expect(result[0].powerWatts).toBe(150);
+    expect(result[0].dailyUsageHours).toBe(24);
   });
 });

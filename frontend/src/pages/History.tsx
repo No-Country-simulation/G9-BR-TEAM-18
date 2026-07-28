@@ -4,33 +4,17 @@ import { useAuth } from "../context/useAuth";
 import { listAnalyses, fetchAnalysisById, deleteAnalysis } from "../services/api";
 import type { AnalysisHistory, ApplianceSnapshot } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
-import {
-  Clock,
-  Zap,
-  DollarSign,
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  Clock as ClockIcon,
-  BarChart3,
-  Lightbulb,
-  Target,
-  X,
-  Calendar,
-  RotateCcw,
-  ArrowUpDown,
-  Trash2,
-  AlertTriangle,
-} from "lucide-react";
+import { resolveApplianceIcon } from "../data/appliance-icons";
+import { LucideIcon } from "../components/LucideIcon";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: React.ReactNode } | undefined
+  { label: string; color: string; icon: string } | undefined
 > = {
-  CONCLUIDA: { label: "Concluida", color: "#10b981", icon: <CheckCircle size={14} /> },
-  PENDENTE: { label: "Pendente", color: "#f59e0b", icon: <ClockIcon size={14} /> },
-  FALHA: { label: "Falha", color: "#ef4444", icon: <AlertCircle size={14} /> },
+  CONCLUIDA: { label: "Concluída", color: "#10b981", icon: "CheckCircle" },
+  PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "Clock" },
+  FALHA: { label: "Falha", color: "#ef4444", icon: "AlertCircle" },
 };
 
 function badgeStyle(cat: string): React.CSSProperties {
@@ -48,12 +32,13 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
   return (
     <div className="hist-table-section">
       <h4>
-        <BarChart3 size={16} /> Detalhamento por Equipamento
+        <LucideIcon name="BarChart3" size={16} /> Detalhamento por Equipamento
       </h4>
       <div className="hist-table-wrapper">
         <table className="hist-table">
           <thead>
             <tr>
+              <th className="hist-th-icon"></th>
               <th>Equipamento</th>
               <th>Qtd</th>
               <th>Potência (W)</th>
@@ -64,6 +49,13 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <tbody>
             {sorted.map((a, i) => (
               <tr key={i}>
+                <td className="hist-td-icon">
+                  <LucideIcon
+                    name={resolveApplianceIcon(a.name, a.category)}
+                    size={16}
+                    className="appliance-icon-inline"
+                  />
+                </td>
                 <td className="hist-td-name">{a.name}</td>
                 <td>{a.quantity}</td>
                 <td>{a.average_power_watts.toFixed(0)}</td>
@@ -74,7 +66,9 @@ function ApplianceTable({ appliances }: { appliances: ApplianceSnapshot[] }) {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={4} className="hist-tfoot-label">Total</td>
+              <td colSpan={5} className="hist-tfoot-label">
+                Total
+              </td>
               <td className="hist-td-kwh">
                 {sorted.reduce((s, a) => s + a.monthly_consumption_kwh, 0).toFixed(1)}
               </td>
@@ -102,13 +96,13 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
   return (
     <div className="hist-chart-section">
       <h4>
-        <BarChart3 size={16} /> Consumo por Equipamento (kWh/mês)
+        <LucideIcon name="BarChart3" size={16} /> Consumo por Equipamento (kWh/mês)
       </h4>
-      <ResponsiveContainer width="100%" height={Math.max(200, appliances.length * 42)}>
+      <ResponsiveContainer width="100%" height={Math.max(260, appliances.length * 48)}>
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 4, right: 20, bottom: 4, left: 20 }}
+          margin={{ top: 8, right: 16, bottom: 8, left: 12 }}
         >
           <XAxis
             type="number"
@@ -119,14 +113,9 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <YAxis
             type="category"
             dataKey="label"
-            tick={{
-              fill: "var(--text-primary)",
-              fontSize: 11,
-              width: 180,
-            }}
+            tick={{ fill: "var(--text-primary)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            width={180}
           />
           <Tooltip
             cursor={{ fill: "var(--bg-surface-alt)" }}
@@ -146,7 +135,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
             dataKey="monthly_consumption_kwh"
             fill="var(--accent-cyan)"
             radius={[0, 4, 4, 0]}
-            barSize={18}
+            barSize={24}
           />
         </BarChart>
       </ResponsiveContainer>
@@ -154,18 +143,12 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
   );
 }
 
-function AnalysisDetail({
-  analysis,
-  onClose,
-}: {
-  analysis: AnalysisHistory;
-  onClose: () => void;
-}) {
+function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onClose: () => void }) {
   return (
     <div className="hist-modal-overlay" onClick={onClose}>
       <div className="hist-modal" onClick={(e) => e.stopPropagation()}>
         <button className="hist-modal-close" onClick={onClose}>
-          <X size={20} />
+          <LucideIcon name="X" size={20} />
         </button>
 
         <div className="hist-modal-header">
@@ -188,7 +171,9 @@ function AnalysisDetail({
                 whiteSpace: "nowrap",
               }}
             >
-              {STATUS_CONFIG[analysis.status]?.icon}
+              {STATUS_CONFIG[analysis.status] && (
+                <LucideIcon name={STATUS_CONFIG[analysis.status]!.icon} size={14} />
+              )}
               {STATUS_CONFIG[analysis.status]?.label ?? analysis.status}
             </span>
           )}
@@ -207,26 +192,24 @@ function AnalysisDetail({
           <div className="hist-stat">
             <span className="hist-stat-label">Consumo</span>
             <span className="hist-stat-value">
-              <Zap size={16} /> {(analysis.consumption_kwh ?? 0).toFixed(0)} kWh
+              <LucideIcon name="Zap" size={16} /> {(analysis.consumption_kwh ?? 0).toFixed(0)} kWh
             </span>
           </div>
           <div className="hist-stat">
             <span className="hist-stat-label">Custo</span>
             <span className="hist-stat-value">
-              <DollarSign size={16} /> R$ {(analysis.estimated_monthly_cost ?? 0).toFixed(2)}
+              <LucideIcon name="DollarSign" size={16} /> R$ {(analysis.estimated_monthly_cost ?? 0).toFixed(2)}
             </span>
           </div>
           <div className="hist-stat">
             <span className="hist-stat-label">Probabilidade</span>
             <span className="hist-stat-value">
-              <Target size={16} /> {(analysis.probability * 100).toFixed(0)}%
+              <LucideIcon name="Target" size={16} /> {(analysis.probability * 100).toFixed(0)}%
             </span>
           </div>
           <div className="hist-stat">
             <span className="hist-stat-label">Pico</span>
-            <span className="hist-stat-value">
-              {analysis.peak_hour_usage ? "Sim" : "Não"}
-            </span>
+            <span className="hist-stat-value">{analysis.peak_hour_usage ? "Sim" : "Não"}</span>
           </div>
         </div>
 
@@ -240,7 +223,7 @@ function AnalysisDetail({
         {analysis.recommendations && analysis.recommendations.length > 0 && (
           <div className="hist-modal-recs">
             <h4>
-              <Lightbulb size={16} /> Recomendações
+              <LucideIcon name="Lightbulb" size={16} /> Recomendações
             </h4>
             <ul>
               {analysis.recommendations.map((r, i) => (
@@ -300,6 +283,7 @@ export default function History() {
 
   useEffect(() => {
     if (!selectedId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDetail(null);
       return;
     }
@@ -326,12 +310,12 @@ export default function History() {
         className="dash-btn dash-btn--secondary"
         style={{ marginBottom: "1.5rem", padding: "0.4rem 1rem" }}
       >
-        <ArrowLeft size={16} /> Voltar
+        <LucideIcon name="ArrowLeft" size={16} /> Voltar
       </button>
 
       <div className="history-header">
         <h1>
-          <Clock size={28} /> Historico
+          <LucideIcon name="Clock" size={28} /> Histórico
         </h1>
         <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
           Nova análise
@@ -340,7 +324,7 @@ export default function History() {
 
       {analyses.length > 0 && (
         <div className="hist-filter-bar">
-          <Calendar size={16} className="hist-filter-icon" />
+          <LucideIcon name="Calendar" size={16} className="hist-filter-icon" />
           <label className="hist-filter-label">De</label>
           <input
             type="date"
@@ -360,7 +344,7 @@ export default function History() {
             onClick={() => setSortOrder((o) => (o === "desc" ? "asc" : "desc"))}
             title={sortOrder === "desc" ? "Mais antigas primeiro" : "Mais recentes primeiro"}
           >
-            <ArrowUpDown size={14} />
+            <LucideIcon name="ArrowUpDown" size={14} />
             <span>{sortOrder === "desc" ? "Recentes" : "Antigas"}</span>
           </button>
           {(dateFrom || dateTo) && (
@@ -372,7 +356,7 @@ export default function History() {
               }}
               title="Limpar filtro"
             >
-              <RotateCcw size={14} />
+              <LucideIcon name="RotateCcw" size={14} />
             </button>
           )}
           <span className="hist-filter-count">
@@ -421,9 +405,11 @@ export default function History() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {STATUS_CONFIG[a.status]?.icon}
-                      {STATUS_CONFIG[a.status]?.label ?? a.status}
-                    </span>
+              {STATUS_CONFIG[a.status] && (
+                <LucideIcon name={STATUS_CONFIG[a.status]!.icon} size={14} />
+              )}
+              {STATUS_CONFIG[a.status]?.label ?? a.status}
+            </span>
                   )}
                   <span className="history-item-cat" style={badgeStyle(a.category)}>
                     {CATEGORY_DISPLAY[a.category] ?? a.category}
@@ -447,10 +433,10 @@ export default function History() {
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <Zap size={14} /> {(a.consumption_kwh ?? 0).toFixed(0)} kWh
+                    <LucideIcon name="Zap" size={14} /> {(a.consumption_kwh ?? 0).toFixed(0)} kWh
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <DollarSign size={14} /> R$ {(a.estimated_monthly_cost ?? 0).toFixed(2)}
+                    <LucideIcon name="DollarSign" size={14} /> R$ {(a.estimated_monthly_cost ?? 0).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -462,7 +448,7 @@ export default function History() {
                 }}
                 title="Excluir análise"
               >
-                <Trash2 size={16} />
+                <LucideIcon name="Trash2" size={16} />
               </button>
             </div>
           ))}
@@ -488,12 +474,12 @@ export default function History() {
         <div className="hist-modal-overlay" onClick={() => !deleting && setConfirmDeleteId(null)}>
           <div className="hist-confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="hist-confirm-icon">
-              <AlertTriangle size={32} />
+              <LucideIcon name="AlertTriangle" size={32} />
             </div>
             <h3>Excluir análise?</h3>
             <p>
-              Esta ação não pode ser desfeita. A análise e todos os seus dados
-              (recomendações, equipamentos) serão removidos permanentemente.
+              Esta ação não pode ser desfeita. A análise e todos os seus dados (recomendações,
+              equipamentos) serão removidos permanentemente.
             </p>
             {deleteError && (
               <p style={{ color: "var(--state-error)", fontSize: "0.8rem", marginBottom: "1rem" }}>
@@ -517,15 +503,13 @@ export default function History() {
                   setDeleting(true);
                   try {
                     await deleteAnalysis(confirmDeleteId);
-                    setAnalyses((prev) =>
-                      prev.filter((a) => a.id !== confirmDeleteId),
-                    );
+                    setAnalyses((prev) => prev.filter((a) => a.id !== confirmDeleteId));
                     if (selectedId === confirmDeleteId) {
                       setSelectedId(null);
                       setDetail(null);
                     }
                     setConfirmDeleteId(null);
-                  } catch (err) {
+                  } catch {
                     setDeleteError("Erro ao excluir análise. Tente novamente.");
                   } finally {
                     setDeleting(false);

@@ -29,13 +29,13 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 113 | | Backend (B) | 52 |
+| Done | 116 | | Backend (B) | 52 |
 | In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 47 |
+| In progress | 0 | | Frontend (F) | 50 |
 | Ready | 0 | | ML Service (Q) | 6 |
 | Backlog | 15 | | Banco de Dados (M) | 7 |
-| **Total** | **113** | | Queries/Views (Q) | 2 |
-| | | | **Total** | **134** |
+| **Total** |**116** | | Queries/Views (Q) | 2 |
+| | | | **Total** | **137** |
 
 ## Movimentações (24/07/2026)
 
@@ -239,5 +239,15 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F063 | Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | ADR-0027, ADR-0028 |
 | F064 | Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | ADR-0027, ADR-0028 |
 | F065 | Ajustar UI: nomes em português com mlCategory em inglês | #135 | ADR-0027, ADR-0028 |
+
+## Movimentações (26/07/2026) — Rodada 5 (Tasks Independentes)
+
+### In progress → Done
+
+| ID | Título | Issue | Commits |
+|---|---|---|---|
+| F066 | Catálogo de ícones por palavra-chave (appliance-icons.ts) + remover METADATA_BY_NAME | #138 | 6e588db |
+| F067 | CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | 6e588db |
+| F068 | Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | 6e588db |
 
 

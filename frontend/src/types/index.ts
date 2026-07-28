@@ -10,7 +10,6 @@ export interface ApplianceType {
   id: string;
   name: string;
   mlCategory: string;
-  distributionField: string;
   powerWatts: number;
   dailyUsageHours: number;
   icon: string;
@@ -29,7 +28,6 @@ export interface AnalysisResponse {
   recommendations: string[];
   estimated_monthly_cost: number;
   source?: string;
-  status?: AnalysisStatus;
   highest_consumption_products?: string[];
 }
 

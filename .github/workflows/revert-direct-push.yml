@@ -8,10 +8,7 @@ on:
 
 jobs:
   enforce-protection:
-    if: >
-      github.event_name == 'push' &&
-      github.event.head_commit.message != 'Initial commit' &&
-      !startsWith(github.event.head_commit.message, 'chore: merge')
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,58 +18,92 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.before }}
 
-      - name: Check if push is a legitimate PR merge
-        id: check_merge
+      - name: Inspect push event
+        id: inspect
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          REF: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
         run: |
-          COMMITTER="${{ github.event.head_commit.committer.name }}"
-          USERNAME="${{ github.event.head_commit.committer.username }}"
-          MESSAGE="${{ github.event.head_commit.message }}"
-          PARENTS=$(git cat-file -p ${{ github.event.after }} 2>/dev/null | grep "^parent " | wc -l || echo 0)
+          echo "=== Push Event Inspection ==="
+          echo "Branch: $REF | Actor: $ACTOR"
+          echo "Before: $BEFORE"
+          echo "After: $AFTER"
 
-          echo "Committer: $COMMITTER"
-          echo "Username: $USERNAME"
-          echo "Message: $MESSAGE"
-          echo "Parents: $PARENTS"
-
-          # PR merges via GitHub UI are always committed by "GitHub" (bot)
-          # This covers: merge commit (2 parents), squash merge (1 parent),
-          # and rebase merge (multiple commits, 1 parent each)
-          if [ "$COMMITTER" = "GitHub" ] || [ "$USERNAME" = "web-flow" ]; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          elif echo "$MESSAGE" | grep -qE "^(Merge pull request|Merge branch)"; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          elif [ "$PARENTS" -gt 1 ]; then
-            echo "is_pr_merge=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_pr_merge=false" >> $GITHUB_OUTPUT
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
-      - name: Reject direct push
-        if: steps.check_merge.outputs.is_pr_merge == 'false'
+          PARENTS=$(git cat-file -p "$AFTER" 2>/dev/null | grep -c "^parent " || echo 0)
+          MESSAGE=$(git log --format="%s" -1 "$AFTER" 2>/dev/null || echo "unknown")
+
+          if [ "$PARENTS" -ge 2 ]; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if git merge-base --is-ancestor "$AFTER" "$BEFORE" 2>/dev/null; then
+            echo "is_legitimate=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if echo "$MESSAGE" | grep -qi "cherry.pick\\|hotfix"; then
+            echo "is_legitimate=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "is_legitimate=false" >> $GITHUB_OUTPUT
+
+      - name: Revert direct push
+        if: steps.inspect.outputs.is_legitimate == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
-          COMMITTER: ${{ github.event.head_commit.committer.name }}
-          MESSAGE: ${{ github.event.head_commit.message }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          ACTOR: ${{ github.actor }}
         run: |
-          echo "❌ Push direto detectado em $BRANCH por $COMMITTER"
-          echo ""
-          echo "Apenas merges de PR sao permitidos em $BRANCH."
-          echo "Criando Issue de alerta..."
+          echo "=== REVERTENDO PUSH DIRETO EM $BRANCH ==="
+          echo "Commit: $AFTER | Revertendo para: $BEFORE"
 
-          gh issue create \
-            --title "🚫 Push direto detectado em $BRANCH" \
-            --label "tipo/fix" \
-            --body "**Branch:** $BRANCH
-          **Autor:** $COMMITTER
-          **Commit:** ${{ github.event.after }}
-          **Mensagem:** $MESSAGE
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions (revert-direct-push)"
 
-          Push direto em $BRANCH nao e permitido. Crie um PR a partir da branch correta:
-          - **dev** -> **homolog** (para features)
-          - **homolog** -> **main** (para releases)
+          MESSAGE=$(git log --format="%s" -1 "$AFTER" 2>/dev/null || echo "unknown")
 
-          Se este push foi acidental, reverta manualmente ou feche esta Issue apos correcao."
+          if git push origin "$BEFORE:$BRANCH" --force 2>&1; then
+            echo "OK Branch $BRANCH revertida"
 
-          exit 1
+            # Usa printf -v para construir body com \n reais e variaveis expandidas
+            printf -v BODY "## Push Direto Revertido Automaticamente\n\nBranch: \`%s\`\nAutor: %s\nCommit: %s\nMensagem: %s\n\nPush direto em \`%s\` nao e permitido. Apenas merges de PR sao aceitos.\n\nFluxo correto: \`dev\` -> \`homolog\` -> \`main\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*" "$BRANCH" "$ACTOR" "$AFTER" "$MESSAGE" "$BRANCH"
+
+            gh issue create \
+              --title "Revertido push direto em $BRANCH" \
+              --label "tipo/fix" \
+              --assignee "$ACTOR" \
+              --body "$BODY"
+
+            echo "OK Issue de alerta criada"
+            exit 0
+          else
+            echo "FALHA ao reverter $BRANCH"
+
+            printf -v BODY "## Falha ao Reverter Push Direto\n\nBranch: \`%s\`\nAutor: %s\nCommit: %s\n\nO workflow tentou reverter automaticamente mas falhou.\n\nAcao necessaria: Reverter manualmente:\n\`\`\`\ngit push origin %s:%s --force\n\`\`\`\n\n---\n\n*Issue criada automaticamente pelo workflow revert-direct-push.*" "$BRANCH" "$ACTOR" "$AFTER" "$BEFORE" "$BRANCH"
+
+            gh issue create \
+              --title "Falha ao reverter push direto em $BRANCH" \
+              --label "tipo/urgente" \
+              --assignee "$ACTOR" \
+              --body "$BODY"
+
+            exit 1
+          fi
+
+      - name: Notify success (legitimate push)
+        if: steps.inspect.outputs.is_legitimate == 'true'
+        run: |
+          echo "OK Push para ${{ github.ref_name }} e legitimo"
