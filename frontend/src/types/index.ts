@@ -28,7 +28,6 @@ export interface AnalysisResponse {
   recommendations: string[];
   estimated_monthly_cost: number;
   source?: string;
-  status?: AnalysisStatus;
   highest_consumption_products?: string[];
 }
 

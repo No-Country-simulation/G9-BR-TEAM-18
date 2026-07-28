@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import * as I from "lucide-react";
+import { LucideIcon } from "../components/LucideIcon";
 import type {
   ApplianceType,
   ApplianceItem,
@@ -9,14 +10,8 @@ import type {
   Regularity,
   AnalysisResponse,
 } from "../types";
-import {
-  ApiError,
-  CATEGORY_COLORS,
-  CATEGORY_DISPLAY,
-  PROPERTY_TYPES,
-  PROPERTY_TYPE_LABELS,
-  REGULARITY_OPTIONS,
-} from "../types";
+import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, REGULARITY_OPTIONS } from "../types";
+import { resolveApplianceIcon } from "../data/appliance-icons";
 import {
   listProperties,
   createProperty,
@@ -31,8 +26,37 @@ import {
   listAnalyses,
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
-import { getCategoryDisplay, sortCategories } from "../data/appliance-icons";
-import { LucideIcon } from "../components/LucideIcon";
+
+const PROPERTY_TYPES: PropertyType[] = [
+  "Casa",
+  "Apartamento",
+  "Comercial",
+  "Industria",
+  "Rural",
+  "Outro",
+];
+
+const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
+  Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
+  Climatizacao: { label: "Climatização", icone: "Wind", cor: "#06b6d4" },
+  Tecnologia: { label: "Tecnologia", icone: "Monitor", cor: "#8b5cf6" },
+  Iluminacao: { label: "Iluminação", icone: "Lightbulb", cor: "#f59e0b" },
+  Eletrodomesticos: { label: "Eletrodomésticos", icone: "Home", cor: "#ec4899" },
+  Servicos: { label: "Serviços", icone: "Wrench", cor: "#14b8a6" },
+  Outros: { label: "Outros", icone: "Box", cor: "#6b7280" },
+};
+
+const ORDEM_CATEGORIAS = [
+  "Refrigeracao",
+  "Climatizacao",
+  "Tecnologia",
+  "Iluminacao",
+  "Eletrodomesticos",
+  "Servicos",
+  "Outros",
+];
+
+const REGULARITY_KEY = "energiai_regularity";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -793,18 +817,26 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 </div>
-                {applianceCalc.highestConsumptionProducts.length > 0 && (
-                  <div className="result-products">
-                    <h4>
-                      <I.Zap size={14} /> Maiores Consumidores
-                    </h4>
-                    <ol className="product-list">
-                      {applianceCalc.highestConsumptionProducts.map((name, i) => (
-                        <li key={i}>{name}</li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
+                {result.highest_consumption_products &&
+                  result.highest_consumption_products.length > 0 && (
+                    <div className="dash-sim-products" style={{ marginTop: "1rem" }}>
+                      <span className="dash-sim-products-label">
+                        Maiores consumidores:
+                      </span>
+                      <span className="dash-sim-products-list">
+                        {result.highest_consumption_products.map((product, i) => (
+                          <span key={i} className="dash-sim-product-tag">
+                            <LucideIcon
+                              name={resolveApplianceIcon(product, "")}
+                              size={14}
+                              className="appliance-icon-inline"
+                            />
+                            {product}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  )}
                 <div className="result-recs">
                   <h4>Recomendações</h4>
                   <ul>
