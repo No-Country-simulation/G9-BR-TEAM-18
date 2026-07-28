@@ -11,7 +11,7 @@ import type {
   AnalysisResponse,
 } from "../types";
 import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, REGULARITY_OPTIONS } from "../types";
-import { resolveApplianceIcon } from "../data/appliance-icons";
+import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import {
   listProperties,
   createProperty,
@@ -36,26 +36,6 @@ const PROPERTY_TYPES: PropertyType[] = [
   "Outro",
 ];
 
-const CATEGORIES: Record<string, { label: string; icone: string; cor: string }> = {
-  Refrigeracao: { label: "Refrigeração", icone: "Snowflake", cor: "#0ea5e9" },
-  Climatizacao: { label: "Climatização", icone: "Wind", cor: "#06b6d4" },
-  Tecnologia: { label: "Tecnologia", icone: "Monitor", cor: "#8b5cf6" },
-  Iluminacao: { label: "Iluminação", icone: "Lightbulb", cor: "#f59e0b" },
-  Eletrodomesticos: { label: "Eletrodomésticos", icone: "Home", cor: "#ec4899" },
-  Servicos: { label: "Serviços", icone: "Wrench", cor: "#14b8a6" },
-  Outros: { label: "Outros", icone: "Box", cor: "#6b7280" },
-};
-
-const ORDEM_CATEGORIAS = [
-  "Refrigeracao",
-  "Climatizacao",
-  "Tecnologia",
-  "Iluminacao",
-  "Eletrodomesticos",
-  "Servicos",
-  "Outros",
-];
-
 const REGULARITY_KEY = "energiai_regularity";
 
 export default function ProfilePage() {
@@ -75,23 +55,7 @@ export default function ProfilePage() {
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
-  const [showNewProperty, setShowNewProperty] = useState(false);
-  const [newPropertyAlias, setNewPropertyAlias] = useState("");
-  const [newPropertyType, setNewPropertyType] = useState<PropertyType>("RESIDENCIAL");
-  const [switchingProperty, setSwitchingProperty] = useState(false);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
-
-  const dynamicCategoryOrder = useMemo(() => {
-    const cats = new Set(applianceTypes.map((t) => t.mlCategory));
-    return sortCategories(Array.from(cats));
-  }, [applianceTypes]);
-
-  // Abre automaticamente as 3 primeiras categorias quando os dados carregam
-  useEffect(() => {
-    if (dynamicCategoryOrder.length > 0 && openCategories.size === 0) {
-      setOpenCategories(new Set(dynamicCategoryOrder.slice(0, 3)));
-    }
-  }, [dynamicCategoryOrder, openCategories.size]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
@@ -155,6 +119,18 @@ export default function ProfilePage() {
       })
       .finally(() => setLoading(false));
   }, [user, navigate]);
+
+  const dynamicCategoryOrder = useMemo(() => {
+    const cats = new Set(applianceTypes.map((t) => t.mlCategory));
+    return sortCategories(Array.from(cats));
+  }, [applianceTypes]);
+
+  // Abre automaticamente as 3 primeiras categorias quando os dados carregam
+  useEffect(() => {
+    if (dynamicCategoryOrder.length > 0 && openCategories.size === 0) {
+      setOpenCategories(new Set(dynamicCategoryOrder.slice(0, 3)));
+    }
+  }, [dynamicCategoryOrder, openCategories.size]);
 
   const filteredTypes = useMemo(() => {
     if (!searchTerm.trim()) return applianceTypes;
@@ -620,9 +596,6 @@ export default function ProfilePage() {
                       type="button"
                       className="appliance-category-header"
                       onClick={() => toggleCategory(cat)}
-                      aria-label={
-                        isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
-                      }
                       style={{ "--cat-color": catInfo.color } as React.CSSProperties}
                     >
                       <span className="category-icon">
