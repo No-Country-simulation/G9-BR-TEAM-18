@@ -211,7 +211,8 @@ export async function listAnalyses(): Promise<AnalysisHistory[]> {
     probability: Number(a.probability ?? 0),
     consumption_kwh: Number(a.consumption_kwh ?? 0),
     estimated_monthly_cost: Number(a.estimated_monthly_cost ?? 0),
-    peak_hour_usage: Boolean(a.peak_hour_usage),
+    peak_hour_usage:
+      a.peak_hour_usage === true || a.peak_hour_usage === "true",
     high_consumption_hours: Number(a.high_consumption_hours ?? 0),
     created_at: String(a.created_at ?? ""),
     recommendations: (a.recommendations as string[]) ?? [],
@@ -290,7 +291,8 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
     probability: raw.probability ?? 0,
     consumption_kwh: raw.consumption_kwh ?? 0,
     estimated_monthly_cost: raw.estimated_monthly_cost ?? 0,
-    peak_hour_usage: raw.peak_hour_usage ?? false,
+    peak_hour_usage:
+      raw.peak_hour_usage === true || raw.peak_hour_usage === "true",
     high_consumption_hours: raw.high_consumption_hours ?? 0,
     created_at: raw.created_at,
     recommendations: raw.recommendations ?? [],
