@@ -77,19 +77,50 @@ export const APPLIANCE_ICONS: Record<string, ApplianceIconEntry> = {
 };
 
 const CATEGORY_FALLBACK: Record<string, string> = {
-  Refrigeracao: "Refrigerator",
-  Climatizacao: "AirVent",
-  Iluminacao: "Lightbulb",
-  Tecnologia: "Monitor",
-  Eletrodomesticos: "CookingPot",
-  Servicos: "Wrench",
+  // Chaves em inglês (contrato do backend / ADR-0027)
+  REFRIGERATION: "Refrigerator",
+  CLIMATE_CONTROL: "AirVent",
+  LIGHTING: "Lightbulb",
+  TECHNOLOGY: "Monitor",
+  APPLIANCES: "CookingPot",
+  SERVICES: "Wrench",
+  OTHERS: "HelpCircle",
+  // Chaves em português (compatibilidade retroativa)
+  REFRIGERACAO: "Refrigerator",
+  CLIMATIZACAO: "AirVent",
+  ILUMINACAO: "Lightbulb",
+  TECNOLOGIA: "Monitor",
+  ELETRODOMESTICOS: "CookingPot",
+  SERVICOS: "Wrench",
+  OUTROS: "HelpCircle",
+  /*
+   * NOTA: Apenas chaves MAIÚSCULAS são necessárias aqui.
+   * A função resolveApplianceIcon() usa normalizeCategoryKey() que
+   * converte qualquer entrada para UPPER_CASE antes do lookup,
+   * capturando automaticamente variações como "Refrigeracao",
+   * "climate-control", "Climatização" etc.
+   */
 };
+
+/**
+ * Normaliza uma string de categoria para lookup no CATEGORY_FALLBACK.
+ * Converte para uppercase, substitui espaços/hífens por underscore.
+ * Ex: "CLIMATE_CONTROL" → "CLIMATE_CONTROL", "Refrigeracao" → "REFRIGERACAO"
+ */
+function normalizeCategoryKey(cat: string): string {
+  return cat
+    .toUpperCase()
+    .normalize("NFD") // separa acentos (Ç → C + cedilha)
+    .replace(/[\u0300-\u036f]/g, "") // remove sinais diacríticos
+    .replace(/[\s-]/g, "_") // normaliza separadores
+    .replace(/[^A-Z_]/g, ""); // remove caracteres não-alfabéticos
+}
 
 /**
  * Resolve o ícone Lucide para um aparelho.
  *
  * 1. Busca por palavra-chave no nome (case-insensitive, sem acentos)
- * 2. Se não encontrar, usa fallback pela categoria
+ * 2. Se não encontrar, usa fallback pela categoria (normalizado)
  * 3. Se não tiver nem categoria, retorna HelpCircle
  */
 export function resolveApplianceIcon(name: string, mlCategory?: string): string {
@@ -105,7 +136,13 @@ export function resolveApplianceIcon(name: string, mlCategory?: string): string 
   }
 
   if (mlCategory) {
-    const fallback = CATEGORY_FALLBACK[mlCategory];
+    // Tenta match exato primeiro
+    const exact = CATEGORY_FALLBACK[mlCategory];
+    if (exact) return exact;
+
+    // Tenta match normalizado (uppercase + underscore)
+    const key = normalizeCategoryKey(mlCategory);
+    const fallback = CATEGORY_FALLBACK[key];
     if (fallback) return fallback;
   }
 
@@ -118,38 +155,125 @@ export interface CategoryDisplay {
   color: string;
 }
 
+/**
+ * Gera uma cor HSL estável a partir de um hash do nome da categoria.
+ * Garante que uma mesma categoria desconhecida sempre tenha a mesma cor.
+ */
+function hashColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 60%, 50%)`;
+}
+
+/**
+ * Converte uma chave de categoria (ex: "REFRIGERATION", "SERVICES")
+ * em um rótulo amigável em português.
+ * Usa um registry de categorias conhecidas + fallback inteligente.
+ */
+function categoryLabel(key: string): string {
+  const labels: Record<string, string> = {
+    REFRIGERATION: "Refrigeração",
+    REFRIGERACAO: "Refrigeração",
+    CLIMATE_CONTROL: "Climatização",
+    CLIMATIZACAO: "Climatização",
+    TECHNOLOGY: "Tecnologia",
+    TECNOLOGIA: "Tecnologia",
+    LIGHTING: "Iluminação",
+    ILUMINACAO: "Iluminação",
+    APPLIANCES: "Eletrodomésticos",
+    ELETRODOMESTICOS: "Eletrodomésticos",
+    SERVICES: "Serviços",
+    SERVICOS: "Serviços",
+    OTHERS: "Outros",
+    OUTROS: "Outros",
+  };
+  return labels[key] ?? key.charAt(0) + key.slice(1).toLowerCase().replace(/_/g, " ");
+}
+
+/**
+ * Cores conhecidas para categorias de consumo.
+ * Para categorias desconhecidas, deriva cor via hash do nome.
+ */
+function categoryColor(upperKey: string): string {
+  const colors: Record<string, string> = {
+    REFRIGERATION: "#0ea5e9",
+    REFRIGERACAO: "#0ea5e9",
+    CLIMATE_CONTROL: "#06b6d4",
+    CLIMATIZACAO: "#06b6d4",
+    TECHNOLOGY: "#8b5cf6",
+    TECNOLOGIA: "#8b5cf6",
+    LIGHTING: "#f59e0b",
+    ILUMINACAO: "#f59e0b",
+    APPLIANCES: "#ec4899",
+    ELETRODOMESTICOS: "#ec4899",
+    SERVICES: "#14b8a6",
+    SERVICOS: "#14b8a6",
+    OTHERS: "#6b7280",
+    OUTROS: "#6b7280",
+  };
+  return colors[upperKey] ?? hashColor(upperKey);
+}
+
+/**
+ * Ícones conhecidos para categorias de consumo.
+ */
+function categoryIcon(upperKey: string): string {
+  const icons: Record<string, string> = {
+    REFRIGERATION: "Snowflake",
+    REFRIGERACAO: "Snowflake",
+    CLIMATE_CONTROL: "Wind",
+    CLIMATIZACAO: "Wind",
+    TECHNOLOGY: "Monitor",
+    TECNOLOGIA: "Monitor",
+    LIGHTING: "Lightbulb",
+    ILUMINACAO: "Lightbulb",
+    APPLIANCES: "Home",
+    ELETRODOMESTICOS: "Home",
+    SERVICES: "Wrench",
+    SERVICOS: "Wrench",
+    OTHERS: "HelpCircle",
+    OUTROS: "HelpCircle",
+  };
+  return icons[upperKey] ?? "HelpCircle";
+}
+
 export function getCategoryDisplay(cat: string): CategoryDisplay {
   const upper = cat.toUpperCase();
-  const map: Record<string, CategoryDisplay> = {
-    REFRIGERACAO: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
-    REFRIGERATION: { label: "Refrigeração", icon: "Snowflake", color: "#0ea5e9" },
-    CLIMATIZACAO: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
-    CLIMATE_CONTROL: { label: "Climatização", icon: "Wind", color: "#06b6d4" },
-    TECNOLOGIA: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
-    TECHNOLOGY: { label: "Tecnologia", icon: "Monitor", color: "#8b5cf6" },
-    ILUMINACAO: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
-    LIGHTING: { label: "Iluminação", icon: "Lightbulb", color: "#f59e0b" },
-    ELETRODOMESTICOS: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
-    APPLIANCES: { label: "Eletrodomésticos", icon: "Home", color: "#ec4899" },
-    SERVICOS: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
-    SERVICES: { label: "Serviços", icon: "Wrench", color: "#14b8a6" },
+  return {
+    label: categoryLabel(upper),
+    icon: categoryIcon(upper),
+    color: categoryColor(upper),
   };
-  return map[upper] ?? { label: cat, icon: "HelpCircle", color: "#6b7280" };
 }
 
 const CATEGORY_PRIORITY: string[] = [
-  "Refrigeracao",
-  "Climatizacao",
-  "Tecnologia",
-  "Iluminacao",
-  "Eletrodomesticos",
-  "Servicos",
+  "REFRIGERATION",
+  "REFRIGERACAO",
+  "CLIMATE_CONTROL",
+  "CLIMATIZACAO",
+  "TECHNOLOGY",
+  "TECNOLOGIA",
+  "LIGHTING",
+  "ILUMINACAO",
+  "APPLIANCES",
+  "ELETRODOMESTICOS",
+  "SERVICES",
+  "SERVICOS",
+  "OTHERS",
+  "OUTROS",
 ];
 
 export function sortCategories(cats: string[]): string[] {
   return [...cats].sort((a, b) => {
-    const ai = CATEGORY_PRIORITY.indexOf(a);
-    const bi = CATEGORY_PRIORITY.indexOf(b);
+    // Normaliza para uppercase antes do lookup, para que variações
+    // como "Refrigeracao" ou "refrigeration" sejam ordenadas
+    // na posição correta (REFRIGERATION).
+    const normalize = (s: string) => s.toUpperCase().replace(/[\s-]/g, "_");
+    const ai = CATEGORY_PRIORITY.indexOf(normalize(a));
+    const bi = CATEGORY_PRIORITY.indexOf(normalize(b));
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
 }
