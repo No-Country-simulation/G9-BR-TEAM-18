@@ -9,7 +9,14 @@ import type {
   Regularity,
   AnalysisResponse,
 } from "../types";
-import { ApiError, CATEGORY_COLORS, CATEGORY_DISPLAY, PROPERTY_TYPES, PROPERTY_TYPE_LABELS, REGULARITY_OPTIONS } from "../types";
+import {
+  ApiError,
+  CATEGORY_COLORS,
+  CATEGORY_DISPLAY,
+  PROPERTY_TYPES,
+  PROPERTY_TYPE_LABELS,
+  REGULARITY_OPTIONS,
+} from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import {
   listProperties,
@@ -26,8 +33,6 @@ import {
 } from "../services/api";
 import type { PropertyResponse } from "../services/api";
 
-
-
 export default function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,11 +48,16 @@ export default function ProfilePage() {
   const [selectedAppliances, setSelectedAppliances] = useState<ApplianceItem[]>([]);
   const [applianceTypes, setApplianceTypes] = useState<ApplianceType[]>([]);
   const [regularity, setRegularity] = useState<Regularity>("instantanea");
-  const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set(["Refrigeracao", "Climatizacao", "Tecnologia"]),
-  );
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
 
+  /*
+   * fetchCategories() retorna categorias de EFICIÊNCIA ("EXCELENTE", "BOM"…),
+   * NÃO categorias de consumo ("REFRIGERATION", "CLIMATE_CONTROL"…).
+   * Por isso é usado apenas como fallback de cor no badge do resultado,
+   * e NÃO para alimentar getCategoryDisplay() / sortCategories(), que
+   * operam sobre categorias de consumo extraídas dinamicamente dos appliances.
+   */
   const [backendCategorySet, setBackendCategorySet] = useState<Set<string>>(new Set());
 
   const [saving, setSaving] = useState(false);
@@ -450,7 +460,11 @@ export default function ProfilePage() {
                       </span>
                       <span className="category-label">{catInfo.label}</span>
                       <span className="category-count">{appliances.length}</span>
-                      {isOpen ? <LucideIcon name="ChevronDown" size={16} /> : <LucideIcon name="ChevronRight" size={16} />}
+                      {isOpen ? (
+                        <LucideIcon name="ChevronDown" size={16} />
+                      ) : (
+                        <LucideIcon name="ChevronRight" size={16} />
+                      )}
                     </button>
                     {isOpen && (
                       <div className="appliance-grid">
@@ -640,9 +654,7 @@ export default function ProfilePage() {
                 {result.highest_consumption_products &&
                   result.highest_consumption_products.length > 0 && (
                     <div className="dash-sim-products" style={{ marginTop: "1rem" }}>
-                      <span className="dash-sim-products-label">
-                        Maiores consumidores:
-                      </span>
+                      <span className="dash-sim-products-label">Maiores consumidores:</span>
                       <span className="dash-sim-products-list">
                         {result.highest_consumption_products.map((product, i) => (
                           <span key={i} className="dash-sim-product-tag">
