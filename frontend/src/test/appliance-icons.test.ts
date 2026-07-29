@@ -247,6 +247,31 @@ describe("getCategoryDisplay", () => {
     expect(getCategoryDisplay("OUTROS")).toEqual(getCategoryDisplay("OTHERS"));
   });
 
+  // --- Categorias acentuadas (como vem do backend: 'Refrigeração', 'Climatização'...) ---
+  it("'Refrigeração' (acentuado) → mesma saída que REFRIGERATION", () => {
+    expect(getCategoryDisplay("Refrigeração")).toEqual(getCategoryDisplay("REFRIGERATION"));
+  });
+
+  it("'Climatização' (acentuado) → mesma saída que CLIMATE_CONTROL", () => {
+    expect(getCategoryDisplay("Climatização")).toEqual(getCategoryDisplay("CLIMATE_CONTROL"));
+  });
+
+  it("'Iluminação' (acentuado) → mesma saída que LIGHTING", () => {
+    expect(getCategoryDisplay("Iluminação")).toEqual(getCategoryDisplay("LIGHTING"));
+  });
+
+  it("'Eletrodomésticos' (acentuado) → mesma saída que APPLIANCES", () => {
+    expect(getCategoryDisplay("Eletrodomésticos")).toEqual(getCategoryDisplay("APPLIANCES"));
+  });
+
+  it("'Serviços' (acentuado) → mesma saída que SERVICES", () => {
+    expect(getCategoryDisplay("Serviços")).toEqual(getCategoryDisplay("SERVICES"));
+  });
+
+  it("'Tecnologia' (sem acento) → mesma saída que TECHNOLOGY", () => {
+    expect(getCategoryDisplay("Tecnologia")).toEqual(getCategoryDisplay("TECHNOLOGY"));
+  });
+
   // --- Case-insensitive: entrada em minúsculo ---
   it("'refrigeration' (minúsculo) → mesma saída que REFRIGERATION", () => {
     expect(getCategoryDisplay("refrigeration")).toEqual(getCategoryDisplay("REFRIGERATION"));
@@ -396,6 +421,14 @@ describe("sortCategories", () => {
     // 'Tecnologia' → normalize → 'TECNOLOGIA' → CATEGORY_PRIORITY tem índice 5
     expect(result[0]).toBe("Climatizacao");
     expect(result[1]).toBe("Tecnologia");
+  });
+
+  it("normaliza 'Refrigeração' (acentuado) para posição correta", () => {
+    const result = sortCategories(["Iluminação", "Refrigeração"]);
+    // 'Refrigeração' → normalize → 'REFRIGERACAO' → CATEGORY_PRIORITY tem índice 1
+    // 'Iluminação' → normalize → 'ILUMINACAO' → CATEGORY_PRIORITY tem índice 7
+    expect(result[0]).toBe("Refrigeração");
+    expect(result[1]).toBe("Iluminação");
   });
 
   // --- Categoria única ---

@@ -100,20 +100,23 @@ const CATEGORY_FALLBACK: Record<string, string> = {
    * capturando automaticamente variações como "Refrigeracao",
    * "climate-control", "Climatização" etc.
    */
-};
+};/**
+ * Remove acentos/sinais diacríticos de uma string usando normalização NFD.
+ * Ex: "Refrigeração" → "Refrigeracao", "Climatização" → "Climatizacao"
+ */
+function removeAccents(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 /**
  * Normaliza uma string de categoria para lookup no CATEGORY_FALLBACK.
- * Converte para uppercase, substitui espaços/hífens por underscore.
+ * Converte para uppercase, remove acentos, substitui espaços/hífens por underscore.
  * Ex: "CLIMATE_CONTROL" → "CLIMATE_CONTROL", "Refrigeracao" → "REFRIGERACAO"
  */
 function normalizeCategoryKey(cat: string): string {
-  return cat
-    .toUpperCase()
-    .normalize("NFD") // separa acentos (Ç → C + cedilha)
-    .replace(/[\u0300-\u036f]/g, "") // remove sinais diacríticos
-    .replace(/[\s-]/g, "_") // normaliza separadores
-    .replace(/[^A-Z_]/g, ""); // remove caracteres não-alfabéticos
+  return removeAccents(cat.toUpperCase())
+    .replace(/[\s-]/g, "_")                // normaliza separadores
+    .replace(/[^A-Z_]/g, "");               // remove caracteres não-alfabéticos
 }
 
 /**
@@ -241,11 +244,14 @@ function categoryIcon(upperKey: string): string {
 }
 
 export function getCategoryDisplay(cat: string): CategoryDisplay {
-  const upper = cat.toUpperCase();
+  // Normaliza: uppercase + remove acentos (NFD)
+  // Isso garante que "Refrigeração" → "REFRIGERACAO"
+  // e "CLIMATE_CONTROL" → "CLIMATE_CONTROL"
+  const key = removeAccents(cat.toUpperCase());
   return {
-    label: categoryLabel(upper),
-    icon: categoryIcon(upper),
-    color: categoryColor(upper),
+    label: categoryLabel(key),
+    icon: categoryIcon(key),
+    color: categoryColor(key),
   };
 }
 
@@ -268,10 +274,11 @@ const CATEGORY_PRIORITY: string[] = [
 
 export function sortCategories(cats: string[]): string[] {
   return [...cats].sort((a, b) => {
-    // Normaliza para uppercase antes do lookup, para que variações
-    // como "Refrigeracao" ou "refrigeration" sejam ordenadas
-    // na posição correta (REFRIGERATION).
-    const normalize = (s: string) => s.toUpperCase().replace(/[\s-]/g, "_");
+    // Normaliza: uppercase + remove acentos (NFD) + normaliza separadores
+    // para que variações como "Refrigeração", "refrigeration",
+    // "Climatizacao" sejam ordenadas na posição correta.
+    const normalize = (s: string) =>
+      removeAccents(s.toUpperCase()).replace(/[\s-]/g, "_");
     const ai = CATEGORY_PRIORITY.indexOf(normalize(a));
     const bi = CATEGORY_PRIORITY.indexOf(normalize(b));
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
