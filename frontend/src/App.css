@@ -132,11 +132,11 @@ body::after {
 }
 
 .section-divider {
-  height: 32px;
+  height: 24px;
   position: relative;
   background: var(--bg-base);
   clip-path: polygon(0 60%, 100% 0, 100% 100%, 0 100%);
-  margin-top: -16px;
+  margin-top: -12px;
   z-index: 2;
 }
 
@@ -367,11 +367,11 @@ body::after {
 
 .hero {
   position: relative;
-  min-height: 70vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rem 1.5rem 3rem;
+  padding: 5rem 1.5rem 2.5rem;
   overflow: hidden;
 }
 
@@ -1633,7 +1633,7 @@ body::after {
 /* ─── Features (Bento Grid) ─── */
 
 .features {
-  padding: 4rem 1.5rem;
+  padding: 3rem 1.5rem;
   background: var(--bg-base);
   position: relative;
 }
