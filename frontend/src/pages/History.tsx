@@ -113,6 +113,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
           <YAxis
             type="category"
             dataKey="label"
+            width={160}
             tick={{ fill: "var(--text-primary)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
