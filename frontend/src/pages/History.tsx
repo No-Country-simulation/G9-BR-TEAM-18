@@ -102,7 +102,7 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 8, right: 16, bottom: 8, left: 12 }}
+          margin={{ top: 8, right: 16, bottom: 8, left: 160 }}
         >
           <XAxis
             type="number"
