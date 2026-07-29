@@ -2077,7 +2077,7 @@ body::after {
 .dash-page {
   max-width: 960px;
   margin: 0 auto;
-  padding: 7rem 1rem 2rem;
+  padding: 7rem 1rem 3rem;
 }
 
 .dash-header {
@@ -2147,16 +2147,16 @@ body::after {
 
 .dash-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .dash-card {
   background: var(--bg-surface);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
-  padding: 1.25rem;
+  padding: 1.5rem;
   box-shadow: var(--shadow-hard-sm);
   transition: all 0.15s ease;
 }
@@ -2205,6 +2205,10 @@ body::after {
   border-radius: var(--radius);
   padding: 1.5rem;
   box-shadow: var(--shadow-hard-sm);
+}
+
+.dash-chart {
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 480px) {
@@ -3068,7 +3072,7 @@ body::after {
   border: 2px solid var(--ink);
   border-radius: var(--radius);
   padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   box-shadow: var(--shadow-hard-sm);
   display: flex;
   justify-content: space-between;
@@ -3077,7 +3081,7 @@ body::after {
   gap: 0.75rem;
 }
 
-.dash-last-header {
+.dash-last-analysis .dash-last-header {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -3254,7 +3258,7 @@ body::after {
 /* ─── Dashboard Sections ─── */
 
 .dash-section {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .dash-section h3 {
@@ -3471,6 +3475,14 @@ body::after {
 }
 
 @media (max-width: 640px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-card {
+    padding: 1.25rem;
+  }
+
   .dash-simulation-grid {
     grid-template-columns: 1fr;
   }
