@@ -317,15 +317,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="dash-actions-row">
-        <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--secondary">
-          <UserCog size={18} /> Meu Perfil
-        </button>
-        <button onClick={() => navigate("/profile")} className="dash-btn dash-btn--primary">
-          <BarChart3 size={18} /> Nova análise
-        </button>
-      </div>
-
       <div className="dash-grid">
         <div className="dash-card">
           <div className="dash-card-header">

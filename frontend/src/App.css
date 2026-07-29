@@ -1885,11 +1885,41 @@ body::after {
   background: var(--bg-surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-hard-lg);
-  padding: 2.5rem;
-  max-width: 420px;
+  padding: 2.5rem 2rem;
+  max-width: 480px;
   width: 100%;
   border: 2px solid var(--ink);
   position: relative;
+}
+
+@media (max-width: 640px) {
+  .dash-page {
+    padding: 6rem 0.75rem 1.5rem;
+  }
+  .history-page {
+    padding: 6rem 0.75rem 1.5rem;
+  }
+  .profile-page {
+    padding: 6rem 0.75rem 1.5rem;
+  }
+  .dash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .dash-actions {
+    width: 100%;
+  }
+  .dash-actions .dash-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .appliance-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .hist-chart-section {
+    margin: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2259,7 +2289,7 @@ body::after {
 /* ─── History ─── */
 
 .history-page {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 7rem 1rem 2rem;
 }
@@ -2938,16 +2968,9 @@ body::after {
 }
 
 .profile-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
-  align-items: start;
-}
-
-@media (max-width: 768px) {
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .profile-form {
@@ -2957,8 +2980,7 @@ body::after {
 }
 
 .profile-result {
-  position: sticky;
-  top: 6rem;
+  width: 100%;
 }
 
 .regularity-selector {
