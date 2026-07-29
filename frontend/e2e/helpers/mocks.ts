@@ -17,67 +17,186 @@ export const MOCK_USER_NEEDS_RESET = {
 };
 
 /* ---------- mock categories ---------- */
-export const MOCK_CATEGORIES = [
-  "EXCELENTE",
-  "BOM",
-  "MEDIANO",
-  "RUIM",
-  "CRITICO",
-];
+export const MOCK_CATEGORIES = ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"];
 
 /* ---------- mock appliances ---------- */
 export const MOCK_APPLIANCES = [
-  { id: 1, name: "Geladeira", appliance_category: "Refrigeracao", average_power_watts: 150, average_daily_use_hours: 24 },
-  { id: 2, name: "Ar Condicionado", appliance_category: "Climatizacao", average_power_watts: 1400, average_daily_use_hours: 8 },
-  { id: 3, name: "Televisao", appliance_category: "Tecnologia", average_power_watts: 120, average_daily_use_hours: 5 },
-  { id: 4, name: "Lampada LED", appliance_category: "Iluminacao", average_power_watts: 10, average_daily_use_hours: 6 },
-  { id: 5, name: "Maquina de Lavar", appliance_category: "Eletrodomesticos", average_power_watts: 500, average_daily_use_hours: 1 },
-  { id: 6, name: "Bomba d'Agua", appliance_category: "Servicos", average_power_watts: 750, average_daily_use_hours: 2 },
+  {
+    id: 1,
+    name: "Geladeira",
+    appliance_category: "REFRIGERATION",
+    average_power_watts: 150,
+    average_daily_use_hours: 24,
+  },
+  {
+    id: 2,
+    name: "Ar Condicionado",
+    appliance_category: "CLIMATE_CONTROL",
+    average_power_watts: 1400,
+    average_daily_use_hours: 8,
+  },
+  {
+    id: 3,
+    name: "Televisao",
+    appliance_category: "TECHNOLOGY",
+    average_power_watts: 120,
+    average_daily_use_hours: 5,
+  },
+  {
+    id: 4,
+    name: "Lampada LED",
+    appliance_category: "LIGHTING",
+    average_power_watts: 10,
+    average_daily_use_hours: 6,
+  },
+  {
+    id: 5,
+    name: "Maquina de Lavar",
+    appliance_category: "APPLIANCES",
+    average_power_watts: 500,
+    average_daily_use_hours: 1,
+  },
+  {
+    id: 6,
+    name: "Bomba d'Agua",
+    appliance_category: "SERVICES",
+    average_power_watts: 750,
+    average_daily_use_hours: 2,
+  },
 ];
 
 /* ---------- mock property ---------- */
 export const MOCK_PROPERTY = {
-  id: 10, alias: "Minha Residencia", property_type: "RESIDENCIAL", active: true,
-  address: "Rua Exemplo, 123", resident_count: 3, area_sqm: 80,
+  id: 10,
+  alias: "Minha Residencia",
+  property_type: "RESIDENCIAL",
+  active: true,
+  address: "Rua Exemplo, 123",
+  resident_count: 3,
+  area_sqm: 80,
 };
 
 /* ---------- mock property appliances ---------- */
 export const MOCK_PROPERTY_APPLIANCES = [
-  { id: 1, appliance_id: 1, appliance_name: "Geladeira", appliance_category: "Refrigeracao", quantity: 1, average_power_watts: 150, average_daily_use_hours: 24, estimated_monthly_consumption_kwh: 108 },
-  { id: 2, appliance_id: 2, appliance_name: "Ar Condicionado", appliance_category: "Climatizacao", quantity: 2, average_power_watts: 1400, average_daily_use_hours: 8, estimated_monthly_consumption_kwh: 672 },
+  {
+    id: 1,
+    appliance_id: 1,
+    appliance_name: "Geladeira",
+    appliance_category: "REFRIGERATION",
+    quantity: 1,
+    average_power_watts: 150,
+    average_daily_use_hours: 24,
+    estimated_monthly_consumption_kwh: 108,
+  },
+  {
+    id: 2,
+    appliance_id: 2,
+    appliance_name: "Ar Condicionado",
+    appliance_category: "CLIMATE_CONTROL",
+    quantity: 2,
+    average_power_watts: 1400,
+    average_daily_use_hours: 8,
+    estimated_monthly_consumption_kwh: 672,
+  },
 ];
 
 /* ---------- mock analysis response ---------- */
 export const MOCK_ANALYSIS_RESULT = {
-  category: "BOM", probability: 0.78,
-  recommendations: ["Troque lampadas incandescentes por LED para economizar ate 80%.", "Evite usar ar-condicionado com portas e janelas abertas."],
-  estimated_monthly_cost: 180.5, status: "CONCLUIDA",
+  category: "BOM",
+  probability: 0.78,
+  recommendations: [
+    "Troque lampadas incandescentes por LED para economizar ate 80%.",
+    "Evite usar ar-condicionado com portas e janelas abertas.",
+  ],
+  estimated_monthly_cost: 180.5,
+  status: "CONCLUIDA",
 };
 
 /* ---------- mock analyses history ---------- */
 export const MOCK_ANALYSES = [
-  { id: "a1", category: "MEDIANO", probability: 0.65, consumption_kwh: 320, estimated_monthly_cost: 240, peak_hour_usage: true, high_consumption_hours: 6, created_at: "2026-07-20T10:00:00Z", recommendations: [], status: "CONCLUIDA" },
-  { id: "a2", category: "BOM", probability: 0.78, consumption_kwh: 280, estimated_monthly_cost: 210, peak_hour_usage: false, high_consumption_hours: 4, created_at: "2026-07-22T14:30:00Z", recommendations: [], status: "CONCLUIDA" },
-  { id: "a3", category: "BOM", probability: 0.81, consumption_kwh: 260, estimated_monthly_cost: 195, peak_hour_usage: false, high_consumption_hours: 3, created_at: "2026-07-25T09:15:00Z", recommendations: [], status: "CONCLUIDA" },
+  {
+    id: "a1",
+    category: "MEDIANO",
+    probability: 0.65,
+    consumption_kwh: 320,
+    estimated_monthly_cost: 240,
+    peak_hour_usage: true,
+    high_consumption_hours: 6,
+    created_at: "2026-07-20T10:00:00Z",
+    recommendations: [],
+    status: "CONCLUIDA",
+  },
+  {
+    id: "a2",
+    category: "BOM",
+    probability: 0.78,
+    consumption_kwh: 280,
+    estimated_monthly_cost: 210,
+    peak_hour_usage: false,
+    high_consumption_hours: 4,
+    created_at: "2026-07-22T14:30:00Z",
+    recommendations: [],
+    status: "CONCLUIDA",
+  },
+  {
+    id: "a3",
+    category: "BOM",
+    probability: 0.81,
+    consumption_kwh: 260,
+    estimated_monthly_cost: 195,
+    peak_hour_usage: false,
+    high_consumption_hours: 3,
+    created_at: "2026-07-25T09:15:00Z",
+    recommendations: [],
+    status: "CONCLUIDA",
+  },
 ];
 
 export const MOCK_ANALYSES_WITH_PENDING = [
   ...MOCK_ANALYSES,
-  { id: "a4", category: "EXCELENTE", probability: 0.72, consumption_kwh: 200, estimated_monthly_cost: 150, peak_hour_usage: false, high_consumption_hours: 2, created_at: "2026-07-26T08:00:00Z", recommendations: [], status: "PENDENTE" },
+  {
+    id: "a4",
+    category: "EXCELENTE",
+    probability: 0.72,
+    consumption_kwh: 200,
+    estimated_monthly_cost: 150,
+    peak_hour_usage: false,
+    high_consumption_hours: 2,
+    created_at: "2026-07-26T08:00:00Z",
+    recommendations: [],
+    status: "PENDENTE",
+  },
 ];
 
 export const MOCK_ANALYSES_WITH_FAILURE = [
   ...MOCK_ANALYSES,
-  { id: "a5", category: "EXCELENTE", probability: 0.7, consumption_kwh: 190, estimated_monthly_cost: 142.5, peak_hour_usage: false, high_consumption_hours: 2, created_at: "2026-07-26T09:00:00Z", recommendations: [], status: "FALHA" },
+  {
+    id: "a5",
+    category: "EXCELENTE",
+    probability: 0.7,
+    consumption_kwh: 190,
+    estimated_monthly_cost: 142.5,
+    peak_hour_usage: false,
+    high_consumption_hours: 2,
+    created_at: "2026-07-26T09:00:00Z",
+    recommendations: [],
+    status: "FALHA",
+  },
 ];
 
 /* ---------- mock dashboard data ---------- */
 export const MOCK_DASHBOARD = {
-  total_analyses: 3, average_consumption_kwh: 286.67, total_estimated_cost: 645, total_co2_emission_kg: 27.52,
+  total_analyses: 3,
+  average_consumption_kwh: 286.67,
+  total_estimated_cost: 645,
+  total_co2_emission_kg: 27.52,
   monthly_consumption: [
-    { month: "Jan", consumption_kwh: 300 }, { month: "Fev", consumption_kwh: 280 },
-    { month: "Mar", consumption_kwh: 320 }, { month: "Abr", consumption_kwh: 260 },
-    { month: "Mai", consumption_kwh: 290 }, { month: "Jun", consumption_kwh: 270 },
+    { month: "Jan", consumption_kwh: 300 },
+    { month: "Fev", consumption_kwh: 280 },
+    { month: "Mar", consumption_kwh: 320 },
+    { month: "Abr", consumption_kwh: 260 },
+    { month: "Mai", consumption_kwh: 290 },
+    { month: "Jun", consumption_kwh: 270 },
   ],
 };
 
@@ -87,11 +206,18 @@ export const MOCK_DASHBOARD = {
  * ========================================================================= */
 export function pt(text: string): RegExp {
   const map: Record<string, string> = {
-    a: "[a\u00E1\u00E0\u00E2\u00E3]", e: "[e\u00E9\u00E8\u00EA]", i: "[i\u00ED\u00EC]", o: "[o\u00F3\u00F2\u00F4\u00F5]",
-    u: "[u\u00FA\u00F9\u00FB]", c: "[c\u00E7]",
-    A: "[A\u00C1\u00C0\u00C2\u00C3]", E: "[E\u00C9\u00C8\u00CA]",
-    I: "[I\u00CD\u00CC]", O: "[O\u00D3\u00D2\u00D4\u00D5]",
-    U: "[U\u00DA\u00D9\u00DB]", C: "[C\u00C7]",
+    a: "[a\u00E1\u00E0\u00E2\u00E3]",
+    e: "[e\u00E9\u00E8\u00EA]",
+    i: "[i\u00ED\u00EC]",
+    o: "[o\u00F3\u00F2\u00F4\u00F5]",
+    u: "[u\u00FA\u00F9\u00FB]",
+    c: "[c\u00E7]",
+    A: "[A\u00C1\u00C0\u00C2\u00C3]",
+    E: "[E\u00C9\u00C8\u00CA]",
+    I: "[I\u00CD\u00CC]",
+    O: "[O\u00D3\u00D2\u00D4\u00D5]",
+    U: "[U\u00DA\u00D9\u00DB]",
+    C: "[C\u00C7]",
   };
   let pattern = "";
   for (const ch of text) {
@@ -106,7 +232,11 @@ export function pt(text: string): RegExp {
 export async function setupPublicMocks(page: Page) {
   const JSON_HEADERS = { "Content-Type": "application/json" };
   await page.route(`http://localhost:8080/auth/me`, async (route: Route) => {
-    await route.fulfill({ status: 401, headers: JSON_HEADERS, body: JSON.stringify({ message: "Unauthorized" }) });
+    await route.fulfill({
+      status: 401,
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ message: "Unauthorized" }),
+    });
   });
 }
 
@@ -116,13 +246,17 @@ export async function setupPublicMocks(page: Page) {
 export async function setupAuthenticatedMocks(
   page: Page,
   options?: {
-    analyses?: typeof MOCK_ANALYSES; dashboard?: typeof MOCK_DASHBOARD;
-    properties?: typeof MOCK_PROPERTY[]; propertyAppliances?: typeof MOCK_PROPERTY_APPLIANCES;
+    analyses?: typeof MOCK_ANALYSES;
+    dashboard?: typeof MOCK_DASHBOARD;
+    properties?: (typeof MOCK_PROPERTY)[];
+    propertyAppliances?: typeof MOCK_PROPERTY_APPLIANCES;
   },
 ) {
   const {
-    analyses = MOCK_ANALYSES, dashboard = MOCK_DASHBOARD,
-    properties = [MOCK_PROPERTY], propertyAppliances = MOCK_PROPERTY_APPLIANCES,
+    analyses = MOCK_ANALYSES,
+    dashboard = MOCK_DASHBOARD,
+    properties = [MOCK_PROPERTY],
+    propertyAppliances = MOCK_PROPERTY_APPLIANCES,
   } = options ?? {};
 
   const JSON_HEADERS = { "Content-Type": "application/json" };
@@ -172,11 +306,8 @@ export async function setupAuthenticatedMocks(
  * to set localStorage BEFORE page JS runs, avoiding SecurityError)
  * ========================================================================= */
 export async function setLoggedIn(page: Page) {
-  await page.addInitScript(
-    (user: { id: string; name: string; email: string }) => {
-      localStorage.setItem("energiai_user", JSON.stringify(user));
-      document.cookie = "SESSION_TOKEN=mock-session-token; Path=/;";
-    },
-    MOCK_USER,
-  );
+  await page.addInitScript((user: { id: string; name: string; email: string }) => {
+    localStorage.setItem("energiai_user", JSON.stringify(user));
+    document.cookie = "SESSION_TOKEN=mock-session-token; Path=/;";
+  }, MOCK_USER);
 }

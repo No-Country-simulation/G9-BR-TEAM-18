@@ -222,7 +222,7 @@ describe("listAppliances", () => {
         {
           id: 1,
           name: "Geladeira",
-          appliance_category: "Refrigeracao",
+          appliance_category: "REFRIGERATION",
           average_power_watts: 150,
           average_daily_use_hours: 24,
         },
