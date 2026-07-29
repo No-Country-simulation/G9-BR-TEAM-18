@@ -250,4 +250,14 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F067 | CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | 6e588db |
 | F068 | Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | 6e588db |
 
+## Movimentações (28/07/2026) — peak_hour_usage: Persistência e Independência
+
+### Novos Cards em Backlog
+
+| ID | Título | Issue | ADR | Assignee |
+|---|---|---|---|---|
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário | #143 | ADR-0046 | DessimA |
+| B051 | Backend - Expor peak_hour_usage nas preferências do usuário | #145 | ADR-0046 | eduuardo1st |
+| Q007 | ML Service - Tornar peak_hour_usage feature independente no treino | #144 | ADR-0046 | guilherme-hermano |
+
 
