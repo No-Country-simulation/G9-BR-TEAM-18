@@ -232,12 +232,12 @@ public class AnalysisController {
 
     @Operation(
             summary = "Listar categorias de eficiência",
-            description =
-                    "Retorna as categorias de classificação energética disponíveis no serviço de Machine Learning.")
+            description = "Retorna as categorias de classificação energética disponíveis no serviço de Machine Learning.")
     @ApiResponse(responseCode = "200", description = "Lista de categorias retornada")
     @GetMapping("/energy-analysis/categories")
     public ResponseEntity<List<String>> getCategories() {
-        return ResponseEntity.ok(mlSchemaRegistry.getCategories());
+        // Correção aqui: chamando o novo método do Registry
+        return ResponseEntity.ok(mlSchemaRegistry.getEfficiencyCategories());
     }
 
     private List<EnergyAnalysis> analysesForUser(Long userId) {
