@@ -46,12 +46,10 @@ class MlSchemaDiscoveryTest {
         MlContractResponse mockContract = new MlContractResponse(
                 List.of("CASA_NA_ARVORE"), // Tipo de imóvel inventado para provar que está dinâmico
                 List.of("A", "B", "C"),
-                List.of("ILUMINACAO_FUTURISTA")
-        );
+                List.of("ILUMINACAO_FUTURISTA"));
 
-        MlApplianceCatalogResponse mockCatalog = new MlApplianceCatalogResponse(
-                List.of(new MlApplianceDTO("Sabre de Luz", "TECNOLOGIA", 50, 2.0))
-        );
+        MlApplianceCatalogResponse mockCatalog =
+                new MlApplianceCatalogResponse(List.of(new MlApplianceDTO("Sabre de Luz", "TECNOLOGIA", 50, 2.0)));
 
         // 2. Ensina o cliente a retornar sucesso (Mono.just)
         when(mlServiceClient.fetchContract()).thenReturn(Mono.just(mockContract));
@@ -75,7 +73,8 @@ class MlSchemaDiscoveryTest {
     void deveCarregarFallbackEAgendarRetryQuandoMlServiceFalharNoStartup() {
         // 1. Ensina o cliente a disparar um Erro (simulando API fora do ar)
         when(mlServiceClient.fetchContract()).thenReturn(Mono.error(new RuntimeException("Connection Refused")));
-        when(mlServiceClient.fetchApplianceCatalog()).thenReturn(Mono.error(new RuntimeException("Connection Refused")));
+        when(mlServiceClient.fetchApplianceCatalog())
+                .thenReturn(Mono.error(new RuntimeException("Connection Refused")));
 
         // 2. Executa o método que roda no Startup
         discovery.run(mockArgs);

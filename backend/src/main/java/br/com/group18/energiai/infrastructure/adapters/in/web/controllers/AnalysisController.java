@@ -232,7 +232,8 @@ public class AnalysisController {
 
     @Operation(
             summary = "Listar categorias de eficiência",
-            description = "Retorna as categorias de classificação energética disponíveis no serviço de Machine Learning.")
+            description =
+                    "Retorna as categorias de classificação energética disponíveis no serviço de Machine Learning.")
     @ApiResponse(responseCode = "200", description = "Lista de categorias retornada")
     @GetMapping("/energy-analysis/categories")
     public ResponseEntity<List<String>> getCategories() {

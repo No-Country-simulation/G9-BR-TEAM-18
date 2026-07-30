@@ -72,7 +72,8 @@ public class MlServiceClient {
     }
 
     public Mono<MlContractResponse> fetchContract() {
-        return this.webClient.get()
+        return this.webClient
+                .get()
                 .uri("/contract")
                 .retrieve()
                 .bodyToMono(MlContractResponse.class)
@@ -80,7 +81,8 @@ public class MlServiceClient {
     }
 
     public Mono<MlApplianceCatalogResponse> fetchApplianceCatalog() {
-        return this.webClient.get()
+        return this.webClient
+                .get()
                 .uri("/appliance-catalog")
                 .retrieve()
                 .bodyToMono(MlApplianceCatalogResponse.class)

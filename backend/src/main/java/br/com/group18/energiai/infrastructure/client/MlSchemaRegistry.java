@@ -38,9 +38,12 @@ public class MlSchemaRegistry {
             this.applianceCatalog = List.copyOf(catalog.appliances());
         }
 
-        log.info("Schema Discovery atualizado! Imóveis: {}, Eficiência: {}, Consumo: {}, Aparelhos: {}",
-                this.propertyTypes.size(), this.efficiencyCategories.size(),
-                this.consumptionCategories.size(), this.applianceCatalog.size());
+        log.info(
+                "Schema Discovery atualizado! Imóveis: {}, Eficiência: {}, Consumo: {}, Aparelhos: {}",
+                this.propertyTypes.size(),
+                this.efficiencyCategories.size(),
+                this.consumptionCategories.size(),
+                this.applianceCatalog.size());
     }
 
     public void loadDefaultValues() {
@@ -50,17 +53,14 @@ public class MlSchemaRegistry {
         this.propertyTypes = List.of("RESIDENCIAL", "APARTAMENTO", "COMERCIAL");
         this.efficiencyCategories = this.defaultEfficiencyCategories;
         this.consumptionCategories = List.of(
-                "REFRIGERATION", "CLIMATE_CONTROL", "TECHNOLOGY",
-                "LIGHTING", "APPLIANCES", "SERVICES", "OTHERS"
-        );
+                "REFRIGERATION", "CLIMATE_CONTROL", "TECHNOLOGY", "LIGHTING", "APPLIANCES", "SERVICES", "OTHERS");
 
         // Catálogo reduzido de segurança
         this.applianceCatalog = List.of(
                 new MlApplianceDTO("Geladeira", "REFRIGERATION", 150, 24.0),
                 new MlApplianceDTO("Ar-condicionado", "CLIMATE_CONTROL", 1500, 8.0),
                 new MlApplianceDTO("Lâmpada", "LIGHTING", 12, 6.0),
-                new MlApplianceDTO("Televisão", "TECHNOLOGY", 150, 6.0)
-        );
+                new MlApplianceDTO("Televisão", "TECHNOLOGY", 150, 6.0));
     }
 
     // Getters para a aplicação usar (sempre retornam listas imutáveis)
