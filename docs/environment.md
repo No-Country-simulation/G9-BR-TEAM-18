@@ -30,6 +30,7 @@ Referência completa de todas as variáveis de ambiente utilizadas pelos três s
 | Variável | Padrão | Serviço | Descrição |
 |---|---|---|---|
 | `VITE_API_URL` | `http://localhost:8080` | Frontend | URL base do backend para requisições AJAX |
+| `OPENAPI_SERVER_URL` | - (obrigatória) | Backend | URL base dos servidores expostos no OpenAPI/Swagger. **Sem valor definido o backend não inicia (fail-fast)**. No Render, defina como a URL do deploy (ex: `https://meu-backend.onrender.com`) para que o Swagger UI e os testes contra o contrato usem o host correto |
 | `ML_SERVICE_URL` | `http://ml-service:8000` | Backend | URL base do ML Service para predição |
 | `SERVER_PORT` | `8080` | Backend | Porta interna do servidor Spring Boot |
 | `ML_SERVICE_PORT` | `8000` | ML Service | Porta interna do servidor FastAPI |

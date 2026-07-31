@@ -9,11 +9,15 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
+
+    @Value("${openapi.server.url}")
+    private String serverUrl;
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -43,7 +47,7 @@ public class OpenApiConfig {
                                 .email("team@g9-br-team-18.com")
                                 .url("https://github.com/G9-BR-TEAM-18"))
                         .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
-                .addServersItem(new Server().url("http://localhost:8080").description("Servidor de Desenvolvimento"))
+                .addServersItem(new Server().url(serverUrl).description("Servidor da API"))
                 .components(new Components()
                         .addSecuritySchemes(
                                 "sessionCookie",
