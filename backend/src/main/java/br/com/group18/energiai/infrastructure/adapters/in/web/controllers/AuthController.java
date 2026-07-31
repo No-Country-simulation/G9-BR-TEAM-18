@@ -70,8 +70,8 @@ public class AuthController {
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
         try {
             User user = authenticationService.register(request.getName(), request.getEmail(), request.getPassword());
-            createSession(user, response);
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(user));
+            String token = createSession(user, response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(user, token));
         } catch (IllegalArgumentException e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", e.getMessage());
@@ -96,8 +96,8 @@ public class AuthController {
         }
 
         User user = userOpt.get();
-        createSession(user, response);
-        return ResponseEntity.ok(toResponse(user));
+        String token = createSession(user, response);
+        return ResponseEntity.ok(toResponse(user, token));
     }
 
     @Operation(
@@ -146,8 +146,8 @@ public class AuthController {
         try {
             User user =
                     authenticationService.resetPassword(userId, request.getCurrentPassword(), request.getNewPassword());
-            createSession(user, servletResponse);
-            return ResponseEntity.ok(toResponse(user));
+            String token = createSession(user, servletResponse);
+            return ResponseEntity.ok(toResponse(user, token));
         } catch (IllegalArgumentException e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", e.getMessage());
@@ -170,8 +170,8 @@ public class AuthController {
             HttpServletResponse servletResponse) {
         try {
             User user = authenticationService.adminResetPassword(userId, request.getNewPassword());
-            createSession(user, servletResponse);
-            return ResponseEntity.ok(toResponse(user));
+            String token = createSession(user, servletResponse);
+            return ResponseEntity.ok(toResponse(user, token));
         } catch (IllegalArgumentException e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", e.getMessage());
@@ -232,7 +232,7 @@ public class AuthController {
         return null;
     }
 
-    private void createSession(User user, HttpServletResponse response) {
+    private String createSession(User user, HttpServletResponse response) {
         String token = jwtService.createToken(user.getId());
 
         Cookie cookie = new Cookie("SESSION_TOKEN", token);
@@ -241,14 +241,20 @@ public class AuthController {
         cookie.setSecure(sessionSecure);
         cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         response.addCookie(cookie);
+        return token;
     }
 
-    private LoginResponseDTO toResponse(User user) {
+    private LoginResponseDTO toResponse(User user, String token) {
         LoginResponseDTO dto = new LoginResponseDTO(user.getId(), user.getName(), user.getEmail());
+        dto.setToken(token);
         dto.setPasswordResetRequired(user.isPasswordResetRequired());
         dto.setConsumptionGoal(user.getConsumptionGoal());
         dto.setRegularity(user.getRegularity());
         return dto;
+    }
+
+    private LoginResponseDTO toResponse(User user) {
+        return toResponse(user, null);
     }
 
     private String extractToken(HttpServletRequest request) {

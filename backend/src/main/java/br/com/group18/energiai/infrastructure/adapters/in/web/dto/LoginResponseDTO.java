@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
@@ -14,6 +15,14 @@ public class LoginResponseDTO {
 
     @Schema(description = "E-mail do usuário", example = "usuario@exemplo.com")
     private String email;
+
+    @Schema(
+            description = "Token JWT de sessão (também enviado via cookie SESSION_TOKEN). "
+                    + "Incluído no corpo para facilitar testes fora do navegador (ex: curl, Postman). "
+                    + "Ausente em respostas que não criam sessão (ex: GET /auth/me).",
+            example = "eyJhbGciOiJIUzM4NiJ9...")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String token;
 
     @Schema(description = "Indica se o usuário precisa redefinir a senha", example = "false")
     private boolean passwordResetRequired;
@@ -54,6 +63,14 @@ public class LoginResponseDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public boolean isPasswordResetRequired() {

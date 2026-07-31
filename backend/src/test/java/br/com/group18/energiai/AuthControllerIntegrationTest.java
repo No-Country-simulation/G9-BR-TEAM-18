@@ -43,6 +43,7 @@ class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerBody))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.token").exists())
                 .andReturn();
 
         String json = result.getResponse().getContentAsString();

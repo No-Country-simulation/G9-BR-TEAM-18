@@ -13,8 +13,16 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 { "name": "João Silva", "email": "joao@email.com", "password": "senha123" }
 
 // Response 201 Created
-{ "id": 12, "name": "João Silva", "email": "joao@email.com", "passwordResetRequired": false }
+{
+  "id": 12,
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "token": "eyJhbGciOiJIUzM4NiJ9...",
+  "passwordResetRequired": false
+}
 ```
+
+**Nota:** O campo `token` é o mesmo JWT enviado no cookie `SESSION_TOKEN`. Ele é exposto no corpo para facilitar testes fora do navegador (ex: curl, Postman). Para usá-lo, envie o header `Cookie: SESSION_TOKEN=<token>` (o backend autentica exclusivamente via cookie — o header `Authorization: Bearer` não é suportado).
 
 ### Endpoint: Login do usuário
 
@@ -25,10 +33,16 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 { "email": "joao@email.com", "password": "senha123" }
 
 // Response 200 OK
-{ "id": 12, "name": "João Silva", "email": "joao@email.com", "passwordResetRequired": false }
+{
+  "id": 12,
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "token": "eyJhbGciOiJIUzM4NiJ9...",
+  "passwordResetRequired": false
+}
 ```
 
-**Nota:** A sessão é gerenciada via cookie `SESSION_TOKEN` (httpOnly, Secure).
+**Nota:** A sessão é gerenciada via cookie `SESSION_TOKEN` (httpOnly, Secure). O campo `token` no corpo é o mesmo JWT do cookie, incluído para facilitar testes fora do navegador.
 
 ### Endpoint: Dados do usuário logado
 
