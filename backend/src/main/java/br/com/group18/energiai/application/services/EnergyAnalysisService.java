@@ -16,7 +16,6 @@ import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableExcepti
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
@@ -183,21 +182,16 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
                 "LIGHTING_WATTS", aggregation.lightingWatts());
 
-        String mlPropertyType =
-                switch (propertyType.toUpperCase(Locale.ROOT)) {
-                    case "RESIDENCIAL" -> "Casa";
-                    case "APARTAMENTO" -> "Apartamento";
-                    case "COMERCIAL" -> "Comercial";
-                    default -> propertyType;
-                };
-
         List<String> topProducts = aggregation.highestConsumptionProducts();
 
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
         body.put("consumption_kwh", consumptionKwh);
         body.put("peak_hour_usage", peakHourUsage);
         body.put("equipment_quantity", equipmentQuantity);
-        body.put("property_type", mlPropertyType);
+
+        // Substituído: Passando o propertyType original direto para o Payload em vez da versão traduzida
+        body.put("property_type", propertyType);
+
         body.put("high_consumption_hours", highConsumptionHours);
         body.put("daily_consumption_distribution", dist);
 

@@ -73,7 +73,7 @@ class EnergyAnalysisServiceTest {
 
         assertNotNull(result);
         assertEquals("EXCELENTE", result.getCategory().value());
-        assertEquals("FINALIZADO", result.getStatus());
+        assertEquals("CONCLUIDA", result.getStatus());
         assertEquals(new BigDecimal("108.00"), result.getConsumptionKwh());
     }
 
@@ -195,5 +195,34 @@ class EnergyAnalysisServiceTest {
         ArgumentCaptor<EnergyAnalysis> captor = ArgumentCaptor.forClass(EnergyAnalysis.class);
         verify(repoMock, times(2)).save(captor.capture());
         assertTrue(captor.getAllValues().get(0).getAppliancesSnapshot().isEmpty());
+    }
+
+    @Test
+    void deveEnviarPropertyTypeSemTraducaoParaOMLService() {
+        // Arrange
+        Property property = new Property(1L, "Loja Comercial", "COMERCIAL");
+        Appliance arCondicionado = new Appliance(
+                1L, "Ar Condicionado", "AIR_CONDITIONING", new BigDecimal("1000.0"), new BigDecimal("8.0"));
+        PropertyAppliance propertyAppliance = new PropertyAppliance(1L, arCondicionado, 1);
+
+        when(repoMock.save(any(EnergyAnalysis.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Map<String, Object> responseBody =
+                Map.of("category", "EXCELENTE", "probability", 0.90, "recommendations", List.of(), "source", "model");
+        when(mlClientMock.predict(any(MlEnvelope.class))).thenReturn(new MlEnvelope(responseBody));
+
+        // Act
+        service.execute(
+                property, List.of(propertyAppliance), new BigDecimal("250.0"), false, new BigDecimal("4.0"), null);
+
+        // Assert
+        ArgumentCaptor<MlEnvelope> envelopeCaptor = ArgumentCaptor.forClass(MlEnvelope.class);
+        verify(mlClientMock).predict(envelopeCaptor.capture());
+
+        MlEnvelope capturedEnvelope = envelopeCaptor.getValue();
+        assertNotNull(capturedEnvelope);
+
+        // Valida se o "COMERCIAL" foi repassado direto, sem virar "Comercial"
+        assertEquals("COMERCIAL", capturedEnvelope.body().get("property_type"));
     }
 }
