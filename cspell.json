@@ -209,7 +209,9 @@
     "agregacao",
     "Agregacao",
     "distribuicao",
-    "multiplos"
+    "multiplos",
+    "instantanea",
+    "diaria"
   ],
   "ignorePaths": [
     "node_modules",
