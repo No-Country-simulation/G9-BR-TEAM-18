@@ -49,15 +49,21 @@ export const CATEGORY_COLORS: Record<EfficiencyClassification, string> = {
   CRITICO: "#ef4444",
 };
 
-export const PROPERTY_TYPES = ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"] as const;
-
-export type PropertyType = (typeof PROPERTY_TYPES)[number];
+/**
+ * Tipos de imóvel suportados. A fonte de verdade é o GET /contract-info
+ * (F063 / ADR-0027); este union mantém type-safety em tempo de compilação
+ * e serve de fallback local caso o endpoint dinâmico falhe.
+ */
+export type PropertyType = "RESIDENCIAL" | "APARTAMENTO" | "COMERCIAL";
 
 export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   RESIDENCIAL: "Casa",
   APARTAMENTO: "Apartamento",
   COMERCIAL: "Comercial",
 };
+
+/** Fallback local usado apenas se GET /contract-info falhar (F063). */
+export const DEFAULT_PROPERTY_TYPES: PropertyType[] = ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"];
 
 export interface ErrorResponse {
   timestamp: string;

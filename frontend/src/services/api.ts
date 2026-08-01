@@ -8,6 +8,7 @@ import type {
 } from "../types";
 import { ApiError } from "../types";
 import { enrichAppliance } from "../data/appliances";
+import type { ApplianceCatalogItem } from "../data/appliances";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
@@ -211,15 +212,13 @@ export async function listAnalyses(): Promise<AnalysisHistory[]> {
     probability: Number(a.probability ?? 0),
     consumption_kwh: Number(a.consumption_kwh ?? 0),
     estimated_monthly_cost: Number(a.estimated_monthly_cost ?? 0),
-    peak_hour_usage:
-      a.peak_hour_usage === true || a.peak_hour_usage === "true",
+    peak_hour_usage: a.peak_hour_usage === true || a.peak_hour_usage === "true",
     high_consumption_hours: Number(a.high_consumption_hours ?? 0),
     created_at: String(a.created_at ?? ""),
     recommendations: (a.recommendations as string[]) ?? [],
     status: a.status as AnalysisHistory["status"],
     appliances: (a.appliances as AnalysisHistory["appliances"]) ?? [],
-    highest_consumption_products:
-      (a.highest_consumption_products as string[]) ?? undefined,
+    highest_consumption_products: (a.highest_consumption_products as string[]) ?? undefined,
   }));
 }
 
@@ -291,8 +290,7 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
     probability: raw.probability ?? 0,
     consumption_kwh: raw.consumption_kwh ?? 0,
     estimated_monthly_cost: raw.estimated_monthly_cost ?? 0,
-    peak_hour_usage:
-      raw.peak_hour_usage === true || raw.peak_hour_usage === "true",
+    peak_hour_usage: raw.peak_hour_usage === true || raw.peak_hour_usage === "true",
     high_consumption_hours: raw.high_consumption_hours ?? 0,
     created_at: raw.created_at,
     recommendations: raw.recommendations ?? [],
@@ -314,8 +312,7 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
         monthly_consumption_kwh: s.monthly_consumption_kwh,
       }),
     ),
-    highest_consumption_products:
-      (raw.highest_consumption_products as string[]) ?? undefined,
+    highest_consumption_products: (raw.highest_consumption_products as string[]) ?? undefined,
   };
 }
 
@@ -362,6 +359,45 @@ export async function fetchCategories(): Promise<string[]> {
   return response.json();
 }
 
+export interface ContractInfo {
+  propertyTypes: string[];
+  consumptionCategories: string[];
+  efficiencyCategories: string[];
+}
+
+/**
+ * Consome GET /contract-info (B050 / ADR-0027) para descobrir dinamicamente
+ * os tipos de imóvel e categorias válidas expostos pelo ML Service.
+ *
+ * Nunca lança: em caso de falha/erro retorna listas vazias para que a página
+ * use seu fallback local (F063).
+ */
+export async function fetchContractInfo(): Promise<ContractInfo> {
+  try {
+    const response = await authFetch("/contract-info");
+    if (!response.ok) {
+      if (response.status === 401) redirectToLogin();
+      return { propertyTypes: [], consumptionCategories: [], efficiencyCategories: [] };
+    }
+    const raw = (await response.json()) as {
+      property_types?: unknown;
+      consumption_categories?: unknown;
+      efficiency_categories?: unknown;
+    };
+    return {
+      propertyTypes: Array.isArray(raw?.property_types) ? (raw.property_types as string[]) : [],
+      consumptionCategories: Array.isArray(raw?.consumption_categories)
+        ? (raw.consumption_categories as string[])
+        : [],
+      efficiencyCategories: Array.isArray(raw?.efficiency_categories)
+        ? (raw.efficiency_categories as string[])
+        : [],
+    };
+  } catch {
+    return { propertyTypes: [], consumptionCategories: [], efficiencyCategories: [] };
+  }
+}
+
 export async function deleteAnalysis(analysisId: string): Promise<void> {
   const response = await authFetch(`/analyses/${analysisId}`, {
     method: "DELETE",
@@ -380,12 +416,6 @@ export async function listAppliances(): Promise<ApplianceType[]> {
     const err: ErrorResponse = await response.json();
     throw new Error(err.message ?? "Erro ao carregar catálogo de aparelhos");
   }
-  const raw: Array<{
-    id: number;
-    name: string;
-    appliance_category: string;
-    average_power_watts: number;
-    average_daily_use_hours: number;
-  }> = await response.json();
+  const raw: ApplianceCatalogItem[] = await response.json();
   return raw.map(enrichAppliance);
 }
