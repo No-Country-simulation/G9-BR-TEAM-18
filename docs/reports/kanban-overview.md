@@ -25,12 +25,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria (atualizado em 01/08/2026)
+## Cards por coluna e categoria (atualizado em 02/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 116 | | Frontend (F) | 53 |
-| In review | 9 | | Backend (B) | 42 |
+| Done | 120 | | Frontend (F) | 53 |
+| In review | 5 | | Backend (B) | 42 |
 | In progress | 3 | | Infraestrutura (I) | 19 |
 | Ready | 1 | | ML Service / Queries (Q) | 9 |
 | Backlog | 5 | | Banco de Dados (M) | 9 |
@@ -320,7 +320,24 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - Reconciliação entre o report (que já marcava F058-F061 e F066-F068 como Done desde 27/07) e o
   board do GitHub Projects (que permanecia em Backlog). F059/F060 não possuíam card nem issue:
   foram criados como draft items em Done com os commits 2c04560 e 007c8b2.
-- F062-F065 seguem em In review (implementados, aguardando revisão). Revisão manual
-  executável pelo [checklist-review-f062-f065.md](checklist-review-f062-f065.md).
-  Validações executadas: E2E 68/68 (Firefox), typecheck, lint 0, unit 163/163.
+- F062-F065 foram movidos para Done após revisão concluída (ver Rodada 4).
 - F069 segue em In progress (prep concluída; validação ponta a ponta aguarda B051).
+
+## Movimentações (02/08/2026) - Rodada 4: Review concluída F062-F065
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F062 | Frontend - Consumir GET /contract-info e GET /appliances do backend | #132 | 7f0e60d, b55fc90, b764464, 452977e | ADR-0047 |
+| F063 | Frontend - Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | 7f0e60d, b764464 | ADR-0047 |
+| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | 7f0e60d, b55fc90 | ADR-0047 |
+| F065 | Frontend - Ajustar UI: nomes em português com mlCategory em inglês | #135 | b764464, b305cb2 | ADR-0047 |
+
+### Notas
+
+- Revisão manual executada conforme [checklist-review-f062-f065.md](checklist-review-f062-f065.md)
+  (itens 1-14 aprovados) e validações automatizadas: E2E 68/68 (Firefox), typecheck, lint 0,
+  unit 163/163. Comentado nos issues #132-#135.
+- Limitação registrada: o salvar de aparelhos no perfil continua dependendo do card B052
+  (expor `id` no GET /appliances). Não bloqueia a conclusão dos cards F062-F065.

@@ -103,6 +103,10 @@
 | F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage | - | ADR-0043 |
 | F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | - | ADR-0043 |
 | F061 | Frontend - Seletor de imóveis no Dashboard | #123 | ADR-0043 |
+| F062 | Frontend - Consumir GET /contract-info e GET /appliances do backend | #132 | ADR-0047 |
+| F063 | Frontend - Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | ADR-0047 |
+| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | ADR-0047 |
+| F065 | Frontend - Ajustar UI: nomes em português com mlCategory em inglês | #135 | ADR-0047 |
 | F066 | Frontend - Catálogo de ícones por palavra-chave + remover METADATA_BY_NAME | #138 | - |
 | F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | - |
 | F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | - |
