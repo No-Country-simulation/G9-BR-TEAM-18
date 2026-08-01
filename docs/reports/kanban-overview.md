@@ -275,4 +275,4 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
-| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | - | ADR-0027, ADR-0028, ADR-0047 |
+| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | #150 | ADR-0027, ADR-0028, ADR-0047 |
