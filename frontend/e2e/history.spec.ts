@@ -16,7 +16,8 @@ test.describe("Historico", () => {
   test("mostra loading state inicial", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.route(`http://localhost:8080/analyses`, async (route) => {
-      await new Promise((r) => setTimeout(r, 300));
+      // Janela generosa para o loading state ser renderizado (evita flakiness)
+      await new Promise((r) => setTimeout(r, 1500));
       await route.fulfill({ json: MOCK_ANALYSES, headers: { "Content-Type": "application/json" } });
     });
     await page.goto("/history");
@@ -84,7 +85,10 @@ test.describe("Historico", () => {
     await setupAuthenticatedMocks(page);
     await page.goto("/history");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: /voltar/i }).first().click();
+    await page
+      .getByRole("button", { name: /voltar/i })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/dashboard/);
   });
 

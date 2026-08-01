@@ -22,7 +22,8 @@ test.describe("Dashboard", () => {
   test("mostra loading state inicial", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.route(`http://localhost:8080/dashboard`, async (route) => {
-      await new Promise((r) => setTimeout(r, 300));
+      // Janela generosa para o loading state ser renderizado (evita flakiness)
+      await new Promise((r) => setTimeout(r, 1500));
       await route.fulfill({
         json: MOCK_DASHBOARD,
         headers: { "Content-Type": "application/json" },
