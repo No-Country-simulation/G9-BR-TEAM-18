@@ -25,7 +25,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria (atualizado em 02/08/2026)
+## Cards por coluna e categoria (atualizado em 01/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
@@ -323,7 +323,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - F062-F065 foram movidos para Done após revisão concluída (ver Rodada 4).
 - F069 segue em In progress (prep concluída; validação ponta a ponta aguarda B051).
 
-## Movimentações (02/08/2026) - Rodada 4: Review concluída F062-F065
+## Movimentações (01/08/2026) - Rodada 4: Review concluída F062-F065
 
 ### In review → Done
 

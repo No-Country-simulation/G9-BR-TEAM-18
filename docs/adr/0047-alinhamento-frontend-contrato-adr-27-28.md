@@ -96,7 +96,7 @@ não expõe `id`, e o frontend deriva um id via slugify como fallback local.
 Para destravar o salvar de aparelhos de ponta a ponta, o backend deve expor o
 campo `id` no `GET /appliances` (novo card **B052**).
 
-### 7. Revisão concluída (02/08/2026)
+### 7. Revisão concluída (01/08/2026)
 
 A revisão dos cards F062 a F065 foi concluída e todos foram movidos para
 **Done** no board, com comentário de aprovação nos issues #132, #133, #134
@@ -133,7 +133,7 @@ F065.
 - **Positivo:** UI permanece em português com `mlCategory` interno em inglês.
 - **Positivo:** Suíte E2E validada (68/68) com mocks alinhados ao contrato.
 - **Positivo:** Revisão dos cards F062 a F065 concluída e aprovada
-  (02/08/2026), com checklist manual vinculado (seção 7).
+  (01/08/2026), com checklist manual vinculado (seção 7).
 - **Negativo:** Salvar aparelhos no perfil continua dependendo do backend expor
   `id` no `GET /appliances` (card B052).
 - **Neutro:** Fallbacks defensivos (`DEFAULT_PROPERTY_TYPES`, `?? label`)
