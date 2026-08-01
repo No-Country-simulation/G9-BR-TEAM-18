@@ -1,8 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
-import br.com.group18.energiai.core.domain.model.Appliance;
-import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
-import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ApplianceResponseDTO;
+import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
+import br.com.group18.energiai.infrastructure.client.dto.MlApplianceDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,29 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/appliances")
 public class ApplianceController {
 
-    private final ApplianceRepositoryPort applianceRepository;
+    private final MlSchemaRegistry registry;
 
-    public ApplianceController(ApplianceRepositoryPort applianceRepository) {
-        this.applianceRepository = applianceRepository;
+    public ApplianceController(MlSchemaRegistry registry) {
+        this.registry = registry;
     }
 
     @Operation(
             summary = "Listar catálogo de eletrodomésticos",
-            description =
-                    "Retorna o catálogo completo de eletrodomésticos disponíveis no sistema, com potência média e uso diário estimado.")
+            description = "Retorna o catálogo completo de eletrodomésticos descobertos dinamicamente no ML Service.")
     @ApiResponse(responseCode = "200", description = "Catálogo de eletrodomésticos retornado")
     @GetMapping
-    public ResponseEntity<List<ApplianceResponseDTO>> list() {
-        return ResponseEntity.ok(
-                applianceRepository.findAll().stream().map(this::toResponse).toList());
-    }
-
-    private ApplianceResponseDTO toResponse(Appliance appliance) {
-        return new ApplianceResponseDTO(
-                appliance.getId(),
-                appliance.getName(),
-                appliance.getApplianceCategory(),
-                appliance.getAveragePowerWatts(),
-                appliance.getAverageDailyUseHours());
+    public ResponseEntity<List<MlApplianceDTO>> list() {
+        return ResponseEntity.ok(registry.getApplianceCatalog());
     }
 }
