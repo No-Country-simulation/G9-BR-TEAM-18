@@ -320,5 +320,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - Reconciliação entre o report (que já marcava F058-F061 e F066-F068 como Done desde 27/07) e o
   board do GitHub Projects (que permanecia em Backlog). F059/F060 não possuíam card nem issue:
   foram criados como draft items em Done com os commits 2c04560 e 007c8b2.
-- F062-F065 seguem em In review (implementados, aguardando revisão).
+- F062-F065 seguem em In review (implementados, aguardando revisão). Revisão manual
+  executável pelo [checklist-review-f062-f065.md](checklist-review-f062-f065.md).
+  Validações executadas: E2E 68/68 (Firefox), typecheck, lint 0, unit 163/163.
 - F069 segue em In progress (prep concluída; validação ponta a ponta aguarda B051).
