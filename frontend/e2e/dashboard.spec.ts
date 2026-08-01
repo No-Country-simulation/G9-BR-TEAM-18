@@ -23,7 +23,10 @@ test.describe("Dashboard", () => {
     await setupAuthenticatedMocks(page);
     await page.route(`http://localhost:8080/dashboard`, async (route) => {
       await new Promise((r) => setTimeout(r, 300));
-      await route.fulfill({ json: MOCK_DASHBOARD, headers: { "Content-Type": "application/json" } });
+      await route.fulfill({
+        json: MOCK_DASHBOARD,
+        headers: { "Content-Type": "application/json" },
+      });
     });
     await page.goto("/dashboard");
     await expect(page.getByText(pt("Carregando dashboard"))).toBeVisible();
@@ -32,7 +35,13 @@ test.describe("Dashboard", () => {
   test("mostra estado vazio quando nao ha analises", async ({ page }) => {
     await setupAuthenticatedMocks(page, {
       analyses: [],
-      dashboard: { total_analyses: 0, average_consumption_kwh: 0, total_estimated_cost: 0, total_co2_emission_kg: 0, monthly_consumption: [] },
+      dashboard: {
+        total_analyses: 0,
+        average_consumption_kwh: 0,
+        total_estimated_cost: 0,
+        total_co2_emission_kg: 0,
+        monthly_consumption: [],
+      },
     });
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
@@ -81,14 +90,14 @@ test.describe("Dashboard", () => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
     await expect(page.getByText(pt("Simule sua economia"))).toBeVisible();
-    await expect(page.locator(".dash-simulation-card").first()).toBeVisible();
+    await expect(page.locator(".dash-sim-card").first()).toBeVisible();
   });
 
   test("grafico de consumo mensal aparece", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(pt("Consumo por mes"))).toBeVisible();
+    await expect(page.getByText(pt("Consumo (kWh)"))).toBeVisible();
     await expect(page.locator(".recharts-responsive-container")).toBeVisible();
   });
 
@@ -110,18 +119,30 @@ test.describe("Dashboard", () => {
     await setupAuthenticatedMocks(page);
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: pt("Meu Perfil") }).first().click();
+    await page
+      .getByRole("link", { name: /perfil/i })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/profile/);
   });
 
   test("botoes de acao no estado vazio navegam para /profile", async ({ page }) => {
     await setupAuthenticatedMocks(page, {
       analyses: [],
-      dashboard: { total_analyses: 0, average_consumption_kwh: 0, total_estimated_cost: 0, total_co2_emission_kg: 0, monthly_consumption: [] },
+      dashboard: {
+        total_analyses: 0,
+        average_consumption_kwh: 0,
+        total_estimated_cost: 0,
+        total_co2_emission_kg: 0,
+        monthly_consumption: [],
+      },
     });
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: pt("Criar Perfil") }).first().click();
+    await page
+      .getByRole("button", { name: pt("Criar Perfil") })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/profile/);
   });
 

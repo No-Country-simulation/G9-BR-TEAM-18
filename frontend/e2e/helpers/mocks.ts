@@ -19,49 +19,58 @@ export const MOCK_USER_NEEDS_RESET = {
 /* ---------- mock categories ---------- */
 export const MOCK_CATEGORIES = ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"];
 
-/* ---------- mock appliances ---------- */
+/* ---------- mock contract-info (F063 / ADR-0027) ---------- */
+export const MOCK_CONTRACT_INFO = {
+  property_types: ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
+  consumption_categories: [
+    "REFRIGERATION",
+    "CLIMATE_CONTROL",
+    "TECHNOLOGY",
+    "LIGHTING",
+    "APPLIANCES",
+    "SERVICES",
+    "OTHERS",
+  ],
+  efficiency_categories: MOCK_CATEGORIES,
+};
+
+/* ---------- mock appliances (contrato ADR-0027: ml_category, watts, hours) ---------- */
 export const MOCK_APPLIANCES = [
   {
-    id: 1,
     name: "Geladeira",
-    appliance_category: "REFRIGERATION",
-    average_power_watts: 150,
-    average_daily_use_hours: 24,
+    ml_category: "REFRIGERATION",
+    watts: 150,
+    hours: 24,
   },
   {
-    id: 2,
     name: "Ar Condicionado",
-    appliance_category: "CLIMATE_CONTROL",
-    average_power_watts: 1400,
-    average_daily_use_hours: 8,
+    ml_category: "CLIMATE_CONTROL",
+    watts: 1400,
+    hours: 8,
   },
   {
-    id: 3,
     name: "Televisao",
-    appliance_category: "TECHNOLOGY",
-    average_power_watts: 120,
-    average_daily_use_hours: 5,
+    ml_category: "TECHNOLOGY",
+    watts: 120,
+    hours: 5,
   },
   {
-    id: 4,
     name: "Lampada LED",
-    appliance_category: "LIGHTING",
-    average_power_watts: 10,
-    average_daily_use_hours: 6,
+    ml_category: "LIGHTING",
+    watts: 10,
+    hours: 6,
   },
   {
-    id: 5,
     name: "Maquina de Lavar",
-    appliance_category: "APPLIANCES",
-    average_power_watts: 500,
-    average_daily_use_hours: 1,
+    ml_category: "APPLIANCES",
+    watts: 500,
+    hours: 1,
   },
   {
-    id: 6,
     name: "Bomba d'Agua",
-    appliance_category: "SERVICES",
-    average_power_watts: 750,
-    average_daily_use_hours: 2,
+    ml_category: "SERVICES",
+    watts: 750,
+    hours: 2,
   },
 ];
 
@@ -269,6 +278,9 @@ export async function setupAuthenticatedMocks(
   });
   await page.route(`http://localhost:8080/energy-analysis/categories`, async (route: Route) => {
     await route.fulfill({ json: MOCK_CATEGORIES, headers: JSON_HEADERS });
+  });
+  await page.route(`http://localhost:8080/contract-info`, async (route: Route) => {
+    await route.fulfill({ json: MOCK_CONTRACT_INFO, headers: JSON_HEADERS });
   });
   await page.route(`http://localhost:8080/properties`, async (route: Route, request) => {
     if (request.method() === "POST") {

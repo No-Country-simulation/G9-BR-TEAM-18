@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
-import {
-  setupAuthenticatedMocks,
-  setLoggedIn,
-  pt,
-  MOCK_APPLIANCES,
-} from "./helpers/mocks";
+import { setupAuthenticatedMocks, setLoggedIn, pt, MOCK_APPLIANCES } from "./helpers/mocks";
 
 test.describe("Profile Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,7 +10,10 @@ test.describe("Profile Page", () => {
     await setupAuthenticatedMocks(page);
     await page.route(`http://localhost:8080/appliances`, async (route) => {
       await new Promise((r) => setTimeout(r, 300));
-      await route.fulfill({ json: MOCK_APPLIANCES, headers: { "Content-Type": "application/json" } });
+      await route.fulfill({
+        json: MOCK_APPLIANCES,
+        headers: { "Content-Type": "application/json" },
+      });
     });
     await page.goto("/profile");
     await expect(page.getByText(pt("Carregando perfil"))).toBeVisible();
@@ -98,7 +96,9 @@ test.describe("Profile Page", () => {
     // Fill search and wait for filter to apply
     await page.locator(".appliance-search input").fill("Geladeira");
     // Wait for the button with Geladeira to appear (filter may take a render cycle)
-    await expect(page.getByRole("button", { name: /geladeira/i }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("button", { name: /geladeira/i }).first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("limpa busca ao clicar no X", async ({ page }) => {
@@ -133,21 +133,30 @@ test.describe("Profile Page", () => {
     await setupAuthenticatedMocks(page);
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("button", { name: pt("Executar analise energetica") })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: pt("Executar analise energetica") }),
+    ).toBeVisible();
   });
 
   test("analise envia consumption_kwh com no maximo 2 casas decimais", async ({ page }) => {
     let capturedBody: string | null = null;
-    // Intercept the analysis POST BEFORE navigation to avoid race
+    await setupAuthenticatedMocks(page);
+    // Register the capture route AFTER setup so it takes precedence (Playwright
+    // resolves the most recently registered route first - LIFO).
     await page.route(`http://localhost:8080/energy-analysis`, async (route, request) => {
       capturedBody = request.postData();
       await route.fulfill({
         status: 201,
-        json: { category: "BOM", probability: 0.78, recommendations: [], estimated_monthly_cost: 100, status: "CONCLUIDA" },
+        json: {
+          category: "BOM",
+          probability: 0.78,
+          recommendations: [],
+          estimated_monthly_cost: 100,
+          status: "CONCLUIDA",
+        },
         headers: { "Content-Type": "application/json" },
       });
     });
-    await setupAuthenticatedMocks(page);
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
     // Add an appliance to trigger calculation with potential float issues
