@@ -96,6 +96,27 @@ não expõe `id`, e o frontend deriva um id via slugify como fallback local.
 Para destravar o salvar de aparelhos de ponta a ponta, o backend deve expor o
 campo `id` no `GET /appliances` (novo card **B052**).
 
+### 7. Revisão concluída (02/08/2026)
+
+A revisão dos cards F062 a F065 foi concluída e todos foram movidos para
+**Done** no board, com comentário de aprovação nos issues #132, #133, #134
+e #135 (ADR-0047).
+
+Validação manual executada conforme o
+[checklist-review-f062-f065.md](../reports/checklist-review-f062-f065.md)
+(itens 1 a 14 aprovados), além das validações automatizadas da seção 5:
+
+| Card | Issue | Status |
+|---|---|---|
+| F062 | #132 | Done |
+| F063 | #133 | Done |
+| F064 | #134 | Done |
+| F065 | #135 | Done |
+
+A única limitação registrada na revisão é a dependência do card B052 para o
+salvar de aparelhos (seção 6), que não bloqueia a conclusão dos cards F062 a
+F065.
+
 ## Alternativas consideradas
 
 | Alternativa | Prós | Contras |
@@ -111,6 +132,8 @@ campo `id` no `GET /appliances` (novo card **B052**).
 - **Positivo:** `PROPERTY_TYPES` e dados de aparelhos vêm 100% do backend.
 - **Positivo:** UI permanece em português com `mlCategory` interno em inglês.
 - **Positivo:** Suíte E2E validada (68/68) com mocks alinhados ao contrato.
+- **Positivo:** Revisão dos cards F062 a F065 concluída e aprovada
+  (02/08/2026), com checklist manual vinculado (seção 7).
 - **Negativo:** Salvar aparelhos no perfil continua dependendo do backend expor
   `id` no `GET /appliances` (card B052).
 - **Neutro:** Fallbacks defensivos (`DEFAULT_PROPERTY_TYPES`, `?? label`)
