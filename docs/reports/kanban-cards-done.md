@@ -72,3 +72,37 @@
 | F032 | Frontend (Telas/Componentes) - Corrigir createProperty test e remover demo.test.ts | - | - |
 | I018 | Infraestrutura/Base - Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
 | I020 | Infraestrutura/Base - Configuração de usuários DEV e TEST no Oracle DB com ORDS | #89 | - |
+| F008 | Frontend - Unificar páginas de análise e remover dados avançados | #76 | - |
+| F009 | Frontend - Reformular Dashboard com propósito (meta, simulação, progresso) | #77 | - |
+| F024 | Frontend - Acessibilidade: foco visível (:focus-visible) | #79 | - |
+| F025 | Frontend - Acessibilidade: touch targets mínimos de 36px | #82 | - |
+| F026 | Frontend - Responsividade: breakpoints mobile | #81 | - |
+| F027 | Frontend - Acessibilidade e tema: ARIA labels, variáveis CSS | #80 | - |
+| F033 | Frontend - Validação de sessão na montagem (auth/me) | #92 | ADR-0030 |
+| F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK | #96 | ADR-0030 |
+| F035 | Frontend - Alinhar categorias de aparelhos para inglês (ADR-0027) | #93 | ADR-0027 |
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories | #95 | ADR-0027 |
+| F037 | Frontend - Adicionar campo status nas análises | #94 | ADR-0027 |
+| F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | #97 | - |
+| F039 | Frontend - Corrigir crash no Histórico com status desconhecido | #98 | - |
+| F040 | Frontend - Corrigir null safety no Dashboard e ProfilePage | #99 | - |
+| F041 | Frontend - Corrigir interpretTrend no Dashboard (NaN% com PENDENTE/FALHA) | #100 | - |
+| F042 | Frontend - Code splitting com React.lazy() (bundle 1.15MB -> 242kB) | #101 | - |
+| F043 | Frontend - ChunkErrorBoundary para falhas de carregamento lazy | #102 | - |
+| F044 | Frontend - Testes E2E com Playwright (67 testes) | #103 | ADR-0031 |
+| F045 | Frontend - Corrigir 400 ao analisar com mais de 2 casas decimais | #104 | - |
+| F046 | Frontend - Adicionar campos peakHourUsage e highConsumptionHours no ProfilePage | #106 | ADR-0046 |
+| F047 | Frontend - Adicionar Apartamento como tipo de imóvel | #109 | ADR-0035 |
+| F048 | Frontend - Exibir highest_consumption_products no resultado da análise | #110 | - |
+| F049 | Frontend - Remover localStorage, preferências via backend | #111 | ADR-0033 |
+| F050 | Frontend - Ícones específicos por aparelho + contraste tema escuro | #112 | - |
+| F055 | Frontend - Gráficos Dashboard com granularidade temporal | #118 | ADR-0039 |
+| F056 | Frontend - Relatório completo no Histórico com gráfico por equipamento | #119 | ADR-0040 |
+| F057 | Frontend - Excluir análise no Histórico com confirmação | #120 | ADR-0041 |
+| F058 | Frontend/Backend - Alinhamento FE/BE (remover AnalysisForm, Dashboard usar /simulate) | #122 | ADR-0042 |
+| F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage | - | ADR-0043 |
+| F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | - | ADR-0043 |
+| F061 | Frontend - Seletor de imóveis no Dashboard | #123 | ADR-0043 |
+| F066 | Frontend - Catálogo de ícones por palavra-chave + remover METADATA_BY_NAME | #138 | - |
+| F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | - |
+| F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | - |

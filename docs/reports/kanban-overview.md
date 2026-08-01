@@ -25,17 +25,17 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria
+## Cards por coluna e categoria (atualizado em 01/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 116 | | Backend (B) | 52 |
-| In review | 0 | | Infraestrutura (I) | 20 |
-| In progress | 0 | | Frontend (F) | 50 |
-| Ready | 0 | | ML Service (Q) | 6 |
-| Backlog | 15 | | Banco de Dados (M) | 7 |
-| **Total** |**116** | | Queries/Views (Q) | 2 |
-| | | | **Total** | **137** |
+| Done | 116 | | Frontend (F) | 53 |
+| In review | 9 | | Backend (B) | 42 |
+| In progress | 3 | | Infraestrutura (I) | 19 |
+| Ready | 1 | | ML Service / Queries (Q) | 9 |
+| Backlog | 5 | | Banco de Dados (M) | 9 |
+| **Total** | **134** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **134** |
 
 ## Movimentações (24/07/2026)
 
@@ -295,3 +295,30 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - O commit `7120d57` aumenta a janela dos mocks de loading state (300ms -> 1500ms) nos specs de
   dashboard, history e profile, eliminando flakiness por cold-compile do Vite/Firefox: suíte E2E
   completa com 68/68 testes passando.
+
+## Movimentações (01/08/2026) - Rodada 3: Reconciliação board/report (frontend)
+
+### Backlog → Done (código já implementado)
+
+| ID | Título | Issue | Commits associados |
+|---|---|---|---|
+| F058 | Frontend/Backend - Alinhamento FE/BE: remover AnalysisForm, expor highestConsumptionProducts, Dashboard usar /simulate | #122 | ada29a3 |
+| F061 | Frontend (Dashboard) - Seletor de imóveis no Dashboard para simular com a propriedade correta | #123 | cb37ed4 |
+| F066 | Frontend - Catálogo de ícones por palavra-chave (appliance-icons.ts) + remover METADATA_BY_NAME | #138 | 6e588db, 63d5fe3, 9e956df, cfc294f, 1c7cd79, 8c5fb0e, d77afde, 2716c3c |
+| F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | 6e588db, 2802818, ccfa9f9 |
+| F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | 6e588db, eebb5b9 |
+
+### Cards criados no board (implementados, sem issue) → Done
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage (criar/trocar/editar) | 2c04560 |
+| F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | 007c8b2 |
+
+### Notas
+
+- Reconciliação entre o report (que já marcava F058-F061 e F066-F068 como Done desde 27/07) e o
+  board do GitHub Projects (que permanecia em Backlog). F059/F060 não possuíam card nem issue:
+  foram criados como draft items em Done com os commits 2c04560 e 007c8b2.
+- F062-F065 seguem em In review (implementados, aguardando revisão).
+- F069 segue em In progress (prep concluída; validação ponta a ponta aguarda B051).
