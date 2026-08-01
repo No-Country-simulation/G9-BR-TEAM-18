@@ -13,8 +13,8 @@ import {
   ApiError,
   CATEGORY_COLORS,
   CATEGORY_DISPLAY,
-  PROPERTY_TYPES,
   PROPERTY_TYPE_LABELS,
+  DEFAULT_PROPERTY_TYPES,
   REGULARITY_OPTIONS,
 } from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
@@ -24,6 +24,7 @@ import {
   updateProperty,
   listAppliances,
   fetchCategories,
+  fetchContractInfo,
   fetchPreferences,
   updatePreferences,
   listPropertyAppliances,
@@ -40,6 +41,10 @@ export default function ProfilePage() {
   const [property, setProperty] = useState<PropertyResponse | null>(null);
   const [aliasInput, setAliasInput] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("RESIDENCIAL");
+  // Tipos de imóvel dinâmicos vindos do GET /contract-info (F063 / ADR-0027),
+  // com fallback local caso o endpoint falhe.
+  const [propertyTypeOptions, setPropertyTypeOptions] =
+    useState<PropertyType[]>(DEFAULT_PROPERTY_TYPES);
   const [address, setAddress] = useState("");
   const [residentCount, setResidentCount] = useState(1);
   const [areaSqm, setAreaSqm] = useState(50);
@@ -77,10 +82,19 @@ export default function ProfilePage() {
       navigate("/login");
       return;
     }
-    Promise.all([listAppliances(), listProperties(), fetchCategories(), fetchPreferences()])
-      .then(([appls, props, cats, prefs]) => {
+    Promise.all([
+      listAppliances(),
+      listProperties(),
+      fetchCategories(),
+      fetchContractInfo(),
+      fetchPreferences(),
+    ])
+      .then(([appls, props, cats, contractInfo, prefs]) => {
         if (cats.length > 0) setBackendCategorySet(new Set(cats));
         setApplianceTypes(appls);
+        if (contractInfo.propertyTypes.length > 0) {
+          setPropertyTypeOptions(contractInfo.propertyTypes as PropertyType[]);
+        }
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
@@ -338,9 +352,9 @@ export default function ProfilePage() {
                 value={propertyType}
                 onChange={(e) => setPropertyType(e.target.value as PropertyType)}
               >
-                {PROPERTY_TYPES.map((t) => (
+                {propertyTypeOptions.map((t) => (
                   <option key={t} value={t}>
-                    {PROPERTY_TYPE_LABELS[t]}
+                    {PROPERTY_TYPE_LABELS[t as PropertyType] ?? t}
                   </option>
                 ))}
               </select>
@@ -453,6 +467,9 @@ export default function ProfilePage() {
                       type="button"
                       className="appliance-category-header"
                       onClick={() => toggleCategory(cat)}
+                      aria-label={
+                        isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
+                      }
                       style={{ "--cat-color": catInfo.color } as React.CSSProperties}
                     >
                       <span className="category-icon">
