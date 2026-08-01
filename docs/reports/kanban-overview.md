@@ -157,7 +157,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F044 | Frontend (Testes) - Testes E2E com Playwright (67 testes) | d0984f9, 9d33533, ADR-0031 |
 | F045 | Frontend (Bug) - Corrigir 400 ao analisar por consumo com mais de 2 casas decimais | 6f2a784 |
 
-## Movimentações (26/07/2026) — Rodada 2
+## Movimentações (26/07/2026) - Rodada 2
 
 ### Novos Cards + Conclusão
 
@@ -186,7 +186,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | M006 | Manual: Deletar entrada V12 do flyway_schema_history | In progress | Done | - |
 | B044 | Backend - Corrigir CHECK constraint chk_property_type (APARTAMENTO) | In progress | Done | eb3298d, ADR-0035 |
 
-## Movimentações (27/07/2026) — Rodada 3
+## Movimentações (27/07/2026) - Rodada 3
 
 ### Novos Cards + Conclusão
 
@@ -199,7 +199,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F056 | Frontend - Relatório completo no Histórico com gráfico de consumo por equipamento | In progress | Done | dcf26f0, b790a2a, b4064c4, ADR-0040 |
 | F057 | Frontend - Excluir análise no Histórico com confirmação | In progress | Done | 28911de, ADR-0041 |
 
-## Movimentações (27/07/2026) — Rodada 4
+## Movimentações (27/07/2026) - Rodada 4
 
 ### In progress → Done
 
@@ -210,9 +210,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | In progress | Done | 007c8b2 |
 | F061 | Frontend - Seletor de imóveis no Dashboard para simulação correta | In progress | Done | cb37ed4, ADR-0043 |
 
-## Movimentações (27/07/2026) — ADRs 27/28: Contrato em Inglês e Descoberta ML
+## Movimentações (27/07/2026) - ADRs 27/28: Contrato em Inglês e Descoberta ML
 
-### Novos Cards em Backlog — ML Service (assignee: guilherme-hermano)
+### Novos Cards em Backlog - ML Service (assignee: guilherme-hermano)
 
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
@@ -221,9 +221,9 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Q003 | Ajustar BASE_CONSUMPTION_BY_TYPE em main.py para inglês | #124 | ADR-0027, ADR-0028, ADR-0044 |
 | Q004 | Atualizar _store_for_training() para gravar valores traduzidos | #125 | ADR-0027, ADR-0028, ADR-0044 |
 | Q005 | Aplicar normalize_property_type() no prompt da Groq | #126 | ADR-0027, ADR-0028, ADR-0044 |
-| Q006 | Aplicar translate_category() em _run_prediction() | #131 | ADR-0027, ADR-0028, ADR-0044 |
+| Q006 | Aplicar translate_category() em `_run_prediction()` | #131 | ADR-0027, ADR-0028, ADR-0044 |
 
-### Novos Cards em Backlog — Backend (assignee: eduuardo1st)
+### Novos Cards em Backlog - Backend (assignee: eduuardo1st)
 
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
@@ -231,7 +231,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B049 | Remover switch de tradução em EnergyAnalysisService.buildMlRequest() | #129 | ADR-0027, ADR-0028 |
 | B050 | Expor GET /contract-info e GET /appliances para o frontend | #130 | ADR-0027, ADR-0028 |
 
-### Novos Cards em Backlog — Frontend (assignee: DessimA)
+### Novos Cards em Backlog - Frontend (assignee: DessimA)
 
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
@@ -240,7 +240,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F064 | Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | ADR-0027, ADR-0028 |
 | F065 | Ajustar UI: nomes em português com mlCategory em inglês | #135 | ADR-0027, ADR-0028 |
 
-## Movimentações (26/07/2026) — Rodada 5 (Tasks Independentes)
+## Movimentações (26/07/2026) - Rodada 5 (Tasks Independentes)
 
 ### In progress → Done
 
@@ -250,7 +250,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F067 | CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | 6e588db |
 | F068 | Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | 6e588db |
 
-## Movimentações (28/07/2026) — peak_hour_usage: Persistência e Independência
+## Movimentações (28/07/2026) - peak_hour_usage: Persistência e Independência
 
 ### Novos Cards em Backlog
 
@@ -260,4 +260,19 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B051 | Backend - Expor peak_hour_usage nas preferências do usuário | #145 | ADR-0046 | eduuardo1st |
 | Q007 | ML Service - Tornar peak_hour_usage feature independente no treino | #144 | ADR-0046 | guilherme-hermano |
 
+## Movimentações (01/08/2026) - Frontend: Alinhamento ADR-27/28 (F062-F065)
 
+### Backlog → In review
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F062 | Frontend - Consumir GET /contract-info e GET /appliances do backend | #132 | 7f0e60d, b55fc90, b764464, 452977e | ADR-0047 |
+| F063 | Frontend - Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | 7f0e60d, b764464 | ADR-0047 |
+| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | b55fc90 | ADR-0047 |
+| F065 | Frontend - Ajustar UI: nomes em português com mlCategory em inglês | #135 | b764464, b305cb2 | ADR-0047 |
+
+### Novos Cards em Backlog - Backend (assignee: eduuardo1st)
+
+| ID | Título | Issue | ADRs |
+|---|---|---|---|
+| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | - | ADR-0027, ADR-0028, ADR-0047 |
