@@ -276,3 +276,22 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título | Issue | ADRs |
 |---|---|---|---|
 | B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | #150 | ADR-0027, ADR-0028, ADR-0047 |
+
+## Movimentações (01/08/2026) - Rodada 2: F069 (peak_hour_usage) + bug regularidade + robustez E2E
+
+### Backlog → In progress
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário (prep frontend concluída; validação ponta a ponta aguarda B051) | #143 | 9d4178d, 7120d57 | ADR-0046 |
+
+### Notas
+
+- O commit `9d4178d` corrige o bug da regularidade que não carregava quando havia imóvel ativo
+  (o return precoce no load pulava o `setRegularity`) e prepara o F069: `fetchPreferences`/
+  `updatePreferences` agora aceitam `peak_hour_usage` e `high_consumption_hours`, e o `handleSave`
+  persiste os hábitos de consumo. O backend (B051, Ready) ainda ignora esses campos com segurança
+  até tratá-los.
+- O commit `7120d57` aumenta a janela dos mocks de loading state (300ms -> 1500ms) nos specs de
+  dashboard, history e profile, eliminando flakiness por cold-compile do Vite/Firefox: suíte E2E
+  completa com 68/68 testes passando.
