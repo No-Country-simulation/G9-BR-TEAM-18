@@ -79,7 +79,7 @@ dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
 # Construir a imagem de testes
 docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
 
-# Executar os 67 testes
+# Executar os 68 testes
 docker run --rm energiaia-e2e
 ```
 
@@ -101,6 +101,24 @@ Para instalar os browsers do Playwright localmente:
 cd frontend
 npx playwright install chromium
 ```
+
+##### Alternativa: executar com Firefox
+
+Em distribuições Linux mínimas (ex.: servidores e containers), o Chromium pode
+não abrir por falta de bibliotecas de sistema (`libnspr4.so`, `libnss3.so`,
+`libnssutil3.so`), mesmo com os browsers do Playwright instalados. Sem acesso
+`sudo` para instalar essas bibliotecas, é possível executar a mesma suíte com
+Firefox, que o Playwright baixa e gerencia da mesma forma:
+
+```bash
+cd frontend
+npx playwright install firefox
+npx playwright test --config=e2e/playwright.config.ts --browser=firefox
+```
+
+O flag `--browser=firefox` sobrescreve o browser padrão (Chromium) apenas para
+aquela execução, sem alterar a configuração. Os 68 testes da suíte rodam
+indistintamente em ambos os browsers.
 
 #### Relatórios e artefatos
 
@@ -371,6 +389,36 @@ servidor automaticamente.
 ```bash
 cd frontend
 npx playwright install chromium
+```
+
+Em ambiente Docker, esse passo já está incluído no `Dockerfile.e2e`.
+
+### Testes E2E: Chromium não abre por bibliotecas de sistema ausentes
+
+**Erro:** `error while loading shared libraries: libnspr4.so: cannot open shared object file`
+(ou `libnss3.so` / `libnssutil3.so`) ao iniciar o browser.
+
+**Causa:** O Chromium exige bibliotecas nativas (`libnspr4`, `libnss3`) que
+podem não estar instaladas em distribuições Linux mínimas. Instalar os browsers
+do Playwright (`npx playwright install chromium`) não resolve, pois o problema
+são dependências de sistema operacional, não o browser em si.
+
+**Solução 1 (instalar as bibliotecas):**
+
+```bash
+# Debian/Ubuntu (requer sudo):
+sudo apt-get install -y libnspr4 libnss3
+# Ou via Playwright (requer sudo):
+npx playwright install-deps chromium
+```
+
+**Solução 2 (sem sudo, usando Firefox):** O Firefox do Playwright tem menos
+dependências nativas e costuma funcionar sem instalar nada:
+
+```bash
+cd frontend
+npx playwright install firefox
+npx playwright test --config=e2e/playwright.config.ts --browser=firefox
 ```
 
 Em ambiente Docker, esse passo já está incluído no `Dockerfile.e2e`.

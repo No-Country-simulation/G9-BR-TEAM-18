@@ -3,6 +3,9 @@ target
 dist
 .git
 ml-service/data
+frontend/test-results
+frontend/e2e/test-results
+frontend/e2e/playwright-report
 *.csv
 *.joblib
 *.{png,jpg,jpeg,gif,svg,ico}

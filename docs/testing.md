@@ -8,7 +8,7 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 - [Backend - Testes Unitários](#backend---testes-unitários)
 - [Backend - Testes de Integração](#backend---testes-de-integração)
 - [Backend - Testes de Contrato](#backend---testes-de-contrato)
-- [Frontend - Testes](#frontend---testes)
+- [Frontend - Testes E2E (Playwright)](#frontend---testes-e2e-playwright)
 - [Como Executar](#como-executar)
 - [Cobertura](#cobertura)
 
@@ -20,7 +20,7 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 |---|---|---|
 | Backend | JUnit 5 + Spring Boot Test | Unitários, Integração, Contrato |
 | Frontend | Vitest + Testing Library | Unitários, Componentes |
-| Frontend | Playwright | End-to-End (67 testes via Docker) |
+| Frontend | Playwright | End-to-End (68 testes via Docker) |
 | ML Service | pytest | Unitários, Integração |
 
 ## Backend - Testes Unitários
@@ -140,7 +140,7 @@ Os testes de contrato validam a compatibilidade entre o ML Service e o backend s
 
 ### Estrutura
 
-```
+```text
 frontend/e2e/
 ├── playwright.config.ts        # Config do Playwright
 ├── helpers/
@@ -167,7 +167,7 @@ Todas as chamadas HTTP são interceptadas via `page.route()` com URLs exatas (`h
 
 A função `pt()` converte texto em português para regex accent-insensitive:
 
-```
+```text
 pt("análise")  ->  /an[aáàâã]l[iíì]s[eéèê]/i
 ```
 
@@ -196,7 +196,7 @@ cd frontend && npm run test:e2e
 
 ### Resultado
 
-67/67 testes passando. Duração média: ~2-3 minutos.
+68/68 testes passando. Duração média: ~2-3 minutos.
 
 ## Frontend - Testes Unitários
 

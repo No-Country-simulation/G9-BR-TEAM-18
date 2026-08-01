@@ -243,7 +243,7 @@ Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 
 ### Testes E2E (Playwright)
 
-Localizados em `frontend/e2e/` e executados com Playwright via Docker. Total: **67 testes**.
+Localizados em `frontend/e2e/` e executados com Playwright via Docker. Total: **68 testes**.
 
 | Categoria | Testes | Cenários Cobertos |
 |---|---|---|
@@ -265,6 +265,12 @@ docker run --rm energiaia-e2e
 # Via npm (requer browsers Playwright instalados):
 cd frontend && npm run test:e2e
 ```
+
+> **Alternativa de browser:** em Linux com bibliotecas de sistema do Chromium
+> ausentes (`libnspr4.so`, `libnss3.so`), instale o Firefox do Playwright
+> (`npx playwright install firefox`) e rode a suíte com
+> `npx playwright test --config=e2e/playwright.config.ts --browser=firefox`.
+> Consulte o [guia de execução](./guia-execucao.md) para detalhes.
 
 ---
 
