@@ -252,6 +252,9 @@ export async function fetchDashboard(): Promise<DashboardData> {
 export async function fetchPreferences(): Promise<{
   consumption_goal?: number;
   regularity?: string;
+  // F069 / ADR-0046: campos expostos pelo backend após B051
+  peak_hour_usage?: boolean;
+  high_consumption_hours?: number;
 }> {
   const response = await authFetch("/auth/me");
   if (!response.ok) {
@@ -264,6 +267,9 @@ export async function fetchPreferences(): Promise<{
 export async function updatePreferences(preferences: {
   consumption_goal?: number | null;
   regularity?: string | null;
+  // F069 / ADR-0046: persistidos nas preferências do usuário (backend B051)
+  peak_hour_usage?: boolean | null;
+  high_consumption_hours?: number | null;
 }): Promise<void> {
   const response = await authFetch("/auth/preferences", {
     method: "PUT",

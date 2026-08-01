@@ -95,6 +95,18 @@ export default function ProfilePage() {
         if (contractInfo.propertyTypes.length > 0) {
           setPropertyTypeOptions(contractInfo.propertyTypes as PropertyType[]);
         }
+        // Carrega preferências ANTES do branch de imóvel ativo: o return precoce
+        // abaixo pulava o setRegularity para quem já tem imóvel (bug).
+        if (prefs.regularity) {
+          setRegularity(prefs.regularity as Regularity);
+        }
+        // F069 / ADR-0046: hábitos de consumo persistidos no usuário (B051)
+        if (typeof prefs.peak_hour_usage === "boolean") {
+          setPeakHourUsage(prefs.peak_hour_usage);
+        }
+        if (typeof prefs.high_consumption_hours === "number") {
+          setHighConsumptionHours(prefs.high_consumption_hours);
+        }
         const active = props.find((p) => p.active) ?? props[0] ?? null;
         if (active) {
           setProperty(active);
@@ -108,9 +120,6 @@ export default function ProfilePage() {
               pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
             );
           });
-        }
-        if (prefs.regularity) {
-          setRegularity(prefs.regularity as Regularity);
         }
       })
       .then(() => {
@@ -269,7 +278,12 @@ export default function ProfilePage() {
         await batchUpdateAppliances(prop.id, batchItems);
       }
 
-      await updatePreferences({ regularity }).catch(() => {});
+      await updatePreferences({
+        regularity,
+        // F069 / ADR-0046: persistir hábitos de consumo no usuário
+        peak_hour_usage: peakHourUsage,
+        high_consumption_hours: highConsumptionHours,
+      }).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar perfil");
     } finally {
