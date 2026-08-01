@@ -305,11 +305,13 @@ export default function Dashboard() {
               {rankDiff < 0 ? <TrendingUp size={16} /> : <ArrowDown size={16} />}
               {rankDiff < 0 ? "Voce evoluiu de " : "Seu consumo piorou de "}
               <strong>
-                {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY]}
+                {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY] ??
+                  recentCategories[0]}
               </strong>{" "}
               para{" "}
               <strong>
-                {CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY]}
+                {CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY] ??
+                  recentCategories[1]}
               </strong>
               !
             </div>
