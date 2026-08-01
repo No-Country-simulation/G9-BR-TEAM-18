@@ -2,25 +2,56 @@ import type { ApplianceType } from "../types";
 import { resolveApplianceIcon } from "./appliance-icons";
 
 /**
+ * Item do catálogo exposto pelo backend em GET /appliances (B050 / ADR-0027).
+ *
+ * Contrato atual (descoberta dinâmica do ML Service, serialização SNAKE_CASE):
+ *   { name, ml_category, watts, hours }
+ *
+ * Campos do contrato antigo (id, appliance_category, average_power_watts,
+ * average_daily_use_hours) são aceitos como fallback para compatibilidade
+ * durante a transição, até o backend expor o id estável.
+ */
+export interface ApplianceCatalogItem {
+  id?: number | string;
+  name: string;
+  ml_category?: string;
+  appliance_category?: string;
+  watts?: number;
+  average_power_watts?: number;
+  hours?: number;
+  average_daily_use_hours?: number;
+}
+
+/**
+ * Gera um id estável a partir do nome quando o contrato não expõe id.
+ * Ex: "Televisão OLED" → "televisao-oled"
+ */
+function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
  * Enriquece os dados crus do backend com o ícone Lucide apropriado.
  *
  * Usa resolveApplianceIcon() que busca por palavra-chave no nome
  * do aparelho (ex: "Geladeira Frost Free" → "Refrigerator").
  * Se não encontrar, usa fallback por mlCategory.
  */
-export function enrichAppliance(raw: {
-  id: number;
-  name: string;
-  appliance_category: string;
-  average_power_watts: number;
-  average_daily_use_hours: number;
-}): ApplianceType {
+export function enrichAppliance(raw: ApplianceCatalogItem): ApplianceType {
+  const name = raw.name ?? "Aparelho";
+  const mlCategory = raw.ml_category ?? raw.appliance_category ?? "OTHERS";
+  const id = raw.id != null ? String(raw.id) : slugify(name);
   return {
-    id: String(raw.id),
-    name: raw.name,
-    mlCategory: raw.appliance_category,
-    powerWatts: raw.average_power_watts,
-    dailyUsageHours: raw.average_daily_use_hours,
-    icon: resolveApplianceIcon(raw.name, raw.appliance_category),
+    id,
+    name,
+    mlCategory,
+    powerWatts: Number(raw.watts ?? raw.average_power_watts ?? 0),
+    dailyUsageHours: Number(raw.hours ?? raw.average_daily_use_hours ?? 0),
+    icon: resolveApplianceIcon(name, mlCategory),
   };
 }

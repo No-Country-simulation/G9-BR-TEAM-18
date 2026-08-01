@@ -444,26 +444,41 @@ describe("sortCategories", () => {
  * ========================================================================= */
 
 describe("enrichAppliance (integração)", () => {
-  it("enriquece com ícone correto para refrigeracao em inglês", () => {
+  it("mapeia o contrato novo (ADR-0027): ml_category, watts, hours", () => {
     const raw = {
-      id: 1,
       name: "Geladeira",
-      appliance_category: "REFRIGERATION",
-      average_power_watts: 150,
-      average_daily_use_hours: 24,
+      ml_category: "REFRIGERATION",
+      watts: 150,
+      hours: 24,
     };
     const result = enrichAppliance(raw);
-    expect(result.icon).toBe("Refrigerator");
+    expect(result.name).toBe("Geladeira");
     expect(result.mlCategory).toBe("REFRIGERATION");
+    expect(result.powerWatts).toBe(150);
+    expect(result.dailyUsageHours).toBe(24);
+    expect(result.icon).toBe("Refrigerator");
   });
 
-  it("enriquece com ícone correto para climatizacao", () => {
+  it("gera id estável a partir do nome quando o contrato não expõe id", () => {
     const raw = {
-      id: 2,
+      name: "Televisão OLED",
+      ml_category: "TECHNOLOGY",
+      watts: 200,
+      hours: 6,
+    };
+    const result = enrichAppliance(raw);
+    expect(result.id).toBe("televisao-oled");
+    expect(result.mlCategory).toBe("TECHNOLOGY");
+    expect(result.powerWatts).toBe(200);
+    expect(result.dailyUsageHours).toBe(6);
+  });
+
+  it("enriquece com ícone correto para climatizacao (contrato novo)", () => {
+    const raw = {
       name: "Ar Condicionado",
-      appliance_category: "CLIMATE_CONTROL",
-      average_power_watts: 1400,
-      average_daily_use_hours: 8,
+      ml_category: "CLIMATE_CONTROL",
+      watts: 1400,
+      hours: 8,
     };
     const result = enrichAppliance(raw);
     expect(result.icon).toBe("AirVent");
@@ -471,17 +486,16 @@ describe("enrichAppliance (integração)", () => {
 
   it("enriquece aparelho desconhecido com fallback por categoria", () => {
     const raw = {
-      id: 3,
       name: "Aparelho Desconhecido XYZ",
-      appliance_category: "TECHNOLOGY",
-      average_power_watts: 100,
-      average_daily_use_hours: 5,
+      ml_category: "TECHNOLOGY",
+      watts: 100,
+      hours: 5,
     };
     const result = enrichAppliance(raw);
     expect(result.icon).toBe("Monitor");
   });
 
-  it("mapeia corretamente os campos", () => {
+  it("mantém compatibilidade com o contrato antigo (appliance_category)", () => {
     const raw = {
       id: 42,
       name: "Televisao OLED",
@@ -491,9 +505,56 @@ describe("enrichAppliance (integração)", () => {
     };
     const result = enrichAppliance(raw);
     expect(result.id).toBe("42");
-    expect(result.name).toBe("Televisao OLED");
     expect(result.mlCategory).toBe("TECHNOLOGY");
     expect(result.powerWatts).toBe(200);
     expect(result.dailyUsageHours).toBe(6);
+  });
+
+  it("categoria ausente → fallback OTHERS sem crash", () => {
+    const raw = { name: "Aparelho Sem Categoria", watts: 100, hours: 4 };
+    const result = enrichAppliance(raw);
+    expect(result.mlCategory).toBe("OTHERS");
+    expect(result.icon).toBe("HelpCircle");
+    expect(result.powerWatts).toBe(100);
+  });
+});
+
+/* =========================================================================
+ * Proteção contra payloads inesperados (undefined/null) — F062
+ * ========================================================================= */
+describe("proteção contra undefined/null", () => {
+  it("getCategoryDisplay(undefined) → fallback 'Outros' sem crash", () => {
+    const d = getCategoryDisplay(undefined as unknown as string);
+    expect(d.label).toBe("Outros");
+    expect(d.icon).toBe("HelpCircle");
+    expect(d.color).toBe("#6b7280");
+  });
+
+  it("getCategoryDisplay(null) → fallback 'Outros' sem crash", () => {
+    const d = getCategoryDisplay(null as unknown as string);
+    expect(d.label).toBe("Outros");
+  });
+
+  it("getCategoryDisplay('') → fallback 'Outros' sem crash", () => {
+    const d = getCategoryDisplay("");
+    expect(d.label).toBe("Outros");
+  });
+
+  it("sortCategories ignora undefined/null/vazios sem crash", () => {
+    const result = sortCategories([
+      "LIGHTING",
+      undefined as unknown as string,
+      "REFRIGERATION",
+      "",
+      null as unknown as string,
+    ]);
+    expect(result).toEqual(["REFRIGERATION", "LIGHTING"]);
+  });
+
+  it("resolveApplianceIcon com name undefined → HelpCircle sem crash", () => {
+    expect(resolveApplianceIcon(undefined as unknown as string, "REFRIGERATION")).toBe(
+      "Refrigerator",
+    );
+    expect(resolveApplianceIcon(undefined as unknown as string)).toBe("HelpCircle");
   });
 });

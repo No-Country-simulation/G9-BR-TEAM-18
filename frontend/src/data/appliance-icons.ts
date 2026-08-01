@@ -100,12 +100,12 @@ const CATEGORY_FALLBACK: Record<string, string> = {
    * capturando automaticamente variações como "Refrigeracao",
    * "climate-control", "Climatização" etc.
    */
-};/**
+}; /**
  * Remove acentos/sinais diacríticos de uma string usando normalização NFD.
  * Ex: "Refrigeração" → "Refrigeracao", "Climatização" → "Climatizacao"
  */
 function removeAccents(s: string): string {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 /**
@@ -114,9 +114,9 @@ function removeAccents(s: string): string {
  * Ex: "CLIMATE_CONTROL" → "CLIMATE_CONTROL", "Refrigeracao" → "REFRIGERACAO"
  */
 function normalizeCategoryKey(cat: string): string {
-  return removeAccents(cat.toUpperCase())
-    .replace(/[\s-]/g, "_")                // normaliza separadores
-    .replace(/[^A-Z_]/g, "");               // remove caracteres não-alfabéticos
+  return removeAccents((cat ?? "").toUpperCase())
+    .replace(/[\s-]/g, "_") // normaliza separadores
+    .replace(/[^A-Z_]/g, ""); // remove caracteres não-alfabéticos
 }
 
 /**
@@ -127,7 +127,7 @@ function normalizeCategoryKey(cat: string): string {
  * 3. Se não tiver nem categoria, retorna HelpCircle
  */
 export function resolveApplianceIcon(name: string, mlCategory?: string): string {
-  const normalized = name
+  const normalized = (name ?? "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
@@ -247,7 +247,15 @@ export function getCategoryDisplay(cat: string): CategoryDisplay {
   // Normaliza: uppercase + remove acentos (NFD)
   // Isso garante que "Refrigeração" → "REFRIGERACAO"
   // e "CLIMATE_CONTROL" → "CLIMATE_CONTROL"
-  const key = removeAccents(cat.toUpperCase());
+  // Defensivo: valores undefined/null/ausentes nunca devem crashar a página.
+  const key = removeAccents((cat ?? "").toUpperCase());
+  if (!key.trim()) {
+    return {
+      label: categoryLabel("OTHERS"),
+      icon: categoryIcon("OTHERS"),
+      color: categoryColor("OTHERS"),
+    };
+  }
   return {
     label: categoryLabel(key),
     icon: categoryIcon(key),
@@ -273,12 +281,16 @@ const CATEGORY_PRIORITY: string[] = [
 ];
 
 export function sortCategories(cats: string[]): string[] {
-  return [...cats].sort((a, b) => {
+  // Defensivo: remove entradas undefined/null/vazias antes de ordenar,
+  // evitando que um payload inesperado crashie a página.
+  const valid = (cats ?? []).filter(
+    (c): c is string => typeof c === "string" && c.trim().length > 0,
+  );
+  return [...valid].sort((a, b) => {
     // Normaliza: uppercase + remove acentos (NFD) + normaliza separadores
     // para que variações como "Refrigeração", "refrigeration",
     // "Climatizacao" sejam ordenadas na posição correta.
-    const normalize = (s: string) =>
-      removeAccents(s.toUpperCase()).replace(/[\s-]/g, "_");
+    const normalize = (s: string) => removeAccents((s ?? "").toUpperCase()).replace(/[\s-]/g, "_");
     const ai = CATEGORY_PRIORITY.indexOf(normalize(a));
     const bi = CATEGORY_PRIORITY.indexOf(normalize(b));
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
