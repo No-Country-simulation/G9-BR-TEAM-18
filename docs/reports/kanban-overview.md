@@ -268,7 +268,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 |---|---|---|---|---|
 | F062 | Frontend - Consumir GET /contract-info e GET /appliances do backend | #132 | 7f0e60d, b55fc90, b764464, 452977e | ADR-0047 |
 | F063 | Frontend - Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | 7f0e60d, b764464 | ADR-0047 |
-| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | b55fc90 | ADR-0047 |
+| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | 7f0e60d, b55fc90 | ADR-0047 |
 | F065 | Frontend - Ajustar UI: nomes em português com mlCategory em inglês | #135 | b764464, b305cb2 | ADR-0047 |
 
 ### Novos Cards em Backlog - Backend (assignee: eduuardo1st)
