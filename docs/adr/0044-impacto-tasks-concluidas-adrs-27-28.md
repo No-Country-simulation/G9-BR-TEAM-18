@@ -21,18 +21,18 @@ Desde que essas ADRs foram propostas, outras tasks foram concluídas que impacta
 
 ## Decisão
 
-A equipe decidiu documentar formalmente o estado atual de cada task das ADRs 27 e 28, separando o que já foi avançado por outras tasks do que ainda precisa ser implementado, e atualizando o fluxo de dependências [cite: 10].
+A equipe decidiu documentar formalmente o estado atual de cada task das ADRs 27 e 28, separando o que já foi avançado por outras tasks do que ainda precisa ser implementado, e atualizando o fluxo de dependências.
 
 ### 1. Tasks concluídas que já avançaram parcialmente as ADRs 27 e 28
 
 | Task concluída | O que fez | Impacto na ADR 27/28 |
 |---|---|---|
-| **F054** — Mapeamento `EquipmentCategory` | Adicionou `SERVICES` ao enum do backend + `CATEGORIES` e `CATEGORY_ORDER` no frontend[cite: 10] | As categorias foram atualizadas manualmente, mas continuam hardcoded[cite: 10]. |
-| **B038** — Snapshot de equipamentos | Backend salva e retorna `appliances` com `category`, `name`, `monthly_consumption_kwh`[cite: 10] | O DTO de resposta já suporta dados por equipamento, facilitando as tasks F064 e F065[cite: 10]. |
-| **F058** — Alinhamento FE/BE | Removeu `AnalysisForm.tsx`, expôs `highestConsumptionProducts`, Dashboard usa `/simulate` real[cite: 10] | Redução de código morto e alinhamento de contrato[cite: 10]. |
-| **F049** — Remover localStorage | Preferências agora salvam via backend[cite: 10] | Frontend deixou de ser source of truth[cite: 10]. |
-| **F034** — Remover `APPLIANCE_FALLBACK` | Catálogo de aparelhos agora vem do backend via `GET /appliances`[cite: 10] | Dados vêm do backend[cite: 10]. |
-| **B050** — Expor `/contract-info` e `/appliances` dinâmicos | Backend expõe endpoints consumindo dados do `MlSchemaRegistry` | Backend agora expõe com sucesso os dados descobertos do ML, permitindo consumo dinâmico. |
+| **F054** - Mapeamento `EquipmentCategory` | Adicionou `SERVICES` ao enum do backend + `CATEGORIES` e `CATEGORY_ORDER` no frontend | As categorias foram atualizadas manualmente, mas continuam hardcoded. |
+| **B038** - Snapshot de equipamentos | Backend salva e retorna `appliances` com `category`, `name`, `monthly_consumption_kwh` | O DTO de resposta já suporta dados por equipamento, facilitando as tasks F064 e F065. |
+| **F058** - Alinhamento FE/BE | Removeu `AnalysisForm.tsx`, expôs `highestConsumptionProducts`, Dashboard usa `/simulate` real | Redução de código morto e alinhamento de contrato. |
+| **F049** - Remover localStorage | Preferências agora salvam via backend | Frontend deixou de ser source of truth. |
+| **F034** - Remover `APPLIANCE_FALLBACK` | Catálogo de aparelhos agora vem do backend via `GET /appliances` | Dados vêm do backend. |
+| **B050** - Expor `/contract-info` e `/appliances` dinâmicos | Backend expõe endpoints consumindo dados do `MlSchemaRegistry` | Backend agora expõe com sucesso os dados descobertos do ML, permitindo consumo dinâmico. |
 
 ### 2. O que pode ser feito agora (sem depender do ML Service)
 
@@ -40,14 +40,14 @@ A equipe decidiu documentar formalmente o estado atual de cada task das ADRs 27 
 |---|---|---|
 | **F062** (completo) | Consumir `GET /appliances` e `/contract-info` confiando 100% no backend, removendo dados locais estáticos | O endpoint B050 já foi concluído e está operacional no backend. |
 | **F063** (completo) | Consumir os endpoints dinâmicos em vez de `CATEGORIES` e `CATEGORY_ORDER` hardcoded | Os dados já são expostos dinamicamente pelo backend. |
-| **F065** (início) | Começar a usar `mlCategory` como identificador interno, mantendo português só na exibição | Independe do ML — é refatoração interna do frontend[cite: 10]. |
+| **F065** (início) | Começar a usar `mlCategory` como identificador interno, mantendo português só na exibição | Independe do ML - é refatoração interna do frontend. |
 
 ### 3. O que continua bloqueado pelo ML Service
 
 | Task | Depende de | Motivo do bloqueio |
 |---|---|---|
-| **B048** — Consumir `/contract` e `/appliance-catalog` | Q001 (endpoints no ML)[cite: 10] | Os endpoints precisam existir no ML primeiro[cite: 10]. |
-| **B049** — Remover switch `RESIDENCIAL → "Casa"` | Q002 (ML aceitar inglês)[cite: 10] | Backend só pode remover o switch depois que o ML passar a aceitar inglês[cite: 10]. |
+| **B048** - Consumir `/contract` e `/appliance-catalog` | Q001: endpoints no ML | Os endpoints precisam existir no ML primeiro. |
+| **B049** - Remover switch `RESIDENCIAL → "Casa"` | Q002: ML aceitar inglês | Backend só pode remover o switch depois que o ML passar a aceitar inglês. |
 
 ### 4. Fluxo de dependências atualizado
 
@@ -79,8 +79,8 @@ flowchart TD
 
 | ID | Título |
 |---|---|
-| Q001 | Endpoints de descoberta: GET /contract e GET /appliance-catalog[cite: 10] |
-| Q002 | Funções de normalização EN->PT (normalize_property_type + translate_category)[cite: 10] |
+| Q001 | Endpoints de descoberta: GET /contract e GET /appliance-catalog |
+| Q002 | Funções de normalização EN->PT (`normalize_property_type` + `translate_category`) |
 
 ### 6. Tasks recomendadas para execução imediata
 
@@ -92,5 +92,5 @@ flowchart TD
 
 ### Consequências
 
-- **Positivo**: A conclusão da B050 desbloqueia diretamente as tarefas de integração no frontend (F062 e F063)[cite: 10].
-- **Positivo**: Clareza total para a equipe sobre o escopo restante[cite: 10].
+- **Positivo**: A conclusão da B050 desbloqueia diretamente as tarefas de integração no frontend F062 e F063.
+- **Positivo**: Clareza total para a equipe sobre o escopo restante.

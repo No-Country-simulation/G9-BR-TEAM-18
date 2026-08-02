@@ -83,7 +83,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | ID | Título |
 |---|---|
 | I019 | Infraestrutura/Base - Enriquecer documentação Swagger/OpenAPI da API |
-| M005 | Modelagem Estrutural para Snapshots de Análises[cite: 10] |
+| M005 | Modelagem Estrutural para Snapshots de Análises |
 | B038 | Backend (Endpoints/Services) - Salvar e retornar o histórico de equipamentos |
 
 ### In progress → Done (Finalizados)
