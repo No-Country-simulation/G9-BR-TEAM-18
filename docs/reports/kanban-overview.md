@@ -365,3 +365,5 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   e o novo teste E2E de salvar perfil valida `appliance_id` numérico real no batch update (commit da0e7a9).
 - Suites: typecheck ok, lint 0, unit 114/114 nos arquivos tocados (163 no total), E2E profile 18/18 (Firefox).
 - Comentado no issue #150. Checklist item 9 destravado (ADR-0047 seção 6 atualizada).
+- Contagens: o diff In review 4→5 / Ready 1→0 reflete movimentações de backend feitas por
+  Eduardo no mesmo intervalo (B048, B049, B050 e M003/Analise-PPH movidos para In review).
