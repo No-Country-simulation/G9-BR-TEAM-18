@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
 import ChunkErrorBoundary from "./components/ChunkErrorBoundary";
 import Navbar from "./components/Navbar";

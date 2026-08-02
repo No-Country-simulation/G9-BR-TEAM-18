@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
 import Register from "../pages/Register";
 
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual("react-router");
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
@@ -86,7 +86,10 @@ describe("Register", () => {
 
   it("navigates to home on successful registration", async () => {
     mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
-    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) } as unknown as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({}),
+    } as unknown as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Test", email: "test@test.com" }),

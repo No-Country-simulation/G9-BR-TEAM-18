@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useAuth } from "../context/useAuth";
 import { listAnalyses, fetchAnalysisById, deleteAnalysis } from "../services/api";
 import type { AnalysisHistory, ApplianceSnapshot } from "../types";
@@ -8,10 +8,7 @@ import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; icon: string } | undefined
-> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string } | undefined> = {
   CONCLUIDA: { label: "Concluída", color: "#10b981", icon: "CheckCircle" },
   PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "Clock" },
   FALHA: { label: "Falha", color: "#ef4444", icon: "AlertCircle" },
@@ -199,7 +196,8 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
           <div className="hist-stat">
             <span className="hist-stat-label">Custo</span>
             <span className="hist-stat-value">
-              <LucideIcon name="DollarSign" size={16} /> R$ {(analysis.estimated_monthly_cost ?? 0).toFixed(2)}
+              <LucideIcon name="DollarSign" size={16} /> R${" "}
+              {(analysis.estimated_monthly_cost ?? 0).toFixed(2)}
             </span>
           </div>
           <div className="hist-stat">
@@ -406,11 +404,11 @@ export default function History() {
                         whiteSpace: "nowrap",
                       }}
                     >
-              {STATUS_CONFIG[a.status] && (
-                <LucideIcon name={STATUS_CONFIG[a.status]!.icon} size={14} />
-              )}
-              {STATUS_CONFIG[a.status]?.label ?? a.status}
-            </span>
+                      {STATUS_CONFIG[a.status] && (
+                        <LucideIcon name={STATUS_CONFIG[a.status]!.icon} size={14} />
+                      )}
+                      {STATUS_CONFIG[a.status]?.label ?? a.status}
+                    </span>
                   )}
                   <span className="history-item-cat" style={badgeStyle(a.category)}>
                     {CATEGORY_DISPLAY[a.category] ?? a.category}
@@ -437,7 +435,8 @@ export default function History() {
                     <LucideIcon name="Zap" size={14} /> {(a.consumption_kwh ?? 0).toFixed(0)} kWh
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <LucideIcon name="DollarSign" size={14} /> R$ {(a.estimated_monthly_cost ?? 0).toFixed(2)}
+                    <LucideIcon name="DollarSign" size={14} /> R${" "}
+                    {(a.estimated_monthly_cost ?? 0).toFixed(2)}
                   </span>
                 </div>
               </div>
