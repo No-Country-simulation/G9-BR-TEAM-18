@@ -29,13 +29,13 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 120 | | Frontend (F) | 53 |
+| Done | 122 | | Frontend (F) | 54 |
 | In review | 5 | | Backend (B) | 42 |
 | In progress | 3 | | Infraestrutura (I) | 19 |
-| Ready | 1 | | ML Service / Queries (Q) | 9 |
+| Ready | 0 | | ML Service / Queries (Q) | 9 |
 | Backlog | 5 | | Banco de Dados (M) | 9 |
-| **Total** | **134** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **134** |
+| **Total** | **135** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **135** |
 
 ## Movimentações (24/07/2026)
 
@@ -341,3 +341,27 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   unit 163/163. Comentado nos issues #132-#135.
 - Limitação registrada: o salvar de aparelhos no perfil continua dependendo do card B052
   (expor `id` no GET /appliances). Não bloqueia a conclusão dos cards F062-F065.
+
+## Movimentações (01/08/2026) - Rodada 5: B052 concluída e validação do salvar no frontend
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | #150 | 31ce8c1, 3f13969 | ADR-0048 |
+
+### Novo card → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F070 | Frontend - Consumir id real do GET /appliances (B052) e validar salvar de aparelhos | #151 | da0e7a9 | ADR-0047, ADR-0048 |
+
+### Notas
+
+- B052 revisada (backend): `ApplianceCatalogSyncService` (upsert NFD no startup), `ApplianceResponseDTO`
+  com `id`, `@JsonProperty("appliance_id")` no `ApplianceQuantity` e `ApplianceControllerTest` atualizado
+  (commits 31ce8c1/3f13969, ADR-0048).
+- F070 (frontend) destrava o último critério de aceite da B052: mocks E2E espelham o contrato com `id`
+  e o novo teste E2E de salvar perfil valida `appliance_id` numérico real no batch update (commit da0e7a9).
+- Suites: typecheck ok, lint 0, unit 114/114 nos arquivos tocados (163 no total), E2E profile 18/18 (Firefox).
+- Comentado no issue #150. Checklist item 9 destravado (ADR-0047 seção 6 atualizada).

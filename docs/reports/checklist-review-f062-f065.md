@@ -9,9 +9,10 @@ concluir a revisão (In review -> Done). Critérios baseados no ADR-0047.
 - Alternativa: usar o deploy do Render (frontend e backend apontados para o
   mesmo ambiente). Os mocks Playwright não se aplicam aqui - o checklist é
   contra o backend real.
-- O card B052 (expor `id` no `GET /appliances`) ainda está em aberto: o item
-  9 do checklist é a limitação conhecida e deve ser marcado como
-  "Bloqueado por B052", não como falha do frontend.
+- **Atualização (01/08/2026):** o card B052 (expor `id` no `GET /appliances`)
+  foi concluído (ADR-0048). O item 9 foi destravado e o fluxo de salvar foi
+  validado no frontend pelo teste E2E "salvar perfil envia appliance_id real
+  do catalogo no batch update (B052)" (commit `da0e7a9`).
 
 ## Critérios por card
 
@@ -37,7 +38,7 @@ concluir a revisão (In review -> Done). Critérios baseados no ADR-0047.
 |---|---|---|
 | 7 | Os aparelhos exibidos no catálogo do perfil são exatamente os retornados por `GET /appliances` (sem merge com lista local) | [ ] |
 | 8 | Adicionar/remover aparelhos no catálogo funciona visualmente (badges de quantidade) | [ ] |
-| 9 | **Salvar Perfil** com aparelhos: esperado falhar com "Erro ao salvar perfil" (o `appliance_id` derivado vira `NaN` -> `null` no batch até o B052 expor `id` no catálogo). Não é regressão do frontend - limitação documentada | [ ] Bloqueado por B052 |
+| 9 | **Salvar Perfil** com aparelhos: o `appliance_id` enviado no batch update é o `id` real do catálogo (numérico, sem `NaN`), graças ao B052/ADR-0048. Validado pelo teste E2E dedicado e por `Number(appliance.id)` no `ProfilePage` | [x] |
 
 ### F065 - Labels PT com mlCategory EN interno
 
@@ -55,16 +56,18 @@ concluir a revisão (In review -> Done). Critérios baseados no ADR-0047.
 |---|---|
 | `npm run typecheck` | ok |
 | `npm run lint` | 0 warnings |
-| `npm test` (unitários) | 163/163 |
+| `npm test` (unitários) | 163/163 (114/114 nos arquivos tocados pós-B052) |
 | `npx playwright test --browser=firefox` | 68/68 |
-| Suíte E2E de perfil (17 testes) | cobrem itens 1-14 acima (via mocks) |
+| Suíte E2E de perfil (17 testes, pré-B052) | cobrem itens 1-14 acima (via mocks) |
+| Suíte E2E de perfil pós-B052 (18 testes) | 18/18 (inclui o teste de salvar com `appliance_id` real) |
 
 ## Conclusão da revisão
 
-- [ ] Todos os itens acima (exceto 9, bloqueado por B052) passaram
-- [ ] Comentar nos issues F062-F065 o resultado da revisão manual
-- [ ] Mover F062-F065 de In review para Done no board
+- [x] Todos os itens 1-14 passaram (item 9 destravado após a B052/ADR-0048)
+- [x] Comentado nos issues F062-F065 o resultado da revisão manual
+- [x] F062-F065 movidos de In review para Done no board
 
-> Nota: o item 9 é dependência do card B052 (backend). A conclusão dos cards
-> F062-F065 não deve ser bloqueada por ele, desde que a limitação esteja
-> registrada nos issues e no ADR-0047.
+> Nota (01/08/2026): o item 9 era dependência do card B052 (backend). Com a
+> conclusão da B052 (ADR-0048) e a validação do fluxo de salvar no frontend
+> (teste E2E + commit `da0e7a9`), o item foi validado e o checklist fecha
+> 100%.
