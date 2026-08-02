@@ -111,4 +111,3 @@
 | F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | - |
 | F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | - |
 | F070 | Frontend - Consumir id real do GET /appliances (B052) e validar salvar de aparelhos | #151 | ADR-0047, ADR-0048 |
-| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | #150 | ADR-0048 |

@@ -29,12 +29,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 122 | | Frontend (F) | 54 |
-| In review | 5 | | Backend (B) | 42 |
+| Done | 121 | | Frontend (F) | 54 |
+| In review | 5 | | Backend (B) | 44 |
 | In progress | 3 | | Infraestrutura (I) | 19 |
 | Ready | 0 | | ML Service / Queries (Q) | 9 |
-| Backlog | 5 | | Banco de Dados (M) | 9 |
-| **Total** | **135** | | Análise de dados (outros) | 2 |
+| Backlog | 8 | | Banco de Dados (M) | 9 |
+| **Total** | **137** | | Análise de dados (outros) | 2 |
 | | | | **Total** | **135** |
 
 ## Movimentações (24/07/2026)
@@ -367,3 +367,28 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - Comentado no issue #150. Checklist item 9 destravado (ADR-0047 seção 6 atualizada).
 - Contagens: o diff In review 4→5 / Ready 1→0 reflete movimentações de backend feitas por
   Eduardo no mesmo intervalo (B048, B049, B050 e M003/Analise-PPH movidos para In review).
+
+## Movimentações (01/08/2026) - Rodada 6: Deploy quebrado no Render (B052 revertida)
+
+### Done → Backlog (regressão)
+
+| ID | Título | Issue | Motivo |
+|---|---|---|---|
+| B052 | Backend - Expor campo id no GET /appliances (destrava salvar de aparelhos) | #150 | Crash no startup do Render: `ORA-02290 CHK_APPLIANCE_CATEGORY` no `ApplianceCatalogSyncService` (mlCategory EN vs constraint PT) |
+
+### Novos cards em Backlog
+
+| ID | Título | Issue | ADR |
+|---|---|---|---|
+| B053 | Backend - Corrigir crash do ApplianceCatalogSyncService (CHK_APPLIANCE_CATEGORY) - sub-issue B052 | #152 | ADR-0048 |
+| B054 | Backend - Corrigir NPE no MlSchemaRegistry.register (lista nula no retry do Schema Discovery) | #153 | ADR-0028 |
+
+### Notas
+
+- Deploy de 01/08/2026: o backend quebra no startup porque o sync da B052 grava `mlCategory` em
+  inglês (`REFRIGERATION`...) em `tb_appliance.appliance_category`, mas a constraint
+  `chk_appliance_category` (V12) só aceita português (`'Refrigeração'`...). Fix proposto no B053:
+  mapear via `EquipmentCategory.toPortuguese()` antes do save.
+- B054 (não relacionado à B052): NPE no retry do Schema Discovery quando o ML responde listas nulas.
+- O card F070 (frontend) permanece Done - o consumo do `id` está correto e validado por mocks/E2E;
+  a validação ponta a ponta em produção fica condicionada à correção B053.
