@@ -2,7 +2,7 @@
 
 ## Status
 
-Aceito
+Aceito (aguardando B053 para validação em produção)
 
 ## Contexto
 
@@ -96,20 +96,27 @@ Nota de ambiente: o Chromium do Playwright exige libs de sistema (`libnspr4`,
 `libnss3`) que podem faltar em Linux mínimo sem sudo; o Firefox do Playwright
 funciona sem dependências extras. Documentado no `guia-execucao.md`.
 
-### 6. Bloqueio resolvido: `id` no `GET /appliances` (Task B052 concluída)
+### 6. Bloqueio do `id` no `GET /appliances` (B052): concluída e revertida (regressão no deploy)
 
-A Task B052 foi concluída com sucesso, e o fluxo de **salvar aparelhos** no
-perfil, que dependia do `appliance_id` para o batch update
-(`PUT /properties/{id}/appliances/batch`), está agora totalmente destravado. O
-endpoint `GET /appliances` agora expõe o `id` físico real de cada
-eletrodoméstico, eliminando a necessidade do frontend derivar um ID via slugify
-como fallback local.
+A Task B052 expôs o `id` físico no `GET /appliances`, eliminando a necessidade
+do frontend derivar um ID via slugify como fallback local. O frontend (F070)
+consumiu o contrato novo e foi validado com mocks E2E espelhando o
+`ApplianceResponseDTO` (`id`, `name`, `ml_category`, `watts`, `hours`) e o
+teste E2E de salvar perfil, que captura o body do batch update e confirma que o
+`appliance_id` enviado é o id numérico real do catálogo (não `NaN`/slug) -
+commit `da0e7a9`.
 
-**Validação do frontend (01/08/2026):** o consumo do `id` real foi validado com
-os mocks E2E espelhando o contrato `ApplianceResponseDTO` (`id`, `name`,
-`ml_category`, `watts`, `hours`) e o novo teste E2E de salvar perfil, que
-captura o body do batch update e confirma que o `appliance_id` enviado é o id
-numérico real do catálogo (não `NaN`/slug) - commit `da0e7a9`.
+**Regressão (01/08/2026):** o deploy do Render quebrou no startup com
+`ORA-02290: check constraint (ADMIN.CHK_APPLIANCE_CATEGORY) violated` no
+`ApplianceCatalogSyncService` (B052): o sync grava o `mlCategory` em inglês
+(`REFRIGERATION`, `CLIMATE_CONTROL`, ...) em `tb_appliance.appliance_category`,
+mas a constraint `chk_appliance_category` (migration V12) só aceita português.
+A B052 voltou para **Backlog** (issue #150) com o sub-issue de correção **B053**
+(#152, mapear via `EquipmentCategory.toPortuguese()` antes do save). Enquanto a
+B053 não for entregue, o fluxo de salvar aparelhos fica **bloqueado em
+produção** (o backend nem sobe). O frontend (F070) permanece Done: o código
+está correto e testado, mas só poderá ser validado de ponta a ponta em
+produção após a B053.
 
 ### 7. Revisão concluída (01/08/2026)
 
@@ -129,7 +136,9 @@ Validação manual executada conforme o
 | F065 | #135 | Done |
 
 A revisão confirma que a dependência do card B052 para o salvar de aparelhos
-(seção 6) foi resolvida, destravando completamente o fluxo.
+(seção 6) foi implementada no frontend (F070), mas a entrega da B052 foi
+revertida para Backlog após a regressão de deploy (ORA-02290); o fluxo em
+produção permanece bloqueado até a correção da B053.
 
 ## Alternativas consideradas
 
@@ -153,9 +162,13 @@ A revisão confirma que a dependência do card B052 para o salvar de aparelhos
 - **Positivo:** Revisão dos cards F062 a F065 concluída e aprovada
   (01/08/2026), com checklist manual vinculado (seção 7).
 
-- **Positivo:** O fluxo de salvar aparelhos no perfil foi totalmente destravado
-  com a conclusão da Task B052, que expõe o `id` físico no `GET /appliances` e
-  foi validado no frontend (F070, commit `da0e7a9`).
+- **Positivo:** O frontend consome o `id` físico do `GET /appliances` e o
+  envia no batch update (F070, commit `da0e7a9`), validado por testes E2E e
+  unitários.
+
+- **Negativo:** A B052 foi revertida para Backlog após quebrar o deploy do
+  Render no startup (`ORA-02290 CHK_APPLIANCE_CATEGORY`); o fluxo de salvar
+  aparelhos em produção permanece bloqueado até a correção da B053.
 
 - **Neutro:** Fallbacks defensivos (`DEFAULT_PROPERTY_TYPES`, `?? label`)
   permanecem como camada de segurança, não como fonte de dados.
