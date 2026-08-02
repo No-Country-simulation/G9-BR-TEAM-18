@@ -28,11 +28,11 @@ A função `aggregateByGranularity()` usa **chaves ordenáveis internamente** pa
 | `day` | `ISO date` (`"2026-07-27"`) | `"27 jul"` (locale pt-BR) |
 | `hour` | `getHours()` (0-23) | `"14h"` |
 
-Isso evita o problema de tentar converter rótulos localizados (`"jul/2026"`) de volta para `Date` — que resultaria em `Invalid Date` em JavaScript.
+Isso evita o problema de tentar converter rótulos localizados (`"jul/2026"`) de volta para `Date` - que resultaria em `Invalid Date` em JavaScript.
 
 ### Interface
 
-Um grupo de botões estilo "segmented control" foi adicionado acima do gráfico, permitindo alternar entre as três visualizações. O gráfico (Recharts `BarChart`) é reutilizado — apenas os dados de entrada mudam conforme a granularidade selecionada.
+Um grupo de botões estilo "segmented control" foi adicionado acima do gráfico, permitindo alternar entre as três visualizações. O gráfico (Recharts `BarChart`) é reutilizado - apenas os dados de entrada mudam conforme a granularidade selecionada.
 
 ## Arquivos modificados
 

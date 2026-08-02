@@ -267,7 +267,7 @@ As alterações foram validadas pela equipe de ML (Guilherme Hermano), que confi
   predição, `_store_for_training()` e **prompt da Groq**.
 - `translate_category()` precisa ser aplicada em **dois pontos**: `_run_prediction()`
   (antes do modelo) e `_store_for_training()`.
-- `normalize_category()` existente em `features.py` **não é modificada** — a equipe
+- `normalize_category()` existente em `features.py` **não é modificada** - a equipe
   de ML confirmou que a abordagem de criar `translate_category()` separada é correta.
 - Apenas a cópia de `main.py` do `BASE_CONSUMPTION_BY_TYPE` muda para inglês.
 

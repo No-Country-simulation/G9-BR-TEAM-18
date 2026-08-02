@@ -18,11 +18,11 @@ implementava a operação de `deleteById`.
 
 Adicionar a funcionalidade de exclusão de análise em três camadas:
 
-### Backend — Porta de saída (`AnalysisRepositoryPort`)
+### Backend - Porta de saída (`AnalysisRepositoryPort`)
 
 Adicionado o método `void deleteById(Long id)` na interface do port.
 
-### Backend — Adaptador de persistência (`EnergyAnalysisRepositoryAdapter`)
+### Backend - Adaptador de persistência (`EnergyAnalysisRepositoryAdapter`)
 
 Implementado `deleteById()` com `@Transactional` que executa a exclusão em
 ordem para respeitar as constraints de chave estrangeira do Oracle:
@@ -31,23 +31,25 @@ ordem para respeitar as constraints de chave estrangeira do Oracle:
 2. Exclui snapshots de equipamentos (`snapshotRepository.deleteByAnalysisId`)
 3. Exclui a análise principal (`analysisRepository.deleteById`)
 
-### Backend — Controller (`AnalysisController`)
+### Backend - Controller (`AnalysisController`)
 
 Adicionado endpoint `DELETE /analyses/{analysisId}` com:
+
 - Verificação de autenticação via `AuthController.getUserId`
 - Verificação de propriedade via `propertyService.getOwned`
 - Resposta `204 No Content` em caso de sucesso
 - Resposta `404` se a análise não existir
 - Resposta `401` se não autenticado
 
-### Frontend — Serviço de API (`api.ts`)
+### Frontend - Serviço de API (`api.ts`)
 
 Adicionada função `deleteAnalysis(analysisId: string)` que chama o endpoint
 `DELETE /analyses/{analysisId}` com credentials `include`.
 
-### Frontend — Página de Histórico (`History.tsx`)
+### Frontend - Página de Histórico (`History.tsx`)
 
 Adicionado:
+
 - Botão de `Trash2` em cada item do histórico (com `stopPropagation` para
   não abrir o modal de detalhes ao clicar em excluir)
 - Modal de confirmação com ícone `AlertTriangle`, mensagem explicativa e

@@ -22,7 +22,7 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 }
 ```
 
-**Nota:** O campo `token` é o mesmo JWT enviado no cookie `SESSION_TOKEN`. Ele é exposto no corpo para facilitar testes fora do navegador (ex: curl, Postman). Para usá-lo, envie o header `Cookie: SESSION_TOKEN=<token>` (o backend autentica exclusivamente via cookie — o header `Authorization: Bearer` não é suportado).
+**Nota:** O campo `token` é o mesmo JWT enviado no cookie `SESSION_TOKEN`. Ele é exposto no corpo para facilitar testes fora do navegador (ex: curl, Postman). Para usá-lo, envie o header `Cookie: SESSION_TOKEN=<token>` (o backend autentica exclusivamente via cookie - o header `Authorization: Bearer` não é suportado).
 
 ### Endpoint: Login do usuário
 

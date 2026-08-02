@@ -42,7 +42,7 @@ ALTER TABLE tb_user ADD regularity VARCHAR2(20);
 
 ## Endpoint
 
-`PUT /auth/preferences` — aceita um JSON com campos opcionais:
+`PUT /auth/preferences` - aceita um JSON com campos opcionais:
 
 ```json
 {

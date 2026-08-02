@@ -163,7 +163,7 @@ linguística**, e as demais camadas descobrem e enviam dados no idioma do contra
 As alterações foram validadas pela equipe de ML (Guilherme Hermano), que confirmou
 que:
 
-1. `normalize_category()` em `features.py` **não pode ser modificada** — a abordagem
+1. `normalize_category()` em `features.py` **não pode ser modificada** - a abordagem
    de criar `translate_category()` separada é a correta.
 2. `normalize_property_type()` deve ser aplicada em **três pontos**: pipeline de
    predição, `_store_for_training()` e prompt da Groq.
