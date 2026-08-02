@@ -65,9 +65,11 @@ no `Dashboard.tsx`.
 ## Arquivos alterados
 
 ### Removidos
+
 - `frontend/src/components/AnalysisForm.tsx`
 
 ### Modificados
+
 - `backend/src/main/java/.../dto/AnalysisResponseDTO.java` (novo campo)
 - `backend/src/main/java/.../controllers/AnalysisController.java` (top 3 em toResponse)
 - `backend/src/main/java/.../services/EnergyAnalysisService.java` (products no simulate)

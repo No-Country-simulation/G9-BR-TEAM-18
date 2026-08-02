@@ -6,7 +6,10 @@ Aceito
 
 ## Contexto
 
-A página de Histórico exibia apenas uma lista com informações básicas de cada análise (classificação, consumo, custo). Para ver detalhes completos — como recomendações e consumo por equipamento — o usuário precisava acessar o Dashboard e encontrar a análise específica. Não havia uma visualização clara de quanto cada equipamento estava consumindo.
+A página de Histórico exibia apenas uma lista com informações básicas de cada análise
+(classificação, consumo, custo). Para ver detalhes completos - como recomendações e consumo por
+equipamento - o usuário precisava acessar o Dashboard e encontrar a análise específica. Não havia
+uma visualização clara de quanto cada equipamento estava consumindo.
 
 ## Decisão
 

@@ -1,13 +1,27 @@
 # ADR-0045: Implementação do Contrato em Inglês no ML Service
 
 ## Status
+
 Aceito
 
 ## Contexto
 
-As ADR-0027 e ADR-0028 definiram a decisão de padronizar o contrato do `POST /predict` do ML Service para inglês nos campos `property_type` e `highest_consumption_category`, com tradução EN→PT centralizada exclusivamente no ML Service, além dos endpoints de descoberta `GET /contract` e `GET /appliance-catalog`. A ADR-0028 complementou esclarecendo a fronteira entre o que é contrato público (inglês) e o que é processamento interno do ML Service (português), incorporando três correções técnicas apontadas pela equipe de ML: a criação de uma função de tradução separada em vez de modificar `normalize_category()`, a restrição da mudança de `BASE_CONSUMPTION_BY_TYPE` para inglês apenas à cópia usada em `main.py`, e o ajuste de `_store_for_training()` para gravar valores já traduzidos.
+As ADR-0027 e ADR-0028 definiram a decisão de padronizar o contrato do `POST /predict` do ML
+Service para inglês nos campos `property_type` e `highest_consumption_category`, com tradução
+EN→PT centralizada exclusivamente no ML Service, além dos endpoints de descoberta `GET /contract`
+e `GET /appliance-catalog`. A ADR-0028 complementou esclarecendo a fronteira entre o que é
+contrato público (inglês) e o que é processamento interno do ML Service (português), incorporando
+três correções técnicas apontadas pela equipe de ML: a criação de uma função de tradução separada
+em vez de modificar `normalize_category()`, a restrição da mudança de `BASE_CONSUMPTION_BY_TYPE`
+para inglês apenas à cópia usada em `main.py`, e o ajuste de `_store_for_training()` para gravar
+valores já traduzidos.
 
-Este ADR documenta a implementação de fato dessas decisões no código do `ml-service`, incluindo dois ajustes adicionais identificados durante a revisão técnica do time de ML antes da implementação: a necessidade de aplicar `normalize_property_type()` também no prompt de recomendações da Groq (não previsto na primeira versão da ADR-0027), e a confirmação de que `translate_category()` precisa ser aplicada dentro de `_run_prediction()`, antes da chamada ao modelo.
+Este ADR documenta a implementação de fato dessas decisões no código do `ml-service`, incluindo
+dois ajustes adicionais identificados durante a revisão técnica do time de ML antes da
+implementação: a necessidade de aplicar `normalize_property_type()` também no prompt de
+recomendações da Groq (não previsto na primeira versão da ADR-0027), e a confirmação de que
+`translate_category()` precisa ser aplicada dentro de `_run_prediction()`, antes da chamada ao
+modelo.
 
 Consulte também a ADR-0044 para o contexto de descoberta dinâmica de contrato no lado do backend, que consome os endpoints aqui implementados.
 
@@ -77,7 +91,10 @@ Commit: `35b4d1b`. Esta mudança é retroativamente incompatível: o `/predict` 
 
 ### 4. Tradução no prompt da Groq
 
-Identificado durante a revisão técnica que `_generate_recommendations_groq()` interpola `data.property_type` diretamente no texto do prompt, que contém regras escritas em português (ex: "se for Apartamento, não sugira painel solar"). Sem tradução, um valor em inglês não bateria com essas regras. Corrigido aplicando `normalize_property_type()` antes de montar o prompt:
+Identificado durante a revisão técnica que `_generate_recommendations_groq()` interpola
+`data.property_type` diretamente no texto do prompt, que contém regras escritas em português
+(ex: "se for Apartamento, não sugira painel solar"). Sem tradução, um valor em inglês não bateria
+com essas regras. Corrigido aplicando `normalize_property_type()` antes de montar o prompt:
 
 ```python
 property_type_pt = normalize_property_type(data.property_type)

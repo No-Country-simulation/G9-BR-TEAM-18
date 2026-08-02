@@ -6,7 +6,11 @@ Aceito
 
 ## Contexto
 
-O deploy do backend começou a falhar após a introdução da migration V12, que adiciona aparelhos da categoria "Serviços" ao catálogo. A migration foi criada com a ordem errada das operações SQL: os comandos `INSERT` foram executados antes de dropar a `CHECK constraint`, fazendo com que a constraint existente (`chk_appliance_category`) bloqueasse a inserção dos registros com categoria "Serviços" (que não estava entre os valores permitidos na constraint original).
+O deploy do backend começou a falhar após a introdução da migration V12, que adiciona aparelhos da
+categoria "Serviços" ao catálogo. A migration foi criada com a ordem errada das operações SQL: os
+comandos `INSERT` foram executados antes de dropar a `CHECK constraint`, fazendo com que a
+constraint existente (`chk_appliance_category`) bloqueasse a inserção dos registros com categoria
+"Serviços" (que não estava entre os valores permitidos na constraint original).
 
 O erro resultou em uma migration V12 corrompida no banco de dados (registrada como `success: 0` na tabela `flyway_schema_history`), impedindo qualquer execução futura do Flyway.
 
@@ -14,7 +18,7 @@ O erro resultou em uma migration V12 corrompida no banco de dados (registrada co
 
 A migration V12 foi criada com a seguinte ordem incorreta:
 
-```
+```text
 1. INSERT (falhou - CHECK constraint bloqueava 'Serviços')
 2. DROP CONSTRAINT
 3. ADD CONSTRAINT
@@ -22,7 +26,7 @@ A migration V12 foi criada com a seguinte ordem incorreta:
 
 A ordem correta deveria ser:
 
-```
+```text
 1. DROP CONSTRAINT
 2. INSERT
 3. ADD CONSTRAINT (incluindo 'Serviços')
@@ -41,7 +45,7 @@ Adicionou-se a propriedade `spring.flyway.clean-on-validation-error=true` ao `ap
 
 ### Segunda tentativa: spring.flyway.clean-disabled=false
 
-Adicionou-se `spring.flyway.clean-disabled=false` em conjunto com `clean-on-validation-error=true`. Ainda não funcionou — possivelmente por limitações do Flyway 12.4.0 na interação entre essas duas propriedades ou por incompatibilidade com a versão do Spring Boot (4.1.0).
+Adicionou-se `spring.flyway.clean-disabled=false` em conjunto com `clean-on-validation-error=true`. Ainda não funcionou - possivelmente por limitações do Flyway 12.4.0 na interação entre essas duas propriedades ou por incompatibilidade com a versão do Spring Boot (4.1.0).
 
 ### Terceira tentativa: Desabilitar Flyway e usar Hibernate
 
@@ -62,7 +66,7 @@ Após a deleção, restaurou-se a configuração original do Flyway no `applicat
 
 Com o banco vazio (após drop manual de todas as tabelas), o Flyway tentou fazer baseline mas falhou porque a env var `SPRING_FLYWAY_BASELINE_VERSION` não estava configurada no Render. O placeholder `${SPRING_FLYWAY_BASELINE_VERSION}` no `application.properties` não pôde ser resolvido, resultando no erro:
 
-```
+```text
 Invalid version: ${SPRING.FLYWAY.BASELINE.VERSION}
 ```
 

@@ -1,4 +1,4 @@
-# ADR-0038: Correção da V14 — PL/SQL para constraints inline sem nome no Oracle
+# ADR-0038: Correção da V14 - PL/SQL para constraints inline sem nome no Oracle
 
 ## Status
 
@@ -25,7 +25,10 @@ No Oracle, constraints inline sem nome recebem um nome gerado pelo sistema (`SYS
 
 ## Causa Raiz
 
-A migration V1 (`V1__initial_schema.sql`) define a CHECK constraint de status como uma constraint **inline na definição da coluna**, sem usar `CONSTRAINT chk_analysis_status` como nome explícito. Diferentemente das constraints em V3 (que usam `ALTER TABLE ... ADD CONSTRAINT chk_property_type` com nome explícito), a constraint inline em V1 é anônima para o Oracle.
+A migration V1 (`V1__initial_schema.sql`) define a CHECK constraint de status como uma constraint
+**inline na definição da coluna**, sem usar `CONSTRAINT chk_analysis_status` como nome explícito.
+Diferentemente das constraints em V3 (que usam `ALTER TABLE ... ADD CONSTRAINT chk_property_type`
+com nome explícito), a constraint inline em V1 é anônima para o Oracle.
 
 ## Primeira Tentativa de Correção (PL/SQL com user_cons_columns)
 
@@ -43,7 +46,7 @@ WHERE c.table_name = 'TB_ENERGY_ANALYSIS'
 
 Isso falhou com `ORA-01422: exact fetch returns more than requested number of rows` porque no Oracle o `NOT NULL` também é armazenado como uma CHECK constraint (`constraint_type = 'C'`). A coluna `STATUS` tem tanto a constraint NOT NULL quanto a CHECK de valores, e ambas aparecem em `user_cons_columns` com `column_name = 'STATUS'`.
 
-## Segunda Tentativa (ALTER TABLE MODIFY — DESCARTA DA)
+## Segunda Tentativa (ALTER TABLE MODIFY - DESCARTA DA)
 
 Uma abordagem alternativa usando `ALTER TABLE MODIFY` com `CONSTRAINT` foi considerada:
 
@@ -95,13 +98,13 @@ ALTER TABLE tb_energy_analysis ADD CONSTRAINT chk_analysis_status
 
 A coluna `search_condition_vc` (disponível desde Oracle 12c) armazena o texto da condição da constraint. Para a constraint de status, o valor é algo como:
 
-```
+```text
 status IN ('PENDENTE', 'PROCESSADO', 'FALHA', 'FINALIZADO')
 ```
 
 Enquanto para a constraint NOT NULL, o valor é:
 
-```
+```text
 "STATUS" IS NOT NULL
 ```
 

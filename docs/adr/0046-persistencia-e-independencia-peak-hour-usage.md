@@ -27,7 +27,11 @@ Durante o treinamento do modelo (`train_model.py`), a coluna `peak_hour_usage` �
 df["peak_hour_usage"] = df.apply(_infer_peak_usage, axis=1)
 ```
 
-Isso significa que, no conjunto de treino, `peak_hour_usage` é altamente correlacionado com `consumption_kwh`, `high_consumption_hours` e outras features. Consequentemente, o modelo RandomForest aprendeu que `peak_hour_usage` não adiciona informação independente. Por isso, na inferência, alterar apenas este campo não muda a predição do modelo quando a confiança é alta (>80%).
+Isso significa que, no conjunto de treino, `peak_hour_usage` é altamente correlacionado com
+`consumption_kwh`, `high_consumption_hours` e outras features. Consequentemente, o modelo
+RandomForest aprendeu que `peak_hour_usage` não adiciona informação independente. Por isso,
+na inferência, alterar apenas este campo não muda a predição do modelo quando a confiança é
+alta (>80%).
 
 Já na classificação rule-based (fallback quando o modelo não está disponível), `peak_hour_usage` contribui com 25% do índice:
 

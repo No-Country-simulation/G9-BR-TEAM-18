@@ -32,29 +32,29 @@ Três gaps foram identificados:
    do ML Service (ADR-0026) define o campo `highest_consumption_products` como
    uma lista dos 3 aparelhos de maior consumo do imóvel. Esse campo é usado
    como contexto para o LLM gerar recomendações mais específicas (ex.:
-   "sua geladeira consome 150W — evite colocá-la perto do fogão"). Atualmente
+   "sua geladeira consome 150W - evite colocá-la perto do fogão"). Atualmente
    o backend não calcula nem envia esse campo.
 
-Além disso, há duas tarefas futuras registradas que dependem das implementações
+Além disso, há três tarefas futuras registradas que dependem das implementações
 acima ou do time de ML Service:
 
-4. **Revisar mapeamento de categorias para distribuição de potência**: O
+1. **Revisar mapeamento de categorias para distribuição de potência**: O
    `ApplianceAggregationService` mapeia categorias de aparelhos para buckets
    de distribuição (refrigeration_watts, heating_watts, etc.). Algumas
    categorias como "Tecnologia" e "Servicos" podem não ter distribuição definida.
 
-5. **Usar `highest_consumption_products` no prompt do LLM**: Após o backend
+2. **Usar `highest_consumption_products` no prompt do LLM**: Após o backend
    passar a enviar o campo, o ML Service pode incorporá-lo no prompt do Groq
    para recomendações citando equipamentos específicos.
 
-6. **Exibir `highest_consumption_products` no frontend**: Mostrar ao usuário
+3. **Exibir `highest_consumption_products` no frontend**: Mostrar ao usuário
    quais foram os aparelhos de maior consumo identificados na análise.
 
 ## Decisão
 
 Implementar as melhorias em duas rodadas:
 
-### Rodada 1 — Imediata (backend + frontend, sem alterar ML Service)
+### Rodada 1 - Imediata (backend + frontend, sem alterar ML Service)
 
 | ID | Título | Descrição |
 |---|---|---|
@@ -62,7 +62,7 @@ Implementar as melhorias em duas rodadas:
 | F047 | Adicionar "Apartamento" como tipo de imóvel | Incluir `APARTAMENTO` em `PROPERTY_TYPES` no frontend e mapear para `"Apartamento"` no backend |
 | B039 | Calcular e enviar `highest_consumption_products` ao ML Service | Calcular top 3 aparelhos por consumo mensal no `ApplianceAggregationService` e incluir no `MlEnvelope` |
 
-### Rodada 2 — Futura (depende de implementações da Rodada 1 ou time ML)
+### Rodada 2 - Futura (depende de implementações da Rodada 1 ou time ML)
 
 | ID | Título | Descrição |
 |---|---|---|

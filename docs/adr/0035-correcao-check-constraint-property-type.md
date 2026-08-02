@@ -10,7 +10,7 @@ O enum `PropertyType.java` e o frontend já suportavam três valores para o tipo
 
 Quando um usuário selecionava "Apartamento" no frontend e tentava salvar o perfil, o backend enviava `property_type = 'APARTAMENTO'` para o banco Oracle, que rejeitava a operação com o erro:
 
-```
+```text
 A operação viola uma restrição de dados. (HTTP 409)
 ```
 
@@ -20,7 +20,7 @@ Este erro era genérico, capturado pelo `GlobalExceptionHandler` ao interceptar 
 
 A migration V3 (`V3__add_residential_appliances.sql`) foi criada em um momento em que o projeto usava apenas dois tipos de imóvel: `RESIDENCIAL` e `COMERCIAL`. Posteriormente, o tipo `APARTAMENTO` foi adicionado ao enum e ao frontend (card F047), mas a constraint no banco nunca foi atualizada para refletir essa mudança.
 
-Além disso, o DTO `PropertyRequestDTO.java` também estava desatualizado — o `@Schema` `allowableValues` só listava `{"RESIDENCIAL", "COMERCIAL"}`, gerando documentação Swagger incorreta.
+Além disso, o DTO `PropertyRequestDTO.java` também estava desatualizado - o `@Schema` `allowableValues` só listava `{"RESIDENCIAL", "COMERCIAL"}`, gerando documentação Swagger incorreta.
 
 ## Decisão
 

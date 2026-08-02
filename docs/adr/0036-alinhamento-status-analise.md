@@ -24,13 +24,14 @@ Alinhar todas as camadas para usar exclusivamente os três valores: `PENDENTE`, 
 As ações são:
 
 1. **V14 migration**: alterar a CHECK constraint `chk_analysis_status` para:
+
    ```sql
    CHECK (status IN ('PENDENTE', 'CONCLUIDA', 'FALHA'))
    ```
 
 2. **EnergyAnalysisService.java**: substituir `analysis.setStatus("FINALIZADO")` por `analysis.setStatus("CONCLUIDA")`.
 
-3. **Frontend e DTO**: já estão corretos com `CONCLUIDA` — nenhuma alteração necessária.
+3. **Frontend e DTO**: já estão corretos com `CONCLUIDA` - nenhuma alteração necessária.
 
 ### Justificativa
 

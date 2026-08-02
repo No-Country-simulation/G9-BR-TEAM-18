@@ -9,6 +9,7 @@ Aceito
 O frontend do EnergIAI possuía 65 testes unitários (Vitest + Testing Library) que
 cobriam componentes isolados, contexto de autenticação e chamadas de API. No entanto,
 não existia nenhum teste que validasse o comportamento real do usuário no navegador
+
 - fluxos completos como navegação entre páginas, preenchimento de formulários,
 interação com o catálogo de aparelhos, exibição de gráficos no dashboard e tratamento
 de erros de rede.
@@ -38,7 +39,7 @@ dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
 
 ### Arquitetura dos Testes
 
-```
+```text
 frontend/e2e/
 ├── playwright.config.ts        # Config do Playwright (Docker + local)
 ├── helpers/
