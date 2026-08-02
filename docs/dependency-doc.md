@@ -76,23 +76,29 @@ Gerenciado pelo npm (`frontend/package.json`).
 |---|---|---|
 | `react` | ^19 | Biblioteca de UI |
 | `react-dom` | ^19 | Renderização DOM |
-| `react-router-dom` | ^7 | Roteamento SPA |
-| `recharts` | ^2 | Gráficos (Dashboard) |
-| `lucide-react` | ^0.47 | Ícones |
-| `typescript` | ^5.7 | Tipagem estática |
-| `vite` | ^6 | Bundler e dev server |
-| `@vitejs/plugin-react` | ^4 | Integração React com Vite |
-| `eslint` | ^9 | Linter |
+| `react-is` | ^18 | Identificação de tipos de elementos React |
+| `react-router` | ^8 | Roteamento SPA (v8 consolidou o antigo `react-router-dom`) |
+| `recharts` | ^3 | Gráficos (Dashboard) |
+| `lucide-react` | ^0.441 | Ícones |
+| `typescript` | ^5.5 | Tipagem estática |
+| `@types/react` | ^19 | Tipos do React |
+| `@types/react-dom` | ^19 | Tipos do React DOM |
+| `vite` | ^8 | Bundler e dev server |
+| `@vitejs/plugin-react` | ^6 | Integração React com Vite |
+| `eslint` | ^10 | Linter |
+| `@eslint/js` | ^10 | Regras core do ESLint (flat config) |
 | `typescript-eslint` | ^8 | Regras ESLint para TypeScript |
-| `eslint-plugin-react-hooks` | ^5 | Regras para React Hooks |
-| `eslint-plugin-react-refresh` | ^0.4 | Regras para HMR |
+| `eslint-plugin-react-hooks` | ^7 | Regras para React Hooks |
+| `eslint-plugin-react-refresh` | ^0.5 | Regras para HMR |
 | `eslint-config-prettier` | ^10 | Integração ESLint + Prettier |
 | `prettier` | ^3 | Formatador |
-| `vitest` | ^3 | Test runner |
+| `vitest` | ^4 | Test runner |
+| `@playwright/test` | ^1.62 | Testes E2E (Playwright) |
 | `@testing-library/react` | ^16 | Testes de componentes |
+| `@testing-library/dom` | ^10 | Utilitários DOM para testes |
 | `@testing-library/jest-dom` | ^6 | Matchers DOM para testes |
 | `@testing-library/user-event` | ^14 | Simulação de eventos de usuário |
-| `jsdom` | ^26 | Ambiente DOM para testes |
+| `jsdom` | ^29 | Ambiente DOM para testes |
 
 ## ML Service (Python / FastAPI)
 
