@@ -268,10 +268,11 @@ describe("listAppliances", () => {
     await expect(listAppliances()).rejects.toThrow("API error");
   });
 
-  it("returns enriched appliances on success (contrato ADR-0027)", async () => {
+  it("returns enriched appliances on success (contrato ADR-0027 + id B052)", async () => {
     mockFetch.mockResolvedValueOnce(
       mockResponse(true, [
         {
+          id: 1,
           name: "Geladeira",
           ml_category: "REFRIGERATION",
           watts: 150,
@@ -282,10 +283,22 @@ describe("listAppliances", () => {
 
     const result = await listAppliances();
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("geladeira");
+    expect(result[0].id).toBe("1");
     expect(result[0].name).toBe("Geladeira");
     expect(result[0].icon).toBe("Refrigerator");
     expect(result[0].powerWatts).toBe(150);
     expect(result[0].dailyUsageHours).toBe(24);
+  });
+
+  it("preserva id real do backend em Number() para o batch update (B052)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, [
+        { id: 3, name: "Televisao", ml_category: "TECHNOLOGY", watts: 120, hours: 5 },
+      ]),
+    );
+
+    const result = await listAppliances();
+    expect(Number(result[0].id)).toBe(3);
+    expect(Number.isNaN(Number(result[0].id))).toBe(false);
   });
 });

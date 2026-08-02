@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { setupAuthenticatedMocks, setLoggedIn, pt, MOCK_APPLIANCES } from "./helpers/mocks";
+import {
+  setupAuthenticatedMocks,
+  setLoggedIn,
+  pt,
+  MOCK_APPLIANCES,
+  MOCK_PROPERTY_APPLIANCES,
+} from "./helpers/mocks";
 
 test.describe("Profile Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -128,6 +134,39 @@ test.describe("Profile Page", () => {
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("button", { name: pt("Salvar perfil do imovel") })).toBeVisible();
+  });
+
+  test("salvar perfil envia appliance_id real do catalogo no batch update (B052)", async ({
+    page,
+  }) => {
+    await setupAuthenticatedMocks(page);
+    // Register AFTER setup so this route takes precedence (LIFO)
+    await page.route(/\/properties\/\d+\/appliances\/batch$/, async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: MOCK_PROPERTY_APPLIANCES,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Adiciona Televisao (id 3 no catalogo)
+    await page.getByRole("button", { name: pt("Adicionar Televisao") }).click();
+    // Dispara o save e aguarda deterministicamente o request do batch (evita race)
+    const batchRequest = page.waitForRequest(
+      (req) => req.method() === "PUT" && /appliances\/batch$/.test(req.url()),
+    );
+    await page.getByRole("button", { name: pt("Salvar perfil do imovel") }).click();
+    const request = await batchRequest;
+    const parsed = JSON.parse(request.postData() ?? "[]");
+    expect(Array.isArray(parsed)).toBe(true);
+    const tv = parsed.find((x) => x.appliance_id === 3);
+    expect(tv).toBeDefined();
+    expect(tv.quantity).toBe(1);
+    // Garante que NAO e NaN/string slug: id real numerico do backend
+    expect(Number.isNaN(Number(tv.appliance_id))).toBe(false);
+    // Save concluiu sem erro (botao voltou a ficar habilitado)
+    await expect(page.getByRole("button", { name: pt("Salvar perfil do imovel") })).toBeEnabled();
   });
 
   test("botao 'Analisar Agora' esta presente apos carregar imovel", async ({ page }) => {

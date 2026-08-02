@@ -446,6 +446,7 @@ describe("sortCategories", () => {
 describe("enrichAppliance (integração)", () => {
   it("mapeia o contrato novo (ADR-0027): ml_category, watts, hours", () => {
     const raw = {
+      id: 1,
       name: "Geladeira",
       ml_category: "REFRIGERATION",
       watts: 150,
@@ -453,10 +454,24 @@ describe("enrichAppliance (integração)", () => {
     };
     const result = enrichAppliance(raw);
     expect(result.name).toBe("Geladeira");
+    expect(result.id).toBe("1");
     expect(result.mlCategory).toBe("REFRIGERATION");
     expect(result.powerWatts).toBe(150);
     expect(result.dailyUsageHours).toBe(24);
     expect(result.icon).toBe("Refrigerator");
+  });
+
+  it("usa o id real do backend quando presente (B052)", () => {
+    const raw = {
+      id: 7,
+      name: "Micro-ondas",
+      ml_category: "APPLIANCES",
+      watts: 800,
+      hours: 1,
+    };
+    const result = enrichAppliance(raw);
+    expect(result.id).toBe("7");
+    expect(Number.isNaN(Number(result.id))).toBe(false);
   });
 
   it("gera id estável a partir do nome quando o contrato não expõe id", () => {

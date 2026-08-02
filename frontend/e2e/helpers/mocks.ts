@@ -34,39 +34,45 @@ export const MOCK_CONTRACT_INFO = {
   efficiency_categories: MOCK_CATEGORIES,
 };
 
-/* ---------- mock appliances (contrato ADR-0027: ml_category, watts, hours) ---------- */
+/* ---------- mock appliances (contrato ADR-0027 + id real desde B052/ADR-0048) ---------- */
 export const MOCK_APPLIANCES = [
   {
+    id: 1,
     name: "Geladeira",
     ml_category: "REFRIGERATION",
     watts: 150,
     hours: 24,
   },
   {
+    id: 2,
     name: "Ar Condicionado",
     ml_category: "CLIMATE_CONTROL",
     watts: 1400,
     hours: 8,
   },
   {
+    id: 3,
     name: "Televisao",
     ml_category: "TECHNOLOGY",
     watts: 120,
     hours: 5,
   },
   {
+    id: 4,
     name: "Lampada LED",
     ml_category: "LIGHTING",
     watts: 10,
     hours: 6,
   },
   {
+    id: 5,
     name: "Maquina de Lavar",
     ml_category: "APPLIANCES",
     watts: 500,
     hours: 1,
   },
   {
+    id: 6,
     name: "Bomba d'Agua",
     ml_category: "SERVICES",
     watts: 750,
@@ -310,6 +316,9 @@ export async function setupAuthenticatedMocks(
   });
   await page.route(`http://localhost:8080/energy-analysis`, async (route: Route) => {
     await route.fulfill({ status: 201, json: MOCK_ANALYSIS_RESULT, headers: JSON_HEADERS });
+  });
+  await page.route(`http://localhost:8080/auth/preferences`, async (route: Route) => {
+    await route.fulfill({ status: 200, headers: JSON_HEADERS, body: "{}" });
   });
 }
 

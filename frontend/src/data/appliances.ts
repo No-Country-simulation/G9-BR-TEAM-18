@@ -2,14 +2,15 @@ import type { ApplianceType } from "../types";
 import { resolveApplianceIcon } from "./appliance-icons";
 
 /**
- * Item do catálogo exposto pelo backend em GET /appliances (B050 / ADR-0027).
+ * Item do catálogo exposto pelo backend em GET /appliances (B050 / ADR-0027,
+ * com id físico do banco desde a B052 / ADR-0048).
  *
- * Contrato atual (descoberta dinâmica do ML Service, serialização SNAKE_CASE):
- *   { name, ml_category, watts, hours }
+ * Contrato atual (serialização SNAKE_CASE):
+ *   { id, name, ml_category, watts, hours }
  *
- * Campos do contrato antigo (id, appliance_category, average_power_watts,
- * average_daily_use_hours) são aceitos como fallback para compatibilidade
- * durante a transição, até o backend expor o id estável.
+ * Campos do contrato antigo (appliance_category, average_power_watts,
+ * average_daily_use_hours) são aceitos como fallback defensivo para
+ * compatibilidade durante a transição.
  */
 export interface ApplianceCatalogItem {
   id?: number | string;
