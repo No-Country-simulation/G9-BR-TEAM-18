@@ -3,6 +3,7 @@ package br.com.group18.energiai.core.domain.model;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 public enum EquipmentCategory {
     LIGHTING("Iluminação"),
@@ -22,12 +23,27 @@ public enum EquipmentCategory {
         return portuguese;
     }
 
+    public static Optional<EquipmentCategory> fromEnglish(String englishValue) {
+        if (englishValue == null || englishValue.isBlank()) {
+            return Optional.empty();
+        }
+        String key = englishValue.strip().toUpperCase(Locale.ROOT);
+        try {
+            return Optional.of(EquipmentCategory.valueOf(key));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static String toPortugueseFromEnglish(String englishValue) {
+        return fromEnglish(englishValue).map(EquipmentCategory::toPortuguese).orElse("Outros");
+    }
+
     private static final Map<String, EquipmentCategory> LOOKUP = new HashMap<>();
 
     static {
         for (EquipmentCategory cat : values()) {
             LOOKUP.put(cat.portuguese.toLowerCase(Locale.ROOT), cat);
-            // Also index the accent-free version for ML service compatibility
             String noAccent = cat.portuguese
                     .replaceAll("[áàâã]", "a")
                     .replaceAll("[éèê]", "e")
@@ -45,7 +61,11 @@ public enum EquipmentCategory {
             return null;
         }
         String key = value.strip().toLowerCase(Locale.ROOT);
-        // LOOKUP já contém versões com e sem acentos (populado no static initializer)
         return LOOKUP.get(key);
+    }
+
+    public static String toEnglishFromPortuguese(String portugueseValue) {
+        EquipmentCategory category = fromPortuguese(portugueseValue);
+        return category != null ? category.name() : portugueseValue;
     }
 }

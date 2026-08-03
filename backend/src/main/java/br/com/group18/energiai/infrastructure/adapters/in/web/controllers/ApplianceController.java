@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
+import br.com.group18.energiai.core.domain.model.EquipmentCategory;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ApplianceResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class ApplianceController {
                 .map(appliance -> new ApplianceResponseDTO(
                         appliance.getId(),
                         appliance.getName(),
-                        appliance.getApplianceCategory(),
+                        EquipmentCategory.toEnglishFromPortuguese(appliance.getApplianceCategory()),
                         appliance.getAveragePowerWatts() != null
                                 ? appliance.getAveragePowerWatts().intValue()
                                 : 0,

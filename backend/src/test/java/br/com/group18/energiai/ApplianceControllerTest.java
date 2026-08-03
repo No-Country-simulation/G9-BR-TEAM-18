@@ -24,7 +24,6 @@ class ApplianceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // Dependência alterada do MlSchemaRegistry para o RepositoryPort
     @MockitoBean
     private ApplianceRepositoryPort applianceRepository;
 
@@ -36,9 +35,8 @@ class ApplianceControllerTest {
 
     @Test
     void deveRetornarCatalogoDeAparelhosDoBancoComId() throws Exception {
-        // Arrange
         Appliance mockAppliance = new Appliance(
-                1L, "Geladeira Frost Free", "REFRIGERATION", new BigDecimal("150.0"), new BigDecimal("24.0"));
+                1L, "Geladeira Frost Free", "Refrigeração", new BigDecimal("150.0"), new BigDecimal("24.0"));
 
         when(applianceRepository.findAll()).thenReturn(List.of(mockAppliance));
 
@@ -48,5 +46,17 @@ class ApplianceControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Geladeira Frost Free"))
                 .andExpect(jsonPath("$[0].ml_category").value("REFRIGERATION"));
+    }
+
+    @Test
+    void naoDeveQuebrarQuandoCategoriaPersistidaNaoForReconhecida() throws Exception {
+        Appliance mockAppliance = new Appliance(
+                2L, "Aparelho Legado", "Categoria Antiga", new BigDecimal("100.0"), new BigDecimal("5.0"));
+
+        when(applianceRepository.findAll()).thenReturn(List.of(mockAppliance));
+
+        mockMvc.perform(get("/appliances"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].ml_category").value("Categoria Antiga"));
     }
 }

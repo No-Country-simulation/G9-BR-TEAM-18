@@ -1,6 +1,7 @@
 package br.com.group18.energiai.application.services;
 
 import br.com.group18.energiai.core.domain.model.Appliance;
+import br.com.group18.energiai.core.domain.model.EquipmentCategory;
 import br.com.group18.energiai.core.domain.util.ApplianceNameNormalizer;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
 import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -49,20 +51,37 @@ public class ApplianceCatalogSyncService {
             String normalizedMlName = ApplianceNameNormalizer.normalize(mlApp.name());
             Appliance appliance = dbApplianceMap.get(normalizedMlName);
 
+            Optional<EquipmentCategory> category = EquipmentCategory.fromEnglish(mlApp.mlCategory());
+
             if (appliance != null) {
-                appliance.setApplianceCategory(mlApp.mlCategory());
+                if (category.isPresent()) {
+                    appliance.setApplianceCategory(category.get().toPortuguese());
+                } else {
+                    log.warn(
+                            "mlCategory '{}' desconhecida para o aparelho existente '{}'. Mantendo categoria"
+                                    + " anterior '{}' para não violar chk_appliance_category.",
+                            mlApp.mlCategory(),
+                            mlApp.name(),
+                            appliance.getApplianceCategory());
+                }
                 appliance.setAveragePowerWatts(BigDecimal.valueOf(mlApp.watts()));
                 appliance.setAverageDailyUseHours(BigDecimal.valueOf(mlApp.hours()));
                 applianceRepository.save(appliance);
-            } else {
+            } else if (category.isPresent()) {
                 Appliance newAppliance = new Appliance();
                 newAppliance.setName(mlApp.name());
-                newAppliance.setApplianceCategory(mlApp.mlCategory());
+                newAppliance.setApplianceCategory(category.get().toPortuguese());
                 newAppliance.setAveragePowerWatts(BigDecimal.valueOf(mlApp.watts()));
                 newAppliance.setAverageDailyUseHours(BigDecimal.valueOf(mlApp.hours()));
 
                 applianceRepository.save(newAppliance);
                 log.info("Novo aparelho cadastrado via ML Sync: {}", mlApp.name());
+            } else {
+                log.warn(
+                        "mlCategory '{}' desconhecida para o novo aparelho '{}'. Item pulado nesta"
+                                + " sincronização (sem categoria anterior para preservar).",
+                        mlApp.mlCategory(),
+                        mlApp.name());
             }
         }
 
