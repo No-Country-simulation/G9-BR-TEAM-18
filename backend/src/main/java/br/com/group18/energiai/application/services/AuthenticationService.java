@@ -118,6 +118,26 @@ public class AuthenticationService {
             }
         }
 
+        if (preferences.containsKey("peak_hour_usage")) {
+            Object value = preferences.get("peak_hour_usage");
+            if (value instanceof Boolean) {
+                user.setPeakHourUsage((Boolean) value);
+            } else if (value != null) {
+                user.setPeakHourUsage(Boolean.parseBoolean(value.toString()));
+            } else {
+                user.setPeakHourUsage(null);
+            }
+        }
+
+        if (preferences.containsKey("high_consumption_hours")) {
+            Object value = preferences.get("high_consumption_hours");
+            if (value instanceof Number) {
+                user.setHighConsumptionHours(BigDecimal.valueOf(((Number) value).doubleValue()));
+            } else if (value == null) {
+                user.setHighConsumptionHours(null);
+            }
+        }
+
         return userRepository.save(user);
     }
 

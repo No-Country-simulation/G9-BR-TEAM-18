@@ -250,6 +250,8 @@ public class AuthController {
         dto.setPasswordResetRequired(user.isPasswordResetRequired());
         dto.setConsumptionGoal(user.getConsumptionGoal());
         dto.setRegularity(user.getRegularity());
+        dto.setPeakHourUsage(user.getPeakHourUsage());
+        dto.setHighConsumptionHours(user.getHighConsumptionHours());
         return dto;
     }
 

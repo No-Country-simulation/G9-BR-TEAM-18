@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
@@ -32,6 +33,14 @@ public class LoginResponseDTO {
 
     @Schema(description = "Regularidade da análise", example = "instantanea")
     private String regularity;
+
+    @Schema(description = "Indica se o usuário faz uso de energia no horário de pico (18h às 21h)", example = "true")
+    @JsonProperty("peak_hour_usage")
+    private Boolean peakHourUsage;
+
+    @Schema(description = "Quantidade de horas de alto consumo diário", example = "4.5")
+    @JsonProperty("high_consumption_hours")
+    private BigDecimal highConsumptionHours;
 
     public LoginResponseDTO() {}
 
@@ -95,5 +104,21 @@ public class LoginResponseDTO {
 
     public void setRegularity(String regularity) {
         this.regularity = regularity;
+    }
+
+    public Boolean getPeakHourUsage() {
+        return peakHourUsage;
+    }
+
+    public void setPeakHourUsage(Boolean peakHourUsage) {
+        this.peakHourUsage = peakHourUsage;
+    }
+
+    public BigDecimal getHighConsumptionHours() {
+        return highConsumptionHours;
+    }
+
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
+        this.highConsumptionHours = highConsumptionHours;
     }
 }

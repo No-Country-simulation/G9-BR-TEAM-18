@@ -11,6 +11,8 @@ public class User {
     private boolean passwordResetRequired;
     private BigDecimal consumptionGoal;
     private String regularity;
+    private Boolean peakHourUsage;
+    private BigDecimal highConsumptionHours;
 
     public User() {}
 
@@ -74,5 +76,21 @@ public class User {
 
     public void setRegularity(String regularity) {
         this.regularity = regularity;
+    }
+
+    public Boolean getPeakHourUsage() {
+        return peakHourUsage;
+    }
+
+    public void setPeakHourUsage(Boolean peakHourUsage) {
+        this.peakHourUsage = peakHourUsage;
+    }
+
+    public BigDecimal getHighConsumptionHours() {
+        return highConsumptionHours;
+    }
+
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
+        this.highConsumptionHours = highConsumptionHours;
     }
 }

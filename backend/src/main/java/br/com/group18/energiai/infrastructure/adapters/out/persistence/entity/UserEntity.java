@@ -34,6 +34,12 @@ public class UserEntity {
     @Column(name = "regularity", length = 20)
     private String regularity;
 
+    @Column(name = "peak_hour_usage")
+    private Integer peakHourUsage;
+
+    @Column(name = "high_consumption_hours", precision = 10, scale = 2)
+    private BigDecimal highConsumptionHours;
+
     public Long getId() {
         return id;
     }
@@ -88,5 +94,21 @@ public class UserEntity {
 
     public void setRegularity(String regularity) {
         this.regularity = regularity;
+    }
+
+    public Integer getPeakHourUsage() {
+        return peakHourUsage;
+    }
+
+    public void setPeakHourUsage(Integer peakHourUsage) {
+        this.peakHourUsage = peakHourUsage;
+    }
+
+    public BigDecimal getHighConsumptionHours() {
+        return highConsumptionHours;
+    }
+
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
+        this.highConsumptionHours = highConsumptionHours;
     }
 }

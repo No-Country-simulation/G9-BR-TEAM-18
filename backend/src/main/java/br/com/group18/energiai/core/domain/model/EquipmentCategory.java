@@ -50,7 +50,7 @@ public enum EquipmentCategory {
                     .replaceAll("[íì]", "i")
                     .replaceAll("[óòôõ]", "o")
                     .replaceAll("[úùû]", "u")
-                    .replaceAll("[ç]", "c")
+                    .replaceAll("ç", "c")
                     .toLowerCase(Locale.ROOT);
             LOOKUP.put(noAccent, cat);
         }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.UserRepositoryPort;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -164,5 +165,30 @@ class AuthenticationServiceTest {
         Optional<User> result = authenticationService.findById(99L);
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldUpdatePreferencesWithPeakHourAndHighConsumption() {
+        User user = new User("Nome", "email@email.com", "hash");
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Map<String, Object> prefs = Map.of(
+                "consumption_goal",
+                300.5,
+                "regularity",
+                "mensal",
+                "peak_hour_usage",
+                true,
+                "high_consumption_hours",
+                5.5);
+
+        User result = authenticationService.updatePreferences(1L, prefs);
+
+        assertEquals(new java.math.BigDecimal("300.5"), result.getConsumptionGoal());
+        assertEquals("mensal", result.getRegularity());
+        assertTrue(result.getPeakHourUsage());
+        assertEquals(new java.math.BigDecimal("5.5"), result.getHighConsumptionHours());
     }
 }
