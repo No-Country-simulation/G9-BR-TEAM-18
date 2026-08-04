@@ -61,8 +61,7 @@ model_filename = os.getenv("MODEL_PATH", "categorization-model.joblib")
 MODEL_PATH = os.path.join(BASE_DIR, model_filename)
 
 LABELED_CSV = os.path.join(DATA_DIR, "labeled-energy-base.csv")
-PPH_CSV = os.path.join(DATA_DIR, "pph-data-complete.csv")
-ROTULED_CSV = os.path.join(DATA_DIR, "rotuled-ml-processed.csv")
+PPH_CSV = os.path.join(DATA_DIR, "main-dataset.csv")
 
 CATEGORIES = ["Excelente", "Bom", "Mediano", "Ruim", "Critico"]
 MAP_CATEGORY_UPPER = {c.upper(): c for c in CATEGORIES}
@@ -118,15 +117,6 @@ PPH_APPLIANCE_QTY_COLUMNS = [
     "qtd_tv",
     "qtd_chuveiro_eletrico",
 ]
-
-PPH_CATEGORY_KWH_COLUMNS = {
-    "kwh_categoria_iluminacao": "Iluminacao",
-    "kwh_categoria_refrigeracao": "Refrigeracao",
-    "kwh_categoria_climatizacao": "Climatizacao",
-    "kwh_categoria_eletrodomesticos": "Eletrodomesticos",
-    "kwh_categoria_tecnologia": "Tecnologia",
-}
-
 
 def _assign_region_property(region: str, counter: int) -> str:
     """Assign property type based on region with proportional distribution."""
@@ -242,12 +232,13 @@ def load_labeled_csv(path: str) -> pd.DataFrame:
     return df[FEATURE_COLUMNS + ["category"]]
 
 
-def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
-    """Load PPH 2019 survey data and convert to training format.
+def load_pph_data(path: str) -> pd.DataFrame:
+    """Load the merged PPH 2019 + notebook-enriched dataset for training.
 
-    The PPH dataset contains real Brazilian household energy consumption
-    data with appliance-level detail. Since it has no efficiency label,
-    we compute the inefficiency index to create labeled categories.
+    main-dataset.csv already contains categoria_maior_consumo and
+    produtos_maior_consumo, merged and validated (row alignment by
+    ENTREVISTA + REGIAO + UF + MUNICIPIO) in M003_merge_datasets.ipynb.
+    No positional join or fallback is needed here anymore.
 
     Features derived from PPH columns:
       - consumption_kwh: consumo_real_medio_kwh_mes
@@ -257,15 +248,8 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
       - peak_hour_usage: inferred from multiple habit columns
       - consumption distribution: from kwh_categoria_* columns
 
-    highest_consumption_category is preferably taken from the notebook's
-    output (rotuled_path), computed from the full 37-appliance extraction
-    and including the "Servicos" category, which is not derivable from
-    this file's reduced 11-appliance set. The join with rotuled_path is
-    positional (not by ENTREVISTA, which repeats across re-interviews of
-    the same household) -- both files share the same raw extraction order.
-    If rotuled_path is missing or its row count doesn't match, this falls
-    back silently to the original 5-category calculation from this file's
-    own kwh_categoria_* columns.
+    Rows without a categoria_maior_consumo value (missing/non-string)
+    fall back to "Outros" via normalize_category().
     """
     if not os.path.exists(path):
         print("  File not found.")
@@ -273,23 +257,7 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
 
     df = pd.read_csv(path, encoding="utf-8-sig").reset_index(drop=True)
 
-    enriched = False
-    if os.path.exists(rotuled_path):
-        df_rotuled = pd.read_csv(rotuled_path).reset_index(drop=True)
-        if len(df_rotuled) == len(df):
-            df["produtos_maior_consumo"] = df_rotuled["produtos_maior_consumo"]
-            df["highest_consumption_category"] = df_rotuled["categoria_maior_consumo"].apply(
-                normalize_category
-            )
-            enriched = True
-        else:
-            print(
-                f"  Warning: row count mismatch between {os.path.basename(path)} "
-                f"({len(df)}) and {os.path.basename(rotuled_path)} ({len(df_rotuled)}) "
-                "-- falling back to 5-category calculation."
-            )
-    else:
-        print(f"  Warning: {rotuled_path} not found -- falling back to 5-category calculation.")
+    df["highest_consumption_category"] = df["categoria_maior_consumo"].apply(normalize_category)
 
     # Assign property type with regional proportional distribution
     df["property_type"] = df.reset_index(drop=True).apply(
@@ -326,23 +294,10 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
     df["peak_hour_usage"] = df.apply(_infer_peak_usage, axis=1)
 
     # Map category kWh to consumption distribution (monthly kWh -> avg watts)
-    # -- always computed, regardless of enrichment, since features.py uses these
-    # for pct_refrigeration/pct_heating/etc.
     df["refrigeration_watts"] = df.get("kwh_categoria_refrigeracao", 0).fillna(0) * 1000 / 730
     df["air_conditioning_watts"] = df.get("kwh_categoria_climatizacao", 0).fillna(0) * 1000 / 730
     df["heating_watts"] = df.get("kwh_categoria_eletrodomesticos", 0).fillna(0) * 1000 / 730
     df["lighting_watts"] = df.get("kwh_categoria_iluminacao", 0).fillna(0) * 1000 / 730
-
-    # Fallback: determine highest consumption category from kWh distribution
-    # only if the notebook's enrichment above did not succeed.
-    if not enriched:
-        cat_cols = [c for c in PPH_CATEGORY_KWH_COLUMNS if c in df.columns]
-        if cat_cols:
-            cat_values = df[cat_cols].fillna(0)
-            max_cat_idx = cat_values.idxmax(axis=1)
-            df["highest_consumption_category"] = max_cat_idx.map(PPH_CATEGORY_KWH_COLUMNS)
-        else:
-            df["highest_consumption_category"] = "Outros"
 
     # Handle missing values
     df["consumption_kwh"] = (
@@ -356,9 +311,7 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
     index = calculate_inefficiency_index(pph_subset)
     df["category"] = pd.qcut(index, q=5, labels=CATEGORIES)
 
-    result_columns = FEATURE_COLUMNS + ["category"]
-    if "produtos_maior_consumo" in df.columns:
-        result_columns.append("produtos_maior_consumo")
+    result_columns = FEATURE_COLUMNS + ["category", "produtos_maior_consumo"]
     result = df[result_columns].copy()
     result["peak_hour_usage"] = result["peak_hour_usage"].astype(int)
     return result
