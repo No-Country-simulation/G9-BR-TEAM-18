@@ -40,6 +40,7 @@ def normalize_category(cat: object) -> str:
     }
     return mapping.get(cat_lower, "Outros")
 
+
 def normalize_property_type(ptype: object) -> str:
     """Normaliza property_type de ingles para portugues (formato do modelo)."""
     if not isinstance(ptype, str):
@@ -70,6 +71,7 @@ def translate_category(cat: object) -> str:
         "others": "Outros",
     }
     return mapping.get(cat.strip().lower(), "Outros")
+
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -108,30 +110,5 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
             df[f"cat_highest_{lower_cat}"] = (
                 df["highest_consumption_category_lower"] == lower_cat
             ).astype(int)
-
-    if "daily_consumption_distribution" in df.columns:
-        df["refrigeration_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("REFRIGERATION_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["heating_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("HEATING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["air_conditioning_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("AIR_CONDITIONING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["lighting_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("LIGHTING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        total = (
-            df["refrigeration_watts"]
-            + df["heating_watts"]
-            + df["air_conditioning_watts"]
-            + df["lighting_watts"]
-        )
-        df["total_watts"] = total
-        df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_heating"] = (df["heating_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_air_conditioning"] = (df["air_conditioning_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_lighting"] = (df["lighting_watts"] / (total + epsilon)).clip(0, 1)
 
     return df
