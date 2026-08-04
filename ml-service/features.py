@@ -79,29 +79,4 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
                 df["highest_consumption_category_lower"] == lower_cat
             ).astype(int)
 
-    if "daily_consumption_distribution" in df.columns:
-        df["refrigeration_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("REFRIGERATION_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["heating_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("HEATING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["air_conditioning_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("AIR_CONDITIONING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        df["lighting_watts"] = df["daily_consumption_distribution"].apply(
-            lambda x: x.get("LIGHTING_WATTS", 0.0) if isinstance(x, dict) else 0.0
-        )
-        total = (
-            df["refrigeration_watts"]
-            + df["heating_watts"]
-            + df["air_conditioning_watts"]
-            + df["lighting_watts"]
-        )
-        df["total_watts"] = total
-        df["pct_refrigeration"] = (df["refrigeration_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_heating"] = (df["heating_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_air_conditioning"] = (df["air_conditioning_watts"] / (total + epsilon)).clip(0, 1)
-        df["pct_lighting"] = (df["lighting_watts"] / (total + epsilon)).clip(0, 1)
-
     return df
