@@ -28,9 +28,15 @@ public class MlSchemaRegistry {
 
     public void register(MlContractResponse contract, MlApplianceCatalogResponse catalog) {
         if (contract != null) {
-            this.propertyTypes = List.copyOf(contract.propertyTypes());
-            this.efficiencyCategories = List.copyOf(contract.efficiencyCategories());
-            this.consumptionCategories = List.copyOf(contract.consumptionCategories());
+            if (contract.propertyTypes() != null) {
+                this.propertyTypes = List.copyOf(contract.propertyTypes());
+            }
+            if (contract.efficiencyCategories() != null) {
+                this.efficiencyCategories = List.copyOf(contract.efficiencyCategories());
+            }
+            if (contract.consumptionCategories() != null) {
+                this.consumptionCategories = List.copyOf(contract.consumptionCategories());
+            }
         }
 
         if (catalog != null && catalog.appliances() != null) {
