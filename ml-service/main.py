@@ -257,6 +257,23 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
 
 def _generate_recommendations_groq(data: PredictRequest, category: str) -> list[str]:
     property_type_pt = normalize_property_type(data.property_type)
+    highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
+    produtos_texto = (
+        ", ".join(data.highest_consumption_products[:3])
+        if data.highest_consumption_products
+        else None
+    )
+
+    category_rule = ""
+    if highest_category_pt != "Outros":
+        category_rule = (
+            f"- Pelo menos uma recomendação deve abordar especificamente a categoria de maior "
+            f"consumo do imóvel ({highest_category_pt})"
+        )
+        if produtos_texto:
+            category_rule += f", citando ao menos um destes equipamentos: {produtos_texto}"
+        category_rule += ".\n"
+
     prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas\
  e realmente úteis para melhorar a eficiência energética do imóvel.
 
@@ -266,7 +283,7 @@ REGRAS OBRIGATÓRIAS:
 - Baseie-se APENAS nos dados fornecidos. Não invente equipamentos ou hábitos não informados.
 - Se o tipo de imóvel for "Apartamento", não sugira painéis solares ou soluções que dependam
   de telhado/espaço externo próprio.
-- Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
+{category_rule}- Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
 - Não cite marcas, modelos ou preços. Não use termos técnicos sem explicação simples.
 - Máximo 20 palavras por recomendação. Sem emojis, markdown ou numeração.
 - Tom: {category} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
@@ -278,6 +295,8 @@ Dados do imóvel:
 - Quantidade de equipamentos: {data.equipment_quantity}
 - Tipo de imóvel: {property_type_pt}
 - Horas de alto consumo por dia: {data.high_consumption_hours}
+- Categoria de maior consumo: {highest_category_pt}
+- Equipamentos de maior consumo: {produtos_texto or "não informado"}
 - Categoria de eficiência: {category}
 
 Responda APENAS com as 3 recomendações, uma por linha, sem numeração,
