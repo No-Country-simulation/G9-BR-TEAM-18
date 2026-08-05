@@ -173,24 +173,64 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
         return "RUIM", 0.82
     return "CRITICO", 0.90
 
+CATEGORY_RECOMMENDATIONS = {
+    "Refrigeracao": (
+        "Verifique a vedação da geladeira e evite deixá-la encostada em paredes "
+        "ou perto de fontes de calor, isso força o motor a trabalhar mais."
+    ),
+    "Climatizacao": (
+        "Ajuste o ar-condicionado para 23°C e evite deixar portas ou janelas "
+        "abertas enquanto ele estiver ligado."
+    ),
+    "Tecnologia": (
+        "Desligue TVs, computadores e videogames da tomada quando ficarem "
+        "muito tempo sem uso, o consumo em standby soma ao longo do mês."
+    ),
+    "Iluminacao": (
+        "Troque lâmpadas antigas por modelos LED, que entregam a mesma "
+        "iluminação consumindo bem menos energia."
+    ),
+    "Eletrodomesticos": (
+        "Prefira banhos mais curtos no chuveiro elétrico e use o micro-ondas "
+        "ou a air fryer no lugar do forno tradicional sempre que possível."
+    ),
+    "Servicos": (
+        "Revise bombas d'água, portões elétricos e outros equipamentos de uso "
+        "ocasional, é comum ficarem ligados sem necessidade."
+    ),
+}
+
 
 def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
+
     if data.peak_hour_usage:
         recs.append(
-            "Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."
+            "Evite usar equipamentos de maior potência entre 18h e 21h, "
+            "esse é o horário de pico e costuma pesar mais na conta."
         )
 
+    highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
+    category_rec = CATEGORY_RECOMMENDATIONS.get(highest_category_pt)
+    if category_rec:
+        recs.append(category_rec)
+
     if category in ("RUIM", "CRITICO"):
-        recs.append("Considere substituir equipamentos antigos por modelos mais eficientes.")
+        recs.append(
+            "Considere substituir os equipamentos mais antigos por modelos "
+            "com melhor selo de eficiência energética."
+        )
 
     if data.equipment_quantity > 10:
-        recs.append("Avalie a real necessidade de todos os equipamentos ligados simultaneamente.")
+        recs.append(
+            "Com tantos equipamentos no imóvel, vale revisar quais realmente "
+            "precisam ficar ligados ao mesmo tempo."
+        )
 
     if data.high_consumption_hours > 5:
         recs.append(
-            "Distribua o uso de equipamentos ao longo do dia "
-            "para reduzir o horário de alto consumo."
+            "Tente distribuir o uso dos equipamentos ao longo do dia, em vez "
+            "de concentrar tudo num único período de alto consumo."
         )
 
     if data.daily_consumption_distribution:
@@ -203,9 +243,9 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
             recs.append("Substituir lâmpadas antigas por tecnologia LED de baixo consumo.")
 
     if category == "EXCELENTE":
-        recs.append("Continue mantendo as boas práticas de eficiência energética!")
+        recs.append("Continue mantendo essas boas práticas, seu consumo está bem equilibrado!")
     elif not recs:
-        recs.append("Mantenha o bom acompanhamento dos seus hábitos de consumo!")
+        recs.append("Continue acompanhando seus hábitos de consumo de perto.")
 
     return recs
 
