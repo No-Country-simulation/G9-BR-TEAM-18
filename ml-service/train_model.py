@@ -548,6 +548,25 @@ joblib.dump(calibrated_pipeline, MODEL_PATH, compress=3)
 print(f"\nModel saved to '{MODEL_PATH}'")
 print(f"Size: {os.path.getsize(MODEL_PATH) / 1024 / 1024:.1f} MB")
 
+# =========================================================================
+# FEATURE IMPORTANCE
+# =========================================================================
+
+print()
+print("=" * 60)
+print("FEATURE IMPORTANCE")
+print("=" * 60)
+
+feature_names = preprocessor.get_feature_names_out()
+importances = np.mean(
+    [clf.estimator.feature_importances_ for clf in calibrated_pipeline.named_steps["model"].calibrated_classifiers_],
+    axis=0,
+)
+
+importance_pairs = sorted(zip(feature_names, importances), key=lambda x: x[1], reverse=True)
+for name, importance in importance_pairs:
+    print(f"  {name:40s} {importance:.4f}")
+
 print()
 print("=" * 60)
 print("TEST WITH ALL PROPERTY TYPES AND CATEGORIES")
