@@ -567,20 +567,72 @@ importance_pairs = sorted(zip(feature_names, importances), key=lambda x: x[1], r
 for name, importance in importance_pairs:
     print(f"  {name:40s} {importance:.4f}")
 
+# =========================================================================
+# SANITY CHECK: VARIED CONSUMPTION SCENARIOS
+# =========================================================================
+
 print()
 print("=" * 60)
-print("TEST WITH ALL PROPERTY TYPES AND CATEGORIES")
+print("SANITY CHECK: VARIED CONSUMPTION SCENARIOS")
 print("=" * 60)
-for tipo in PROPERTY_TYPES:
+print(
+    "Previously this block used a single fixed scenario (consumption_kwh=400,\n"
+    "equipment_quantity=10), which always predicted 'Critico' regardless of\n"
+    "property_type/category and masked real changes in the model's decision\n"
+    "boundary (see ADR-0049). Now testing low/medium/high consumption levels."
+)
+print()
+
+TEST_SCENARIOS = {
+    "low": {
+        "consumption_kwh": 120.0,
+        "equipment_quantity": 4,
+        "high_consumption_hours": 1.5,
+        "peak_hour_usage": False,
+    },
+    "medium": {
+        "consumption_kwh": 400.0,
+        "equipment_quantity": 10,
+        "high_consumption_hours": 5.0,
+        "peak_hour_usage": False,
+    },
+    "high": {
+        "consumption_kwh": 900.0,
+        "equipment_quantity": 20,
+        "high_consumption_hours": 10.0,
+        "peak_hour_usage": True,
+    },
+}
+
+print("-- Varying property_type (category fixed as 'Refrigeracao') --")
+for scenario_name, scenario in TEST_SCENARIOS.items():
+    for tipo in PROPERTY_TYPES:
+        teste = pd.DataFrame(
+            [
+                {
+                    **scenario,
+                    "property_type": tipo,
+                    "highest_consumption_category": "Refrigeracao",
+                    "refrigeration_watts": 1500.0,
+                    "heating_watts": 0.0,
+                    "air_conditioning_watts": 0.0,
+                    "lighting_watts": 0.0,
+                }
+            ]
+        )
+        pred = calibrated_pipeline.predict(teste)[0]
+        proba = calibrated_pipeline.predict_proba(teste).max()
+        print(f"  [{scenario_name:6s}] {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
+print()
+
+print("-- Varying highest_consumption_category (property_type fixed as 'Casa') --")
+for scenario_name, scenario in TEST_SCENARIOS.items():
     for categoria_consumo in HIGHEST_CONSUMPTION_CATEGORIES:
         teste = pd.DataFrame(
             [
                 {
-                    "consumption_kwh": 400.0,
-                    "peak_hour_usage": False,
-                    "equipment_quantity": 10,
-                    "property_type": tipo,
-                    "high_consumption_hours": 5.0,
+                    **scenario,
+                    "property_type": "Casa",
                     "highest_consumption_category": categoria_consumo,
                     "refrigeration_watts": 1500.0,
                     "heating_watts": 0.0,
@@ -591,8 +643,4 @@ for tipo in PROPERTY_TYPES:
         )
         pred = calibrated_pipeline.predict(teste)[0]
         proba = calibrated_pipeline.predict_proba(teste).max()
-        print(f"  {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
-
-print()
-print("Tip: for the next cycle, run this script again —")
-print("the data in 'data/' and 'treino_feedback.jsonl' will be incorporated automatically.")
+        print(f"  [{scenario_name:6s}] {categoria_consumo:18s} -> {pred:10s} (confidence: {proba:.1%})")
