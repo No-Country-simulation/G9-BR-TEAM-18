@@ -26,7 +26,7 @@ A equipe decidiu por implementar autenticação federada (SSO) com o Google util
 
 | Alternativa | Prós | Contras |
 |---|---|---|
-| Frontend gerenciar o token (ex: Firebase Auth) | Implementação muito fácil no frontend | O backend perde controle do fluxo, exigindo trocar o sistema atual de JWT |
+| Frontend gerenciar o token (ex: Firebase Auth) | Implementação tranquila no frontend | O backend perde controle do fluxo, exigindo trocar o sistema atual de JWT |
 | Login via OAuth2 nativo no Backend (Escolhida) | Mantém a sessão atual intacta (JWT em HttpOnly cookie), backend no controle | Configuração inicial mais complexa no Spring Security |
 | OAuth2 Proxy na frente da aplicação | Sem mudança no código da aplicação | Requer infraestrutura adicional (proxy) e complica o ambiente de dev local |
 
