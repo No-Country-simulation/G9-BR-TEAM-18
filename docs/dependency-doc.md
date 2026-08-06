@@ -76,14 +76,14 @@ Gerenciado pelo npm (`frontend/package.json`).
 |---|---|---|
 | `react` | ^19 | Biblioteca de UI |
 | `react-dom` | ^19 | Renderização DOM |
-| `react-is` | ^18 | Identificação de tipos de elementos React |
+| `react-is` | ^19 | Identificação de tipos de elementos React |
 | `react-router` | ^8 | Roteamento SPA (v8 consolidou o antigo `react-router-dom`) |
 | `recharts` | ^3 | Gráficos (Dashboard) |
-| `lucide-react` | ^0.441 | Ícones |
-| `typescript` | ^5.5 | Tipagem estática |
+| `lucide-react` | ^1.29 | Ícones |
+| `typescript` | ~6.0.3 | Tipagem estática (pinado com `~` em `6.0.x` para impedir que um futuro `6.1.x` seja instalado automaticamente: o `typescript-eslint@8.66.0` (03/08/2026), a versão mais recente do toolchain de lint, exige `typescript >=4.8.4 <6.1.0`; o TypeScript 7.0.2 não é suportado. Subir para 7.x apenas quando o typescript-eslint ampliar o peer range) |
 | `@types/react` | ^19 | Tipos do React |
 | `@types/react-dom` | ^19 | Tipos do React DOM |
-| `vite` | ^8 | Bundler e dev server |
+| `vite` | ^8.2 | Bundler e dev server |
 | `@vitejs/plugin-react` | ^6 | Integração React com Vite |
 | `eslint` | ^10 | Linter |
 | `@eslint/js` | ^10 | Regras core do ESLint (flat config) |
@@ -96,9 +96,9 @@ Gerenciado pelo npm (`frontend/package.json`).
 | `@playwright/test` | ^1.62 | Testes E2E (Playwright) |
 | `@testing-library/react` | ^16 | Testes de componentes |
 | `@testing-library/dom` | ^10 | Utilitários DOM para testes |
-| `@testing-library/jest-dom` | ^6 | Matchers DOM para testes |
-| `@testing-library/user-event` | ^14 | Simulação de eventos de usuário |
-| `jsdom` | ^29 | Ambiente DOM para testes |
+| `@testing-library/jest-dom` | ^7 | Matchers DOM para testes |
+| `@testing-library/user-event` | ^14.6 | Simulação de eventos de usuário |
+| `jsdom` | ^30 | Ambiente DOM para testes |
 
 ## ML Service (Python / FastAPI)
 
