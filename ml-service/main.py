@@ -317,7 +317,7 @@ sem introdução e sem comentários adicionais."""
             {"role": "user", "content": prompt},
         ],
         max_tokens=150,
-        temperature=0,
+        temperature=0.3
     )
 
     text = (response.choices[0].message.content or "").strip()
