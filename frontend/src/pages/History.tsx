@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../context/useAuth";
 import { listAnalyses, fetchAnalysisById, deleteAnalysis } from "../services/api";
@@ -6,6 +6,7 @@ import type { AnalysisHistory, ApplianceSnapshot } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
+import { useDialogFocus } from "../hooks/useDialogFocus";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string } | undefined> = {
@@ -152,6 +153,13 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
+  // Foco no botão de fechar ao abrir o modal; restaura ao desmontar (a11y).
+  // Este componente só é renderizado enquanto o modal está aberto (ver
+  // `{detail && !loadingDetail && <AnalysisDetail ... />}`), então o estado
+  // `open` é sempre `true` — o cleanup do hook roda no desmonte (fechar).
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useDialogFocus(true, closeRef);
+
   return (
     <div className="hist-modal-overlay" onClick={onClose}>
       <div
@@ -161,7 +169,7 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
         aria-label="Detalhes da análise"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="hist-modal-close" onClick={onClose}>
+        <button ref={closeRef} className="hist-modal-close" onClick={onClose}>
           <LucideIcon name="X" size={20} />
         </button>
 
@@ -340,6 +348,10 @@ export default function History() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [confirmDeleteId, deleting]);
+
+  // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+  useDialogFocus(!!confirmDeleteId, cancelDeleteRef);
 
   if (loading) {
     return (
@@ -558,6 +570,7 @@ export default function History() {
             )}
             <div className="hist-confirm-actions">
               <button
+                ref={cancelDeleteRef}
                 className="dash-btn dash-btn--secondary"
                 disabled={deleting}
                 onClick={() => setConfirmDeleteId(null)}

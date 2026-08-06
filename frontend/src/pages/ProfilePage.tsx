@@ -18,6 +18,7 @@ import {
   REGULARITY_OPTIONS,
 } from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
+import { useDialogFocus } from "../hooks/useDialogFocus";
 import {
   listProperties,
   createProperty,
@@ -154,6 +155,10 @@ export default function ProfilePage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [confirmDelete, deletingProperty]);
+
+  // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+  useDialogFocus(confirmDelete && !!property, cancelDeleteRef);
 
   const dynamicCategoryOrder = useMemo(() => {
     const cats = new Set(applianceTypes.map((t) => t.mlCategory));
@@ -868,6 +873,7 @@ export default function ProfilePage() {
             </p>
             <div className="hist-confirm-actions">
               <button
+                ref={cancelDeleteRef}
                 className="dash-btn dash-btn--secondary"
                 disabled={deletingProperty}
                 onClick={() => setConfirmDelete(false)}
