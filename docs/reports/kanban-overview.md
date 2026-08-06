@@ -30,10 +30,10 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
 | Done | 126 | | Frontend (F) | 56 |
-| In review | 11 | | Backend (B) | 44 |
+| In review | 12 | | Backend (B) | 44 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
-| Backlog | 2 | | Banco de Dados (M) | 9 |
+| Backlog | 1 | | Banco de Dados (M) | 9 |
 | **Total** | **141** | | Análise de dados (outros) | 2 |
 | | | | **Total** | **141** |
 
@@ -445,4 +445,21 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - Os polimentos aproveitam campos que o backend já retorna: source (ML/FALLBACK),
   updated_at (AnalysisResponseDTO) e highest_consumption_products (hoje exibido só no
   resultado da análise - F048).
-- Card em Backlog aguardando implementação.
+
+## Movimentações (06/08/2026) - Rodada 3: F073 implementado (Backlog → In review)
+
+### Backlog → In review
+
+| ID | Título | Issue | Commits associados |
+|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | 30457cd, c9e7825, 3e41293, bdc3832, 8e4e36e |
+
+### Notas
+
+- Implementado e validado: `deleteProperty` no api.ts (DELETE /properties/{id}); botão
+  Excluir Imóvel no ProfilePage com modal de confirmação e reset do formulário; badge de
+  fonte ML/FALLBACK no detalhe do histórico, no resultado do perfil e na simulação do
+  dashboard; linha "Atualizado em" (updated_at) no detalhe; top produtos consumidores no
+  card do histórico.
+- Suítes verdes: unit 175/175, E2E 77/77 (Firefox), typecheck, lint 0, build OK.
+- Comentado na issue #158; card movido para In review.
