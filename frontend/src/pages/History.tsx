@@ -175,6 +175,15 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
               {STATUS_CONFIG[analysis.status]?.label ?? analysis.status}
             </span>
           )}
+          {analysis.source && (
+            <span className="analysis-source-badge">
+              <LucideIcon
+                name={analysis.source === "ML" ? "Sparkles" : "AlertTriangle"}
+                size={12}
+              />
+              {analysis.source === "ML" ? "Modelo ML" : "Fallback"}
+            </span>
+          )}
           <span className="hist-modal-date">
             {new Date(analysis.created_at).toLocaleDateString("pt-BR", {
               day: "2-digit",
@@ -185,6 +194,18 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
             })}
           </span>
         </div>
+        {analysis.updated_at && analysis.updated_at !== analysis.created_at && (
+          <div className="hist-modal-updated">
+            Atualizado em{" "}
+            {new Date(analysis.updated_at).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        )}
 
         <div className="hist-modal-stats">
           <div className="hist-stat">
@@ -439,6 +460,23 @@ export default function History() {
                     {(a.estimated_monthly_cost ?? 0).toFixed(2)}
                   </span>
                 </div>
+                {a.highest_consumption_products && a.highest_consumption_products.length > 0 && (
+                  <div className="dash-sim-products" style={{ marginTop: "0.25rem" }}>
+                    <span className="dash-sim-products-label">Maiores consumidores:</span>
+                    <span className="dash-sim-products-list">
+                      {a.highest_consumption_products.map((product, i) => (
+                        <span key={i} className="dash-sim-product-tag">
+                          <LucideIcon
+                            name={resolveApplianceIcon(product, "")}
+                            size={12}
+                            className="appliance-icon-inline"
+                          />
+                          {product}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                )}
               </div>
               <button
                 className="history-item-delete"

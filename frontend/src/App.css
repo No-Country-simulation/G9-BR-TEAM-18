@@ -619,6 +619,26 @@ body::after {
   box-shadow: var(--shadow-hard);
 }
 
+.btn-danger {
+  background: var(--state-error);
+  color: #fff;
+  border-color: var(--state-error);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--state-error);
+  color: #fff;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard);
+  filter: brightness(1.08);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: var(--shadow-hard-sm);
+}
+
 .btn-full {
   width: 100%;
 }
@@ -2523,6 +2543,29 @@ body::after {
   font-size: 0.8rem;
   color: var(--text-secondary);
   margin-left: auto;
+}
+
+/* F073: badge da fonte da classificacao (ML vs FALLBACK) */
+.analysis-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  white-space: nowrap;
+}
+
+/* F073: linha "Atualizado em" no detalhe da analise */
+.hist-modal-updated {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding: 0.5rem 1.5rem 0;
+  font-style: italic;
 }
 
 .hist-modal-stats {

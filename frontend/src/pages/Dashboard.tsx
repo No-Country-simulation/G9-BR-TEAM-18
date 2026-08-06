@@ -582,6 +582,15 @@ export default function Dashboard() {
                   <span className="dash-sim-stat">
                     Custo: R$ {simResult.estimated_monthly_cost.toFixed(2)}
                   </span>
+                  {simResult.source && (
+                    <span className="analysis-source-badge">
+                      <LucideIcon
+                        name={simResult.source === "ML" ? "Sparkles" : "AlertTriangle"}
+                        size={12}
+                      />
+                      {simResult.source === "ML" ? "Modelo ML" : "Fallback"}
+                    </span>
+                  )}
                 </div>
                 {simResult.highest_consumption_products &&
                   simResult.highest_consumption_products.length > 0 && (
