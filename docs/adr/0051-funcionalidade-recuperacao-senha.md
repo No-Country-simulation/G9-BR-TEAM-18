@@ -2,7 +2,7 @@
 
 ## Status
 
-aceito
+Pendente
 
 ## Contexto
 
