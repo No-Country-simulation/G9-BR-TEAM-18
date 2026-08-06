@@ -9,13 +9,13 @@ Pendente
 Atualmente, o projeto utiliza apenas autenticação local nativa (e-mail e senha) gerenciada através de tokens JWT próprios em cookies HttpOnly. Para reduzir a fricção de entrada de novos usuários e facilitar o login recorrente, surgiu a demanda de implementar autenticação via provedores de identidade externos (Single Sign-On), iniciando pelo Google.
 
 Forças e restrições:
-- **Usabilidade:** Usuários modernos preferem "Login com 1 clique" em vez de preencher formulários longos.
+- **Usabilidade:** Usuários preferem "Login com 1 clique" em vez de preencher formulários ou digitar senha.
 - **Segurança:** O sistema existente baseia sua sessão em cookies HttpOnly. A integração com o Google precisa terminar devolvendo esse mesmo cookie para manter a compatibilidade com o resto do sistema.
 - **Base de dados:** O sistema atual exige que o usuário defina preferências (peak hours, metas). Precisamos garantir que usuários cadastrados via Google recebam valores padrão.
 
 ## Decisão
 
-A equipe decidiu por implementar autenticação federada (SSO) com o Google utilizando OAuth2/OpenID Connect. 
+Implementar autenticação federada (SSO) com o Google utilizando OAuth2/OpenID Connect. 
 
 1. **Frontend:** Serão adicionados botões de "Entrar com Google" nas telas de Login e Cadastro. Ao clicar, o frontend redirecionará o usuário para o endpoint de autorização do backend.
 2. **Backend:** O backend será configurado como um cliente OAuth2 (usando `spring-boot-starter-oauth2-client`). Ele gerenciará o redirecionamento para o Google, o recebimento do código de autorização e a troca pelos dados do perfil (e-mail, nome).
