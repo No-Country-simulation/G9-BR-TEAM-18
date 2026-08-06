@@ -142,9 +142,25 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
 }
 
 function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onClose: () => void }) {
+  // Fecha o modal de detalhe com a tecla Escape (acessibilidade).
+  // O listener é adicionado na montagem e removido no desmonte (cleanup).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
     <div className="hist-modal-overlay" onClick={onClose}>
-      <div className="hist-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="hist-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Detalhes da análise"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="hist-modal-close" onClick={onClose}>
           <LucideIcon name="X" size={20} />
         </button>
