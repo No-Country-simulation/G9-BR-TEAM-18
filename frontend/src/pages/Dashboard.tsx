@@ -280,7 +280,7 @@ export default function Dashboard() {
               style={{
                 backgroundColor:
                   CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
-                  (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
+                  (backendCategorySet.has(lastAnalysis.category) ? "#818cf8" : "#9ca3af"),
               }}
             >
               {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
@@ -570,7 +570,7 @@ export default function Dashboard() {
                     style={{
                       backgroundColor:
                         CATEGORY_COLORS[simResult.category as keyof typeof CATEGORY_COLORS] ??
-                        "#6b7280",
+                        "#9ca3af",
                     }}
                   >
                     {CATEGORY_DISPLAY[simResult.category as keyof typeof CATEGORY_DISPLAY] ??

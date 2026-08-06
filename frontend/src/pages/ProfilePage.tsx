@@ -737,7 +737,7 @@ export default function ProfilePage() {
                       style={{
                         backgroundColor:
                           CATEGORY_COLORS[result.category] ??
-                          (backendCategorySet.has(result.category) ? "#6366f1" : "#6b7280"),
+                          (backendCategorySet.has(result.category) ? "#818cf8" : "#9ca3af"),
                       }}
                     >
                       {CATEGORY_DISPLAY[result.category] ?? result.category}
@@ -804,7 +804,7 @@ export default function ProfilePage() {
                       style={{
                         backgroundColor:
                           CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
-                          (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
+                          (backendCategorySet.has(lastAnalysis.category) ? "#818cf8" : "#9ca3af"),
                       }}
                     >
                       {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??

@@ -9,6 +9,9 @@
   --accent-cyan: #29e7cd;
   --accent-magenta: #ff4fa3;
   --accent-mustard: #f2c230;
+  --on-accent-text: var(--ink);
+  --btn-danger-text: var(--ink);
+  --accent-green-bright: var(--accent-green);
   --state-error: #ff3b3b;
   --state-error-bg: #3a0d0d;
   --state-success: #c6ff3d;
@@ -58,14 +61,17 @@
   --ink: #1a1a1a;
   --text-primary: #1a1a1a;
   --text-secondary: #4a4440;
-  --accent-green: #5aa00f;
-  --accent-cyan: #0faf9a;
-  --accent-magenta: #d42d7a;
-  --accent-mustard: #c4921a;
-  --state-error: #d42d2d;
+  --accent-green: #3f7a0a;
+  --accent-cyan: #0f766e;
+  --accent-magenta: #a61e5c;
+  --accent-mustard: #7c5e0e;
+  --state-error: #b3261e;
   --state-error-bg: #fde8e8;
-  --state-success: #4a8c0d;
+  --state-success: #3f7a0a;
   --state-success-bg: #e8f5d8;
+  --on-accent-text: #fff;
+  --btn-danger-text: #fff;
+  --accent-green-bright: #5aa00f;
   --shadow-hard: 4px 4px 0 var(--ink);
   --shadow-hard-lg: 6px 6px 0 var(--ink);
   --shadow-hard-sm: 2px 2px 0 var(--ink);
@@ -488,7 +494,7 @@ body::after {
   font-family: var(--font-accent);
   font-size: 0.85rem;
   letter-spacing: 0.5px;
-  color: var(--accent-green);
+  color: var(--accent-green-bright);
   margin-bottom: 1.5rem;
   animation: fadeInUp 0.8s ease;
 }
@@ -591,7 +597,7 @@ body::after {
 
 .btn-primary {
   background: var(--accent-green);
-  color: var(--ink);
+  color: var(--on-accent-text);
   box-shadow: var(--shadow-hard);
 }
 
@@ -614,21 +620,21 @@ body::after {
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--accent-cyan);
-  color: var(--ink);
+  color: var(--on-accent-text);
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-hard);
 }
 
 .btn-danger {
   background: var(--state-error);
-  color: #fff;
+  color: var(--btn-danger-text);
   border-color: var(--state-error);
   box-shadow: var(--shadow-hard-sm);
 }
 
 .btn-danger:hover:not(:disabled) {
   background: var(--state-error);
-  color: #fff;
+  color: var(--btn-danger-text);
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-hard);
   filter: brightness(1.08);
@@ -667,7 +673,7 @@ body::after {
   font-size: 0.7rem;
   font-weight: 400;
   background: var(--ink);
-  color: var(--accent-green);
+  color: var(--accent-green-bright);
   border: 1px solid var(--accent-green);
   padding: 0.15rem 0.55rem;
 }
@@ -786,7 +792,7 @@ body::after {
   width: 20px;
   height: 20px;
   background: var(--accent-green);
-  color: var(--ink);
+  color: var(--on-accent-text);
   font-size: 0.65rem;
   font-weight: 700;
   display: flex;
@@ -906,7 +912,7 @@ body::after {
   top: -6px;
   right: -6px;
   background: var(--ink);
-  color: var(--accent-green);
+  color: var(--accent-green-bright);
   font-size: 0.65rem;
   font-weight: 700;
   width: 20px;
@@ -996,7 +1002,7 @@ body::after {
 
 .qty-btn:hover:not(:disabled) {
   background: var(--accent-cyan);
-  color: var(--ink);
+  color: var(--on-accent-text);
   transform: translate(-1px, -1px);
   box-shadow: var(--shadow-hard-sm);
 }
@@ -1426,7 +1432,7 @@ body::after {
   text-align: center;
   font-weight: 400;
   font-size: 1rem;
-  color: var(--ink);
+  color: var(--on-accent-text);
   background: var(--accent-green);
   padding: 0.3rem 0.6rem;
   font-family: var(--font-mono);
@@ -1506,8 +1512,7 @@ body::after {
 
 .result-badge {
   padding: 0.85rem 1.25rem;
-  background: var(--ink);
-  color: var(--accent-green);
+  color: var(--ink);
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 1.15rem;
@@ -2051,7 +2056,7 @@ body::after {
   width: 48px;
   height: 48px;
   background: var(--accent-magenta);
-  color: var(--ink);
+  color: var(--on-accent-text);
   border: 2px solid var(--ink);
   cursor: pointer;
   display: flex;
@@ -2148,7 +2153,7 @@ body::after {
 
 .dash-btn--secondary:hover {
   background: var(--accent-cyan);
-  color: var(--ink);
+  color: var(--on-accent-text);
   transform: translate(-1px, -1px);
   box-shadow: var(--shadow-hard-sm);
 }
@@ -2445,7 +2450,7 @@ body::after {
   letter-spacing: 0.5px;
   background: var(--state-error);
   border: 2px solid var(--ink);
-  color: #fff;
+  color: var(--btn-danger-text);
   box-shadow: var(--shadow-hard-sm);
 }
 
@@ -2901,6 +2906,7 @@ body::after {
   font-size: 0.75rem;
   font-weight: 400;
   border: 1px solid transparent;
+  color: var(--ink);
 }
 
 .history-item-date {
@@ -3094,7 +3100,7 @@ body::after {
   display: inline-block;
   padding: 0.3rem 1rem;
   border-radius: 999px;
-  color: #fff;
+  color: var(--ink);
   font-weight: 700;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -3159,7 +3165,7 @@ body::after {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  color: #fff;
+  color: var(--ink);
   font-weight: 700;
   font-size: 0.8rem;
   text-transform: uppercase;
