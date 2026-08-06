@@ -151,7 +151,7 @@ describe("listAnalyses", () => {
           high_consumption_hours: 4,
           created_at: "2026-07-22T14:30:00Z",
           updated_at: "2026-07-23T09:00:00Z",
-          source: "ML",
+          source: "model",
           recommendations: [],
           status: "CONCLUIDA",
           highest_consumption_products: ["Ar Condicionado", "Geladeira"],
@@ -161,7 +161,7 @@ describe("listAnalyses", () => {
 
     const result = await listAnalyses();
     expect(result[0].updated_at).toBe("2026-07-23T09:00:00Z");
-    expect(result[0].source).toBe("ML");
+    expect(result[0].source).toBe("model");
     expect(result[0].highest_consumption_products).toEqual(["Ar Condicionado", "Geladeira"]);
   });
 
