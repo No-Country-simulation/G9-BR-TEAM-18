@@ -1,3 +1,5 @@
-ignored: []
+ignored:
+  - DL3059
 trustedRegistries:
   - docker.io
+  - mcr.microsoft.com

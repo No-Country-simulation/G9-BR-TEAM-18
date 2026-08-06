@@ -83,7 +83,7 @@ Serviços disponíveis em:
 #### Pré-requisitos
 
 - Java 21 (Eclipse Temurin recomendado)
-- Node.js 20+
+- Node.js 24+
 - Python 3.12+
 - Maven (ou use o wrapper `mvnw` incluso)
 

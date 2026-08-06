@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy frontend source to /app/ (so cwd:".." from e2e/ resolves to /app/)
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 # Install Chromium browser for the installed Playwright version (v1.62.0)
 RUN npx playwright install chromium
