@@ -33,6 +33,34 @@ export interface AnalysisResponse {
 
 export type EfficiencyClassification = "EXCELENTE" | "BOM" | "MEDIANO" | "RUIM" | "CRITICO";
 
+export type AnalysisSourceKind = "ml" | "fallback";
+
+/**
+ * Normaliza o campo `source` da resposta da análise para o rótulo de exibição.
+ *
+ * O contrato real (docs/contrato-api.md) define os valores retornados pelo
+ * ML Service: `model` (classificador treinado), `model+groq` (com fallback
+ * LLM), `rule-based` (fallback por regras) — com sufixos descritivos como
+ * `model (confidence 62.5%)` ou `rule-based (model error)`. Nenhum desses
+ * valores é literalmente `"ML"`, então a comparação antiga (`source === "ML"`)
+ * fazia TODA análise aparecer como "Fallback" no badge.
+ *
+ * Regras:
+ * - `model*` (incl. `model+groq`, `model (confidence ...)`) → "ml"
+ * - `rule-based*` → "fallback"
+ * - legado dos mocks/tests (`"ML"` / `"FALLBACK"`) → compatibilidade
+ * - demais valores ou ausência → undefined (badge não é exibido)
+ */
+export function resolveAnalysisSource(source?: string): AnalysisSourceKind | undefined {
+  if (!source) return undefined;
+  const s = source.trim().toLowerCase();
+  if (s.startsWith("model")) return "ml";
+  if (s.startsWith("rule-based")) return "fallback";
+  if (s === "ml") return "ml";
+  if (s === "fallback") return "fallback";
+  return undefined;
+}
+
 export const CATEGORY_DISPLAY: Record<EfficiencyClassification, string> = {
   EXCELENTE: "Excelente",
   BOM: "Bom",
@@ -104,7 +132,7 @@ export interface AnalysisHistory {
   created_at: string;
   /** F073: data da última atualização da análise (backend AnalysisResponseDTO.updatedAt) */
   updated_at?: string;
-  /** F073: fonte da classificação ("ML" ou "FALLBACK") */
+  /** F073: fonte da classificação — valores do contrato: model, model+groq, rule-based */
   source?: string;
   recommendations: string[];
   status?: AnalysisStatus;
