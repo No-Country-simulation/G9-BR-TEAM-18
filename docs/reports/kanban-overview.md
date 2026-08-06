@@ -29,8 +29,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 126 | | Frontend (F) | 56 |
-| In review | 12 | | Backend (B) | 44 |
+| Done | 127 | | Frontend (F) | 56 |
+| In review | 11 | | Backend (B) | 44 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
 | Backlog | 1 | | Banco de Dados (M) | 9 |
@@ -463,3 +463,19 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   card do histórico.
 - Suítes verdes: unit 175/175, E2E 77/77 (Firefox), typecheck, lint 0, build OK.
 - Comentado na issue #158; card movido para In review.
+
+## Movimentações (06/08/2026) - Rodada 4: F073 Done + ADR-0050
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | 30457cd, c9e7825, 3e41293, bdc3832, 8e4e36e, 5a3fd39 | ADR-0050 |
+
+### Notas
+
+- Revisão concluída: suítes verdes (unit 175/175, E2E 77/77 Firefox, typecheck, lint 0,
+  build) e ADR-0050 criada documentando a decisão (exclusão de imóvel consumindo o
+  DELETE /properties/{id} já existente, badge de fonte ML/FALLBACK, updated_at no detalhe
+  e top produtos no card do histórico, sem mudança de contrato no backend).
+- Issue #158 fechada pela automação do board (mover para Done fecha a issue vinculada).

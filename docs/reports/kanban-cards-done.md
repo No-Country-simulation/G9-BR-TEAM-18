@@ -115,3 +115,4 @@
 | F071 | Frontend - Atualizar para Node 24 e dependências @latest (TS 6.0.3 pinado, engines Node 24) | - | - |
 | F072 | Frontend - Otimizar LucideIcon (registry estático 529kB -> 22kB) + dead code (knip, F030) | - | - |
 | I022 | Infraestrutura/Base - CI: rodar linters frontend/docs/infra em push direto para dev | - | - |
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | ADR-0050 |
