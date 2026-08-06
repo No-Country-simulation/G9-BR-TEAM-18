@@ -165,6 +165,29 @@ test.describe("Historico", () => {
     await expect(page.getByText(/atualizado em/i)).toBeVisible();
   });
 
+  test("detalhe abre como dialog acessivel e fecha com Escape (acessibilidade)", async ({
+    page,
+  }) => {
+    await setupAuthenticatedMocks(page);
+    await page.route(/\/analyses\/a1$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[0] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    // Abre o detalhe da primeira análise (ordem desc: a3, a2, a1)
+    await page.locator(".history-item").nth(2).click();
+    const dialog = page.getByRole("dialog", { name: /detalhes da an[aá]lise/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    // Escape fecha o modal de detalhe e a lista permanece visível
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    await expect(page.locator(".history-item")).toHaveCount(3);
+  });
+
   test("detalhe sem updated_at nem source nao quebra (contrato anterior)", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     // a3 (index 0 na ordem desc) nao tem updated_at nem source
