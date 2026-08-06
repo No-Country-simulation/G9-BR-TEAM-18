@@ -111,3 +111,7 @@
 | F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | - |
 | F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | - |
 | F070 | Frontend - Consumir id real do GET /appliances (B052) e validar salvar de aparelhos | #151 | ADR-0047, ADR-0048 |
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário | #143 | ADR-0046 |
+| F071 | Frontend - Atualizar para Node 24 e dependências @latest (TS 6.0.3 pinado, engines Node 24) | - | - |
+| F072 | Frontend - Otimizar LucideIcon (registry estático 529kB -> 22kB) + dead code (knip, F030) | - | - |
+| I022 | Infraestrutura/Base - CI: rodar linters frontend/docs/infra em push direto para dev | - | - |

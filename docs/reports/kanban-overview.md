@@ -25,17 +25,17 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria (atualizado em 01/08/2026)
+## Cards por coluna e categoria (atualizado em 06/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 121 | | Frontend (F) | 54 |
-| In review | 5 | | Backend (B) | 44 |
-| In progress | 3 | | Infraestrutura (I) | 19 |
-| Ready | 0 | | ML Service / Queries (Q) | 9 |
-| Backlog | 8 | | Banco de Dados (M) | 9 |
-| **Total** | **137** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **135** |
+| Done | 126 | | Frontend (F) | 56 |
+| In review | 11 | | Backend (B) | 44 |
+| In progress | 2 | | Infraestrutura (I) | 20 |
+| Ready | 0 | | ML Service / Queries (Q) | 10 |
+| Backlog | 2 | | Banco de Dados (M) | 9 |
+| **Total** | **141** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **141** |
 
 ## Movimentações (24/07/2026)
 
@@ -392,3 +392,39 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - B054 (não relacionado à B052): NPE no retry do Schema Discovery quando o ML responde listas nulas.
 - O card F070 (frontend) permanece Done - o consumo do `id` está correto e validado por mocks/E2E;
   a validação ponta a ponta em produção fica condicionada à correção B053.
+
+## Movimentações (06/08/2026) - Frontend: F069 Done + Sessão Node 24/deps/CI
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário | #143 | 9d4178d, 7120d57, 8ea109a | ADR-0046 |
+
+### Novos cards em Done (draft items, implementados e validados na sessão)
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F071 | Frontend - Atualizar para Node 24 e dependências @latest (TS 6.0.3 pinado, engines Node 24, audit 0) | 86be85a, 1545925, 2f02742 |
+| F072 | Frontend - Otimizar LucideIcon com registry estático (529kB -> 22kB) + remoção de dead code (knip, F030) | 8ed8f23, 3502ca2, 70b164b |
+| I022 | Infraestrutura/Base - CI: rodar linters de frontend/docs/infra em push direto para dev | 75620bb |
+
+### Notas
+
+- F069: frontend concluído e revisado. O perfil persiste e restaura os hábitos de consumo
+  (peak_hour_usage/high_consumption_hours) via PUT /auth/preferences e GET /auth/me, consumindo
+  o contrato do B051. Suítes verdes: E2E 71/71 (Firefox), unit 169/169, typecheck, lint 0,
+  build, audit 0. Comentado na issue #143.
+- F071: Node 24 em Dockerfiles, workflows (node-version 20/22 -> 24) e engines `>=24.15.0`
+  (jsdom@30 exige 24.15+); dependências @latest (lucide-react 1.29, vite 8.2.1, jest-dom 7,
+  jsdom 30, react-is 19). TypeScript travado em `~6.0.3` por compatibilidade com
+  typescript-eslint@8.66.0 (peer `>=4.8.4 <6.1.0`; TS 7 incompatível). Removidos o flag
+  `--legacy-peer-deps` (Dockerfiles/workflows) e overrides desnecessários. npm audit 0.
+- F072: knip 0 exports não utilizados; F030 (dead code: addApplianceToProperty, demo.test.ts
+  duplicado) concluído nesta sessão; LucideIcon com registry estático de ~55 ícones
+  (chunk de 529kB para 22kB), mantendo fallback para nomes desconhecidos.
+- I022: lint-frontend, test-frontend, lint-docs e lint-infra agora disparam em push direto para
+  `dev` (além de PR), espelhando o lint-backend. Push que altera apenas `.github/workflows/**`
+  não dispara (comportamento do GitHub Actions com path filters), validado no push 75620bb.
+- Contagens do board refletem também movimentações de backend/ML feitas pela equipe desde
+  01/08: B048-B054 e Q007 em In review, Q008 e análise de datasets PPH em In progress.
