@@ -6,6 +6,7 @@ import type { AnalysisHistory, ApplianceSnapshot } from "../types";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
+import { AnalysisSourceBadge } from "../components/AnalysisSourceBadge";
 import { useDialogFocus } from "../hooks/useDialogFocus";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { useFocusTrap } from "../hooks/useFocusTrap";
@@ -204,15 +205,7 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
               {STATUS_CONFIG[analysis.status]?.label ?? analysis.status}
             </span>
           )}
-          {analysis.source && (
-            <span className="analysis-source-badge">
-              <LucideIcon
-                name={analysis.source === "ML" ? "Sparkles" : "AlertTriangle"}
-                size={12}
-              />
-              {analysis.source === "ML" ? "Modelo ML" : "Fallback"}
-            </span>
-          )}
+          <AnalysisSourceBadge source={analysis.source} />
           <span className="hist-modal-date">
             {new Date(analysis.created_at).toLocaleDateString("pt-BR", {
               day: "2-digit",

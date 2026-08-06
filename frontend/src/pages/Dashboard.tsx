@@ -13,6 +13,7 @@ import {
 import type { DashboardData, AnalysisHistory, AnalysisResponse } from "../types";
 import type { PropertyResponse } from "../services/api";
 import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
+import { AnalysisSourceBadge } from "../components/AnalysisSourceBadge";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
   BarChart3,
@@ -582,15 +583,7 @@ export default function Dashboard() {
                   <span className="dash-sim-stat">
                     Custo: R$ {simResult.estimated_monthly_cost.toFixed(2)}
                   </span>
-                  {simResult.source && (
-                    <span className="analysis-source-badge">
-                      <LucideIcon
-                        name={simResult.source === "ML" ? "Sparkles" : "AlertTriangle"}
-                        size={12}
-                      />
-                      {simResult.source === "ML" ? "Modelo ML" : "Fallback"}
-                    </span>
-                  )}
+                  <AnalysisSourceBadge source={simResult.source} />
                 </div>
                 {simResult.highest_consumption_products &&
                   simResult.highest_consumption_products.length > 0 && (

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../context/useAuth";
 import { LucideIcon } from "../components/LucideIcon";
+import { AnalysisSourceBadge } from "../components/AnalysisSourceBadge";
 import type {
   ApplianceType,
   ApplianceItem,
@@ -752,17 +753,12 @@ export default function ProfilePage() {
                     >
                       {CATEGORY_DISPLAY[result.category] ?? result.category}
                     </div>
-                    {result.source && (
-                      <span className="analysis-source-badge" style={{ marginTop: "0.5rem" }}>
-                        <LucideIcon
-                          name={result.source === "ML" ? "Sparkles" : "AlertTriangle"}
-                          size={12}
-                        />
-                        {result.source === "ML"
-                          ? "Análise por modelo de ML"
-                          : "Resultado por fallback"}
-                      </span>
-                    )}
+                    <AnalysisSourceBadge
+                      source={result.source}
+                      mlLabel="Análise por modelo de ML"
+                      fallbackLabel="Resultado por fallback"
+                      style={{ marginTop: "0.5rem" }}
+                    />
                     <div className="result-stats">
                       <div className="stat">
                         <span className="stat-label">Confiança</span>
