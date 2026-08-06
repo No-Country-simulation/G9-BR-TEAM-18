@@ -330,4 +330,20 @@ test.describe("Profile Page", () => {
     // Imóvel continua lá
     await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
   });
+
+  test("modal de exclusao fecha com tecla Escape (acessibilidade)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Modal exposto como dialog (role + aria-modal)
+    await page.getByRole("button", { name: pt("Excluir imovel") }).click();
+    const dialog = page.getByRole("dialog", { name: /exclus[aáã]o de im[oó]vel/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    // Escape fecha o modal
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    // Imóvel continua intacto
+    await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
+  });
 });

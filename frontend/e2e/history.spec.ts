@@ -181,4 +181,19 @@ test.describe("Historico", () => {
     await expect(page.locator(".hist-modal .analysis-source-badge")).toHaveCount(0);
     await expect(page.getByText(/atualizado em/i)).toHaveCount(0);
   });
+
+  test("modal de exclusao de analise fecha com tecla Escape (acessibilidade)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    // Abre o modal de exclusão da primeira análise
+    await page.locator(".history-item").first().locator(".history-item-delete").click();
+    const dialog = page.getByRole("dialog", { name: /exclus[aáã]o de an[aá]lise/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    // Escape fecha o modal e a análise permanece na lista
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    await expect(page.locator(".history-item")).toHaveCount(3);
+  });
 });
