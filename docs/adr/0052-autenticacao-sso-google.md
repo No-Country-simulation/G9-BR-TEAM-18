@@ -6,7 +6,7 @@ Pendente
 
 ## Contexto
 
-Atualmente, o projeto EnergiIA utiliza apenas autenticação local nativa (e-mail e senha) gerenciada através de tokens JWT próprios em cookies HttpOnly. Para reduzir a fricção de entrada de novos usuários e facilitar o login recorrente, surgiu a demanda de implementar autenticação via provedores de identidade externos (Single Sign-On), iniciando pelo Google.
+Atualmente, o projeto utiliza apenas autenticação local nativa (e-mail e senha) gerenciada através de tokens JWT próprios em cookies HttpOnly. Para reduzir a fricção de entrada de novos usuários e facilitar o login recorrente, surgiu a demanda de implementar autenticação via provedores de identidade externos (Single Sign-On), iniciando pelo Google.
 
 Forças e restrições:
 - **Usabilidade:** Usuários modernos preferem "Login com 1 clique" em vez de preencher formulários longos.
