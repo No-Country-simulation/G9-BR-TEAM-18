@@ -222,6 +222,47 @@ test.describe("Historico", () => {
     await expect(page.locator(".history-item")).toHaveCount(3);
   });
 
+  test("modal de exclusao confina o foco com Tab (focus trap)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").first().locator(".history-item-delete").click();
+    const cancelBtn = page.getByRole("button", { name: "Cancelar" });
+    const confirmBtn = page.getByRole("button", { name: /Sim, excluir/ });
+    // Foco inicial no Cancelar (primeiro elemento focável)
+    await expect(cancelBtn).toBeFocused();
+    // Tab: primeiro -> último (Sim, excluir)
+    await page.keyboard.press("Tab");
+    await expect(confirmBtn).toBeFocused();
+    // Tab: último -> primeiro (wrap)
+    await page.keyboard.press("Tab");
+    await expect(cancelBtn).toBeFocused();
+    // Shift+Tab: primeiro -> último (wrap reverso)
+    await page.keyboard.press("Shift+Tab");
+    await expect(confirmBtn).toBeFocused();
+    // O foco nunca escapa do diálogo (botão de exclusão da lista continua fora)
+    await expect(page.locator(".history-item-delete").first()).not.toBeFocused();
+  });
+
+  test("detalhe da analise confina o foco com Tab (focus trap)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.route(/\/analyses\/a1$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[0] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").nth(2).click();
+    const closeBtn = page.locator(".hist-modal-close");
+    // Foco vai para o botão de fechar ao abrir
+    await expect(closeBtn).toBeFocused();
+    // Tab: único elemento focável do diálogo -> permanece nele (wrap)
+    await page.keyboard.press("Tab");
+    await expect(closeBtn).toBeFocused();
+  });
+
   test("modal de exclusao de analise fecha com tecla Escape (acessibilidade)", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.goto("/history");

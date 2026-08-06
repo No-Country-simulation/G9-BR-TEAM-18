@@ -347,6 +347,28 @@ test.describe("Profile Page", () => {
     await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
   });
 
+  test("modal de exclusao confina o foco com Tab (focus trap)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: pt("Excluir imovel") }).click();
+    const cancelBtn = page.getByRole("button", { name: pt("Cancelar") });
+    const confirmBtn = page.getByRole("button", { name: /Sim, excluir/ });
+    // Foco inicial no Cancelar (primeiro elemento focável)
+    await expect(cancelBtn).toBeFocused();
+    // Tab: primeiro -> último (Sim, excluir)
+    await page.keyboard.press("Tab");
+    await expect(confirmBtn).toBeFocused();
+    // Tab: último -> primeiro (wrap)
+    await page.keyboard.press("Tab");
+    await expect(cancelBtn).toBeFocused();
+    // Shift+Tab: primeiro -> último (wrap reverso)
+    await page.keyboard.press("Shift+Tab");
+    await expect(confirmBtn).toBeFocused();
+    // Imóvel continua intacto após navegação por teclado
+    await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
+  });
+
   test("modal de exclusao move foco para Cancelar e restaura ao fechar (acessibilidade)", async ({
     page,
   }) => {
