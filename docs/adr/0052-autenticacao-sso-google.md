@@ -15,7 +15,7 @@ Forças e restrições:
 
 ## Decisão
 
-Implementar autenticação federada (SSO) com o Google utilizando OAuth2/OpenID Connect. 
+Implementar autenticação com o Google utilizando OAuth2/OpenID Connect. 
 
 1. **Frontend:** Serão adicionados botões de "Entrar com Google" nas telas de Login e Cadastro. Ao clicar, o frontend redirecionará o usuário para o endpoint de autorização do backend.
 2. **Backend:** O backend será configurado como um cliente OAuth2 (usando `spring-boot-starter-oauth2-client`). Ele gerenciará o redirecionamento para o Google, o recebimento do código de autorização e a troca pelos dados do perfil (e-mail, nome).
