@@ -48,14 +48,14 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B030 | EfficiencyCategory Value Object |
 | B031 | Contract Tests para integração ML |
 | B032 | Refactor: remover hardcoded, config via env vars |
-| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) |
 | F029 | Corrigir property_type e highestConsumptionCategory |
 | B033 | V9 migration: remover aparelhos sem cobertura PPH |
 | F030 | Remover dead code (updateApplianceQuantity, demo.test.ts) |
 | F031 | Adicionar testes: Login, Register, Navbar (19 testes) |
 | B034 | Adicionar testes: PropertyServiceExtended, AnalysisMapperExtended |
 | F032 | Corrigir createProperty test e remover demo.test.ts |
-| I018 | Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) |
+| I018 | Atualizar documentação (kanban, ADR-0024, frontend.md, testing.md) |
 
 ### In Progress - movidos para In review
 
@@ -69,7 +69,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F008 | Unificar páginas de análise e remover dados avançados |
 | F009 | Reformular Dashboard com propósito (meta, simulação, progresso) |
 | I017 | Atualizar contrato-api.md e glossario.md |
-| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) |
 | F029 | Corrigir property_type e highestConsumptionCategory |
 | F030 | Remover dead code |
 | F031 | Adicionar testes frontend |

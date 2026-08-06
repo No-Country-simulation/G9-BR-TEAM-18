@@ -12,7 +12,7 @@ concluir a revisão (In review -> Done). Critérios baseados no ADR-0047.
 - **Atualização (01/08/2026):** o card B052 (expor `id` no `GET /appliances`)
   foi concluído (ADR-0048). O item 9 foi destravado e o fluxo de salvar foi
   validado no frontend pelo teste E2E "salvar perfil envia appliance_id real
-  do catalogo no batch update (B052)" (commit `da0e7a9`).
+  do catálogo no batch update (B052)" (commit `da0e7a9`).
 
 ## Critérios por card
 

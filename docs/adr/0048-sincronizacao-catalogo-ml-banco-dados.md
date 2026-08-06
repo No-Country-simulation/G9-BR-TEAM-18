@@ -4,7 +4,13 @@
 
 Aceito
 
-**Nota:** O erro de violação de constraint (ORA-02290: check constraint (ADMIN.CHK_APPLIANCE_CATEGORY)) relatado no deploy de 01/08/2026 foi resolvido (via sub-issue B053). O ApplianceCatalogSyncService agora mapeia o mlCategory do ML (em inglês) para o português utilizando o método EquipmentCategory.toPortuguese() antes de salvar no banco de dados, respeitando a estruturação da migration V12. O contrato da API (GET /appliances) continua convertendo e retornando a categoria em inglês, mantendo o alinhamento total com a ADR-0027.
+**Nota:** O erro de violação de constraint (ORA-02290: check constraint
+(ADMIN.CHK_APPLIANCE_CATEGORY)) relatado no deploy de 01/08/2026 foi resolvido (via sub-issue
+B053). O ApplianceCatalogSyncService agora mapeia o mlCategory do ML (em inglês) para o
+português utilizando o método EquipmentCategory.toPortuguese() antes de salvar no banco de
+dados, respeitando a estruturação da migration V12. O contrato da API (GET /appliances)
+continua convertendo e retornando a categoria em inglês, mantendo o alinhamento total com a
+ADR-0027.
 
 ## Contexto
 
@@ -48,7 +54,7 @@ Implementar a sincronização (Upsert) do catálogo do ML Service com o banco de
 
 - **Negativo:** Requer sincronização e conversão de dados (`BigDecimal` para tipos primitivos, traduções de Enum) no startup, adicionando uma leve complexidade na inicialização da aplicação.
 
-## O que mudou:
+## O que mudou
 
 - O Status passou de "Aceito (com correção pendente)" para "Aceito".
 

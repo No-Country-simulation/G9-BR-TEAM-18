@@ -38,22 +38,22 @@ Testa o serviço de análise energética:
 
 ### ApplianceAggregationServiceTest
 
-Testa a agregacao de aparelhos:
+Testa a agregação de aparelhos:
 
-- Calculo de distribuicao de potencia por categoria
-- Agregacao de multiplos aparelhos com diferentes quantidades e potencias
-- Mapeamento de categorias para distribuicao (refrigeration, heating, AC, lighting)
+- Calculo de distribuição de potencia por categoria
+- Agregação de múltiplos aparelhos com diferentes quantidades e potencias
+- Mapeamento de categorias para distribuição (refrigeration, heating, AC, lighting)
 
 ### AnalysisMapperExtendedTest (13 testes)
 
 Testa o mapper da Anti-Corruption Layer:
 
 - Mapeamento completo de resposta do ML
-- Recomendacoes vazias/nulas
-- Probabilidade como inteiro e string numerica
+- Recomendações vazias/nulas
+- Probabilidade como inteiro e string numérica
 - Valores de probabilidade fora do intervalo [0, 1]
 - Categoria ausente, em branco ou invalida
-- Recomendacao como string unica (nao lista)
+- Recomendação como string única (nao lista)
 - Source vazio
 - Chaves customizadas de campos
 
@@ -78,9 +78,9 @@ Testa o serviço de imóveis:
 Testa o serviço de imóveis de forma abrangente:
 
 - CRUD completo (create, list, getOwned, update, delete)
-- Criacao com/sem campos opcionais (address, residentCount, areaSqm)
+- Criação com/sem campos opcionais (address, residentCount, areaSqm)
 - Gerenciamento de aparelhos (addOrUpdate, remove, batch update)
-- Casos de erro (propriedade inexistente, aparelho nao encontrado, remocao de item nao vinculado)
+- Casos de erro (propriedade inexistente, aparelho nao encontrado, remoção de item nao vinculado)
 
 ### JwtServiceTest
 

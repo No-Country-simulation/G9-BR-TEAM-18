@@ -140,6 +140,39 @@ A revisão confirma que a dependência do card B052 para o salvar de aparelhos
 revertida para Backlog após a regressão de deploy (ORA-02290); o fluxo em
 produção permanece bloqueado até a correção da B053.
 
+### 8. F069 - Persistência do peak_hour_usage validada (01/08/2026)
+
+O card **F069** (#143, ADR-0046) foi concluído e movido para **In review**. O
+frontend passou a persistir e restaurar os hábitos de consumo do usuário
+(`peak_hour_usage` e `high_consumption_hours`), consumindo o contrato exposto
+pelo backend na B051 (migration V15, `GET /auth/me`, `PUT /auth/preferences`).
+
+- `services/api.ts`: `fetchPreferences()` lê os dois campos do `GET /auth/me`;
+  `updatePreferences()` envia ambos no `PUT /auth/preferences`.
+- `ProfilePage.tsx`: `handleSave()` envia `peak_hour_usage` e
+  `high_consumption_hours` junto com `regularity`; o load restaura os valores
+  salvos (checkbox e input de horas).
+
+Validações executadas:
+
+| Validação | Resultado |
+| --- | --- |
+| `npm run typecheck` | sem erros |
+| `npm run lint` | 0 warnings |
+| `npm test` (unitários) | 166/166 passando |
+| E2E `profile.spec.ts` (Firefox) | 20/20 passando |
+| E2E suíte completa (Firefox) | 71/71 passando |
+
+Testes adicionados: 2 E2E (salvar persiste `peak_hour_usage: true` +
+`high_consumption_hours: 4.5` no PUT /auth/preferences; recarga reflete o
+valor salvo no GET /auth/me) e 6 unitários em `api.test.ts` (fetchPreferences,
+updatePreferences e analyzeEnergy com os campos F069 no body). Mocks E2E
+atualizados com `MOCK_USER_PREFS` espelhando o contrato B051.
+
+**Dependência:** a classificação só passará a responder ao toggle do pico após
+o **Q008** (retreino do ML com `peak_hour_usage` como feature independente -
+ADR-0046, Decisão B). O frontend já cumpre a sua parte (Decisão A).
+
 ## Alternativas consideradas
 
 | Alternativa | Prós | Contras |

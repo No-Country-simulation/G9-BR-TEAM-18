@@ -50,7 +50,7 @@
 | B026 | Backend (Endpoints/Services) - Validar propertyType com enum TipoImovel | #59 | ADR-0018 |
 | M004 | Banco de Dados (Migration) - Migration V6 normalize property type | #60 | ADR-0018 |
 | B027 | Backend (Endpoints/Services) - Integration tests for property type validation | #61 | ADR-0018 |
-| I011 | Infraestrutura/Base - ADR-0018 (normalizacao tipos imovel) | #62 | ADR-0018 |
+| I011 | Infraestrutura/Base - ADR-0018 (normalização tipos imóvel) | #62 | ADR-0018 |
 | B024 | Backend (Endpoints/Services) - Admin reset password endpoint | #63 | ADR-0019 |
 | B025 | Backend (Endpoints/Services) - Integration tests for password reset and admin reset | #64 | ADR-0019 |
 | I012 | Infraestrutura/Base - ADR-0019 (admin password reset) | #65 | ADR-0019 |
@@ -63,14 +63,14 @@
 | B030 | Backend (Endpoints/Services) - EfficiencyCategory Value Object | - | ADR-0022 |
 | B031 | Backend (Endpoints/Services) - Contract Tests para integração ML | - | ADR-0023 |
 | B032 | Backend (Endpoints/Services) - Refactor: remover hardcoded, config via env vars | - | ADR-0020 |
-| F028 | Frontend (Telas/Componentes) - Alinhar catalogo de aparelhos com cobertura ML (PPH) | #83 | ADR-0024 |
+| F028 | Frontend (Telas/Componentes) - Alinhar catálogo de aparelhos com cobertura ML (PPH) | #83 | ADR-0024 |
 | F029 | Frontend (Telas/Componentes) - Corrigir property_type e highestConsumptionCategory | #84 | ADR-0024 |
 | B033 | Backend (Endpoints/Services) - V9 migration: remover aparelhos sem cobertura PPH | - | ADR-0024 |
 | F030 | Frontend (Telas/Componentes) - Remover dead code (updateApplianceQuantity, demo.test.ts) | - | - |
 | F031 | Frontend (Telas/Componentes) - Adicionar testes: Login, Register, Navbar (19 testes) | - | - |
 | B034 | Backend (Endpoints/Services) - Adicionar testes: PropertyServiceExtended (13), AnalysisMapperExtended (13) | - | - |
 | F032 | Frontend (Telas/Componentes) - Corrigir createProperty test e remover demo.test.ts | - | - |
-| I018 | Infraestrutura/Base - Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
+| I018 | Infraestrutura/Base - Atualizar documentação (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
 | I020 | Infraestrutura/Base - Configuração de usuários DEV e TEST no Oracle DB com ORDS | #89 | - |
 | F008 | Frontend - Unificar páginas de análise e remover dados avançados | #76 | - |
 | F009 | Frontend - Reformular Dashboard com propósito (meta, simulação, progresso) | #77 | - |

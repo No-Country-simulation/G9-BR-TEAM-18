@@ -54,7 +54,7 @@ endpoint que expõe todo o contrato do ML Service em inglês:
 ```python
 @app.get("/contract")
 def contract():
-    """Retorna o contrato completo do ML Service para descoberta dinamica."""
+    """Retorna o contrato completo do ML Service para descoberta dinâmica."""
     return {
         "version": "3.0.0",
         "property_types": ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
@@ -123,7 +123,7 @@ contrato da API, junto com `normalize_property_type()`:
 
 ```python
 def normalize_property_type(ptype: object) -> str:
-    """Normaliza property_type de ingles para portugues (formato do modelo)."""
+    """Normaliza property_type de inglês para português (formato do modelo)."""
     if not isinstance(ptype, str):
         return "Casa"
     mapping = {
@@ -135,8 +135,8 @@ def normalize_property_type(ptype: object) -> str:
 
 
 def translate_category(cat: object) -> str:
-    """Traduz highest_consumption_category de ingles para portugues.
-    Funcao separada da normalize_category() porque esta e usada no pipeline
+    """Traduz highest_consumption_category de inglês para português.
+    Função separada da normalize_category() porque esta é usada no pipeline
     sklearn (treino + inferência) e não deve ser alterada.
     """
     if not isinstance(cat, str):
@@ -161,7 +161,7 @@ O dicionário existe em três arquivos. Apenas a cópia em `main.py` muda para i
 As cópias em `features.py` e `train_model.py` permanecem em português.
 
 ```python
-# main.py - Unica copia que deve usar ingles
+# main.py - Única cópia que deve usar inglês
 BASE_CONSUMPTION_BY_TYPE = {
     "RESIDENCIAL": 250.0,
     "APARTAMENTO": 150.0,

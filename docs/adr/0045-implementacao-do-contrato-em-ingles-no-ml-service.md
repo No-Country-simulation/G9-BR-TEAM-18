@@ -35,7 +35,7 @@ Adicionadas `normalize_property_type()` e `translate_category()`, sem nenhuma al
 
 ```python
 def normalize_property_type(ptype: object) -> str:
-    """Normaliza property_type de ingles para portugues (formato do modelo)."""
+    """Normaliza property_type de inglês para português (formato do modelo)."""
     if not isinstance(ptype, str):
         return "Casa"
     mapping = {
@@ -47,8 +47,8 @@ def normalize_property_type(ptype: object) -> str:
 
 
 def translate_category(cat: object) -> str:
-    """Traduz highest_consumption_category de ingles para portugues.
-    Funcao separada da normalize_category() porque esta e usada no pipeline
+    """Traduz highest_consumption_category de inglês para português.
+    Função separada da normalize_category() porque esta é usada no pipeline
     sklearn (treino + inferência) e não deve ser alterada.
     """
     if not isinstance(cat, str):

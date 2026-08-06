@@ -236,9 +236,9 @@ Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 | `AuthContext.test.tsx` | Fluxo de autenticação (login, registro, logout, reset de senha) |
 | `PrivateRoute.test.tsx` | Proteção de rotas (autenticado/não autenticado/reset pendente) |
 | `ResetPasswordPage.test.tsx` | Validação de formulário de redefinição de senha |
-| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegacao) |
-| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validacao, erros, navegacao) |
-| `Navbar.test.tsx` | Testes da barra de navegacao (6 testes: estados autenticado/anonimo) |
+| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegação) |
+| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validação, erros, navegação) |
+| `Navbar.test.tsx` | Testes da barra de navegação (6 testes: estados autenticado/anonimo) |
 | `types.test.ts` | Constantes de UI e classe ApiError |
 
 ### Testes E2E (Playwright)
