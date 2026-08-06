@@ -42,4 +42,3 @@ Implementar autenticação com o Google utilizando OAuth2/OpenID Connect.
 2. Configurar o redirecionamento do botão apontando diretamente para a rota do backend (ex: `http://localhost:8080/oauth2/authorization/google`).
 3. O fluxo de callback será tratado totalmente pelo backend, o frontend apenas precisa estar preparado para carregar o estado do usuário ao cair no Dashboard.
 
-> **Nota:** Consulte o [glossário do projeto](../glossario.md) para definição dos termos utilizados neste documento.
