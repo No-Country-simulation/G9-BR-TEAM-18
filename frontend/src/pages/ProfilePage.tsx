@@ -22,6 +22,7 @@ import {
   listProperties,
   createProperty,
   updateProperty,
+  deleteProperty,
   listAppliances,
   fetchCategories,
   fetchContractInfo,
@@ -69,6 +70,9 @@ export default function ProfilePage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // F073: exclusão de imóvel com confirmação
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletingProperty, setDeletingProperty] = useState(false);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [lastAnalysis, setLastAnalysis] = useState<{
     category: string;
@@ -291,6 +295,45 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleDeleteProperty() {
+    if (!property) return;
+    setDeletingProperty(true);
+    setError(null);
+    try {
+      await deleteProperty(property.id);
+      // Recarrega a lista e seleciona o próximo imóvel ativo (ou estado vazio)
+      const props = await listProperties();
+      const next = props.find((p) => p.active) ?? props[0] ?? null;
+      setProperty(next);
+      if (next) {
+        setAliasInput(next.alias);
+        setPropertyType(next.property_type as PropertyType);
+        setAddress(next.address ?? "");
+        setResidentCount(next.resident_count ?? 1);
+        setAreaSqm(next.area_sqm ?? 50);
+        const pa = await listPropertyAppliances(next.id);
+        setSelectedAppliances(
+          pa.map((a) => ({ type: String(a.appliance_id), quantity: a.quantity })),
+        );
+      } else {
+        // Reseta o formulário para o estado inicial (evita criar um novo
+        // imóvel com dados obsoletos do imóvel excluído)
+        setAliasInput("");
+        setPropertyType("RESIDENCIAL");
+        setAddress("");
+        setResidentCount(1);
+        setAreaSqm(50);
+        setSelectedAppliances([]);
+      }
+      setConfirmDelete(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir imóvel");
+      setConfirmDelete(false);
+    } finally {
+      setDeletingProperty(false);
+    }
+  }
+
   async function handleAnalyzeNow() {
     if (!property) return;
     setAnalyzing(true);
@@ -331,435 +374,501 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="profile-page">
-      <div className="profile-container">
-        <div className="profile-header">
-          <LucideIcon name="UserCog" size={28} />
-          <h1>Meu Perfil</h1>
-          <p>Configure seu tipo de residência e os aparelhos que você possui.</p>
-        </div>
-
-        {error && (
-          <div className="profile-error">
-            <LucideIcon name="AlertCircle" size={16} />
-            <span>{error}</span>
+    <>
+      <div className="profile-page">
+        <div className="profile-container">
+          <div className="profile-header">
+            <LucideIcon name="UserCog" size={28} />
+            <h1>Meu Perfil</h1>
+            <p>Configure seu tipo de residência e os aparelhos que você possui.</p>
           </div>
-        )}
 
-        <div className="profile-grid">
-          <div className="profile-form">
-            <h3 className="section-title">Dados do Imóvel</h3>
-
-            <div className="form-group">
-              <label>Nome do imóvel</label>
-              <input
-                type="text"
-                placeholder="Ex: Casa, Apartamento"
-                value={aliasInput}
-                onChange={(e) => setAliasInput(e.target.value)}
-              />
+          {error && (
+            <div className="profile-error">
+              <LucideIcon name="AlertCircle" size={16} />
+              <span>{error}</span>
             </div>
+          )}
 
-            <div className="form-group">
-              <label>Tipo de imóvel</label>
-              <select
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value as PropertyType)}
-              >
-                {propertyTypeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {PROPERTY_TYPE_LABELS[t as PropertyType] ?? t}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="profile-grid">
+            <div className="profile-form">
+              <h3 className="section-title">Dados do Imóvel</h3>
 
-            <div className="form-group">
-              <label htmlFor="endereco">Endereço</label>
-              <input
-                id="endereco"
-                type="text"
-                className="form-input"
-                placeholder="Rua, número, bairro"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </div>
-
-            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="moradores">Moradores</label>
+                <label>Nome do imóvel</label>
                 <input
-                  id="moradores"
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={residentCount}
-                  onChange={(e) => setResidentCount(Math.max(1, Number(e.target.value)))}
+                  type="text"
+                  placeholder="Ex: Casa, Apartamento"
+                  value={aliasInput}
+                  onChange={(e) => setAliasInput(e.target.value)}
                 />
               </div>
+
               <div className="form-group">
-                <label htmlFor="area">Área (m²)</label>
-                <input
-                  id="area"
-                  type="number"
-                  min="10"
-                  max="99999"
-                  value={areaSqm}
-                  onChange={(e) => setAreaSqm(Math.max(10, Number(e.target.value)))}
-                />
-              </div>
-            </div>
-
-            <h3 className="section-title">Hábitos de Consumo</h3>
-
-            <div className="form-group">
-              <label htmlFor="pico" className="checkbox-label">
-                <input
-                  id="pico"
-                  type="checkbox"
-                  checked={peakHourUsage}
-                  onChange={(e) => setPeakHourUsage(e.target.checked)}
-                />
-                Uso em horário de pico (18h às 21h)
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="horas-alto-consumo">Horas de alto consumo por dia</label>
-              <input
-                id="horas-alto-consumo"
-                type="number"
-                min="0"
-                max="24"
-                step="0.5"
-                value={highConsumptionHours}
-                onChange={(e) => setHighConsumptionHours(Number(e.target.value))}
-              />
-            </div>
-
-            <h3 className="section-title">
-              Seus Aparelhos
-              {selectedAppliances.length > 0 && (
-                <span className="appliance-count-badge">{applianceCalc.totalEquipment} equip.</span>
-              )}
-            </h3>
-            <p className="section-subtitle">
-              Adicione os aparelhos que você possui. Eles serão salvos no seu perfil.
-            </p>
-
-            <div className="appliance-search">
-              <LucideIcon name="Search" size={16} className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Buscar aparelho..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  className="search-clear"
-                  onClick={() => setSearchTerm("")}
-                  aria-label="Limpar busca"
+                <label>Tipo de imóvel</label>
+                <select
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value as PropertyType)}
                 >
-                  ✕
-                </button>
-              )}
-            </div>
+                  {propertyTypeOptions.map((t) => (
+                    <option key={t} value={t}>
+                      {PROPERTY_TYPE_LABELS[t as PropertyType] ?? t}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="appliance-catalog">
-              {dynamicCategoryOrder.map((cat) => {
-                const catInfo = getCategoryDisplay(cat);
-                const appliances = appliancesByCategory(cat);
-                if (appliances.length === 0) return null;
-                const isOpen = openCategories.has(cat);
-                return (
-                  <div key={cat} className="appliance-category">
-                    <button
-                      type="button"
-                      className="appliance-category-header"
-                      onClick={() => toggleCategory(cat)}
-                      aria-label={
-                        isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
-                      }
-                      style={{ "--cat-color": catInfo.color } as React.CSSProperties}
-                    >
-                      <span className="category-icon">
-                        <LucideIcon name={catInfo.icon} size={18} />
-                      </span>
-                      <span className="category-label">{catInfo.label}</span>
-                      <span className="category-count">{appliances.length}</span>
-                      {isOpen ? (
-                        <LucideIcon name="ChevronDown" size={16} />
-                      ) : (
-                        <LucideIcon name="ChevronRight" size={16} />
+              <div className="form-group">
+                <label htmlFor="endereco">Endereço</label>
+                <input
+                  id="endereco"
+                  type="text"
+                  className="form-input"
+                  placeholder="Rua, número, bairro"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="moradores">Moradores</label>
+                  <input
+                    id="moradores"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={residentCount}
+                    onChange={(e) => setResidentCount(Math.max(1, Number(e.target.value)))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="area">Área (m²)</label>
+                  <input
+                    id="area"
+                    type="number"
+                    min="10"
+                    max="99999"
+                    value={areaSqm}
+                    onChange={(e) => setAreaSqm(Math.max(10, Number(e.target.value)))}
+                  />
+                </div>
+              </div>
+
+              <h3 className="section-title">Hábitos de Consumo</h3>
+
+              <div className="form-group">
+                <label htmlFor="pico" className="checkbox-label">
+                  <input
+                    id="pico"
+                    type="checkbox"
+                    checked={peakHourUsage}
+                    onChange={(e) => setPeakHourUsage(e.target.checked)}
+                  />
+                  Uso em horário de pico (18h às 21h)
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="horas-alto-consumo">Horas de alto consumo por dia</label>
+                <input
+                  id="horas-alto-consumo"
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="0.5"
+                  value={highConsumptionHours}
+                  onChange={(e) => setHighConsumptionHours(Number(e.target.value))}
+                />
+              </div>
+
+              <h3 className="section-title">
+                Seus Aparelhos
+                {selectedAppliances.length > 0 && (
+                  <span className="appliance-count-badge">
+                    {applianceCalc.totalEquipment} equip.
+                  </span>
+                )}
+              </h3>
+              <p className="section-subtitle">
+                Adicione os aparelhos que você possui. Eles serão salvos no seu perfil.
+              </p>
+
+              <div className="appliance-search">
+                <LucideIcon name="Search" size={16} className="search-icon" />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Buscar aparelho..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    className="search-clear"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Limpar busca"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="appliance-catalog">
+                {dynamicCategoryOrder.map((cat) => {
+                  const catInfo = getCategoryDisplay(cat);
+                  const appliances = appliancesByCategory(cat);
+                  if (appliances.length === 0) return null;
+                  const isOpen = openCategories.has(cat);
+                  return (
+                    <div key={cat} className="appliance-category">
+                      <button
+                        type="button"
+                        className="appliance-category-header"
+                        onClick={() => toggleCategory(cat)}
+                        aria-label={
+                          isOpen ? `Recolher ${catInfo.label}` : `Expandir ${catInfo.label}`
+                        }
+                        style={{ "--cat-color": catInfo.color } as React.CSSProperties}
+                      >
+                        <span className="category-icon">
+                          <LucideIcon name={catInfo.icon} size={18} />
+                        </span>
+                        <span className="category-label">{catInfo.label}</span>
+                        <span className="category-count">{appliances.length}</span>
+                        {isOpen ? (
+                          <LucideIcon name="ChevronDown" size={16} />
+                        ) : (
+                          <LucideIcon name="ChevronRight" size={16} />
+                        )}
+                      </button>
+                      {isOpen && (
+                        <div className="appliance-grid">
+                          {appliances.map((t) => {
+                            const selected = selectedAppliances.find((s) => s.type === t.id);
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                className={`appliance-card ${selected ? "selected" : ""}`}
+                                onClick={() => !selected && addAppliance(t.id)}
+                                aria-label={
+                                  selected
+                                    ? `${t.name} - ${selected.quantity}x selecionado`
+                                    : `Adicionar ${t.name} - ${t.powerWatts}W`
+                                }
+                                title={`${t.name} - ${t.powerWatts}W, ~${t.dailyUsageHours}h/dia`}
+                              >
+                                <LucideIcon
+                                  name={t.icon}
+                                  size={22}
+                                  className="appliance-card-icon"
+                                />
+                                <span className="appliance-card-name">{t.name}</span>
+                                <span className="appliance-card-watts">{t.powerWatts}W</span>
+                                {selected && (
+                                  <span className="appliance-card-qty">{selected.quantity}x</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
                       )}
-                    </button>
-                    {isOpen && (
-                      <div className="appliance-grid">
-                        {appliances.map((t) => {
-                          const selected = selectedAppliances.find((s) => s.type === t.id);
-                          return (
-                            <button
-                              key={t.id}
-                              type="button"
-                              className={`appliance-card ${selected ? "selected" : ""}`}
-                              onClick={() => !selected && addAppliance(t.id)}
-                              aria-label={
-                                selected
-                                  ? `${t.name} - ${selected.quantity}x selecionado`
-                                  : `Adicionar ${t.name} - ${t.powerWatts}W`
-                              }
-                              title={`${t.name} - ${t.powerWatts}W, ~${t.dailyUsageHours}h/dia`}
-                            >
-                              <LucideIcon name={t.icon} size={22} className="appliance-card-icon" />
-                              <span className="appliance-card-name">{t.name}</span>
-                              <span className="appliance-card-watts">{t.powerWatts}W</span>
-                              {selected && (
-                                <span className="appliance-card-qty">{selected.quantity}x</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-            {selectedAppliances.length > 0 ? (
-              <div className="selected-appliances">
-                <h4>Aparelhos adicionados</h4>
-                <div className="selected-appliances-list">
-                  {selectedAppliances.map((item) => {
-                    const info = applianceTypes.find((t) => t.id === item.type);
-                    if (!info) return null;
-                    return (
-                      <div key={item.type} className="selected-appliance-item">
-                        <LucideIcon name={info.icon} size={16} className="selected-icon" />
-                        <span className="selected-name">{info.name}</span>
-                        <div className="selected-qty-controls">
+              {selectedAppliances.length > 0 ? (
+                <div className="selected-appliances">
+                  <h4>Aparelhos adicionados</h4>
+                  <div className="selected-appliances-list">
+                    {selectedAppliances.map((item) => {
+                      const info = applianceTypes.find((t) => t.id === item.type);
+                      if (!info) return null;
+                      return (
+                        <div key={item.type} className="selected-appliance-item">
+                          <LucideIcon name={info.icon} size={16} className="selected-icon" />
+                          <span className="selected-name">{info.name}</span>
+                          <div className="selected-qty-controls">
+                            <button
+                              type="button"
+                              className="qty-btn"
+                              onClick={() => changeQuantity(item.type, -1)}
+                              disabled={item.quantity <= 1}
+                              aria-label={`Reduzir quantidade de ${info.name}`}
+                            >
+                              <LucideIcon name="Minus" size={14} />
+                            </button>
+                            <span className="qty-value">{item.quantity}</span>
+                            <button
+                              type="button"
+                              className="qty-btn"
+                              onClick={() => changeQuantity(item.type, 1)}
+                              aria-label={`Aumentar quantidade de ${info.name}`}
+                            >
+                              <LucideIcon name="Plus" size={14} />
+                            </button>
+                          </div>
                           <button
                             type="button"
-                            className="qty-btn"
-                            onClick={() => changeQuantity(item.type, -1)}
-                            disabled={item.quantity <= 1}
-                            aria-label={`Reduzir quantidade de ${info.name}`}
+                            className="remove-btn"
+                            onClick={() => removeAppliance(item.type)}
+                            aria-label={`Remover ${info.name} da lista`}
                           >
-                            <LucideIcon name="Minus" size={14} />
-                          </button>
-                          <span className="qty-value">{item.quantity}</span>
-                          <button
-                            type="button"
-                            className="qty-btn"
-                            onClick={() => changeQuantity(item.type, 1)}
-                            aria-label={`Aumentar quantidade de ${info.name}`}
-                          >
-                            <LucideIcon name="Plus" size={14} />
+                            <LucideIcon name="Trash2" size={14} />
                           </button>
                         </div>
-                        <button
-                          type="button"
-                          className="remove-btn"
-                          onClick={() => removeAppliance(item.type)}
-                          aria-label={`Remover ${info.name} da lista`}
-                        >
-                          <LucideIcon name="Trash2" size={14} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="appliance-summary">
-                  <div className="summary-stat">
-                    <span className="summary-label">Equipamentos</span>
-                    <span className="summary-value">{applianceCalc.totalEquipment}</span>
+                      );
+                    })}
                   </div>
-                  <div className="summary-stat">
-                    <span className="summary-label">Consumo estimado</span>
-                    <span className="summary-value">
-                      {applianceCalc.monthlyConsumptionKwh.toFixed(0)} kWh/mês
-                    </span>
+                  <div className="appliance-summary">
+                    <div className="summary-stat">
+                      <span className="summary-label">Equipamentos</span>
+                      <span className="summary-value">{applianceCalc.totalEquipment}</span>
+                    </div>
+                    <div className="summary-stat">
+                      <span className="summary-label">Consumo estimado</span>
+                      <span className="summary-value">
+                        {applianceCalc.monthlyConsumptionKwh.toFixed(0)} kWh/mês
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <p className="appliance-empty-hint">
-                Clique nos aparelhos acima para adicioná-los ao seu perfil.
-              </p>
-            )}
-
-            <h3 className="section-title">Regularidade da Análise</h3>
-            <p className="section-subtitle">
-              Com que frequência você quer que a análise seja executada automaticamente?
-            </p>
-            <div className="regularity-selector">
-              {REGULARITY_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`regularity-option ${regularity === opt.value ? "active" : ""}`}
-                  onClick={() => setRegularity(opt.value)}
-                  aria-label={`Regularidade: ${opt.label}`}
-                >
-                  {opt.value === "instantanea" && <LucideIcon name="Zap" size={16} />}
-                  {opt.value === "diaria" && <LucideIcon name="Sun" size={16} />}
-                  {opt.value === "semanal" && <LucideIcon name="Calendar" size={16} />}
-                  {opt.value === "mensal" && <LucideIcon name="CalendarDays" size={16} />}
-                  <span>{opt.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              className="btn btn-primary btn-full"
-              onClick={handleSave}
-              disabled={saving}
-              aria-label="Salvar perfil do imóvel"
-            >
-              {saving ? (
-                "Salvando..."
               ) : (
-                <>
-                  <LucideIcon name="Save" size={18} /> Salvar Perfil
-                </>
+                <p className="appliance-empty-hint">
+                  Clique nos aparelhos acima para adicioná-los ao seu perfil.
+                </p>
               )}
-            </button>
 
-            {property && (
+              <h3 className="section-title">Regularidade da Análise</h3>
+              <p className="section-subtitle">
+                Com que frequência você quer que a análise seja executada automaticamente?
+              </p>
+              <div className="regularity-selector">
+                {REGULARITY_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`regularity-option ${regularity === opt.value ? "active" : ""}`}
+                    onClick={() => setRegularity(opt.value)}
+                    aria-label={`Regularidade: ${opt.label}`}
+                  >
+                    {opt.value === "instantanea" && <LucideIcon name="Zap" size={16} />}
+                    {opt.value === "diaria" && <LucideIcon name="Sun" size={16} />}
+                    {opt.value === "semanal" && <LucideIcon name="Calendar" size={16} />}
+                    {opt.value === "mensal" && <LucideIcon name="CalendarDays" size={16} />}
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+
               <button
                 type="button"
-                className="btn btn-secondary btn-full"
-                onClick={handleAnalyzeNow}
-                disabled={analyzing || saving}
-                aria-label="Executar análise energética"
-                style={{ marginTop: "0.75rem" }}
+                className="btn btn-primary btn-full"
+                onClick={handleSave}
+                disabled={saving}
+                aria-label="Salvar perfil do imóvel"
               >
-                {analyzing ? (
-                  "Analisando..."
+                {saving ? (
+                  "Salvando..."
                 ) : (
                   <>
-                    <LucideIcon name="BarChart3" size={18} /> Analisar Agora
+                    <LucideIcon name="Save" size={18} /> Salvar Perfil
                   </>
                 )}
               </button>
-            )}
 
-            <div className="profile-result">
-              {analyzing && (
-                <div className="result-placeholder">
-                  <div className="spinner" />
-                  <p>Analisando seu consumo...</p>
-                </div>
+              {property && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-full"
+                  onClick={handleAnalyzeNow}
+                  disabled={analyzing || saving}
+                  aria-label="Executar análise energética"
+                  style={{ marginTop: "0.75rem" }}
+                >
+                  {analyzing ? (
+                    "Analisando..."
+                  ) : (
+                    <>
+                      <LucideIcon name="BarChart3" size={18} /> Analisar Agora
+                    </>
+                  )}
+                </button>
               )}
 
-              {result && !analyzing && (
-                <div className="result-card">
-                  <div
-                    className="result-badge"
-                    style={{
-                      backgroundColor:
-                        CATEGORY_COLORS[result.category] ??
-                        (backendCategorySet.has(result.category) ? "#6366f1" : "#6b7280"),
-                    }}
-                  >
-                    {CATEGORY_DISPLAY[result.category] ?? result.category}
+              {property && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-full"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={saving || analyzing || deletingProperty}
+                  aria-label="Excluir imóvel"
+                  style={{ marginTop: "0.75rem" }}
+                >
+                  <LucideIcon name="Trash2" size={18} /> Excluir Imóvel
+                </button>
+              )}
+
+              <div className="profile-result">
+                {analyzing && (
+                  <div className="result-placeholder">
+                    <div className="spinner" />
+                    <p>Analisando seu consumo...</p>
                   </div>
-                  <div className="result-stats">
-                    <div className="stat">
-                      <span className="stat-label">Confiança</span>
-                      <span className="stat-value">{(result.probability * 100).toFixed(0)}%</span>
+                )}
+
+                {result && !analyzing && (
+                  <div className="result-card">
+                    <div
+                      className="result-badge"
+                      style={{
+                        backgroundColor:
+                          CATEGORY_COLORS[result.category] ??
+                          (backendCategorySet.has(result.category) ? "#6366f1" : "#6b7280"),
+                      }}
+                    >
+                      {CATEGORY_DISPLAY[result.category] ?? result.category}
                     </div>
-                    <div className="stat">
-                      <span className="stat-label">Custo Estimado</span>
-                      <span className="stat-value">
-                        R$ {result.estimated_monthly_cost.toFixed(2)}
+                    {result.source && (
+                      <span className="analysis-source-badge" style={{ marginTop: "0.5rem" }}>
+                        <LucideIcon
+                          name={result.source === "ML" ? "Sparkles" : "AlertTriangle"}
+                          size={12}
+                        />
+                        {result.source === "ML"
+                          ? "Análise por modelo de ML"
+                          : "Resultado por fallback"}
                       </span>
-                    </div>
-                  </div>
-                  {result.highest_consumption_products &&
-                    result.highest_consumption_products.length > 0 && (
-                      <div className="dash-sim-products" style={{ marginTop: "1rem" }}>
-                        <span className="dash-sim-products-label">Maiores consumidores:</span>
-                        <span className="dash-sim-products-list">
-                          {result.highest_consumption_products.map((product, i) => (
-                            <span key={i} className="dash-sim-product-tag">
-                              <LucideIcon
-                                name={resolveApplianceIcon(product, "")}
-                                size={14}
-                                className="appliance-icon-inline"
-                              />
-                              {product}
-                            </span>
-                          ))}
+                    )}
+                    <div className="result-stats">
+                      <div className="stat">
+                        <span className="stat-label">Confiança</span>
+                        <span className="stat-value">{(result.probability * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="stat">
+                        <span className="stat-label">Custo Estimado</span>
+                        <span className="stat-value">
+                          R$ {result.estimated_monthly_cost.toFixed(2)}
                         </span>
                       </div>
-                    )}
-                  <div className="result-recs">
-                    <h4>Recomendações</h4>
-                    <ul>
-                      {result.recommendations.map((r, i) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
+                    </div>
+                    {result.highest_consumption_products &&
+                      result.highest_consumption_products.length > 0 && (
+                        <div className="dash-sim-products" style={{ marginTop: "1rem" }}>
+                          <span className="dash-sim-products-label">Maiores consumidores:</span>
+                          <span className="dash-sim-products-list">
+                            {result.highest_consumption_products.map((product, i) => (
+                              <span key={i} className="dash-sim-product-tag">
+                                <LucideIcon
+                                  name={resolveApplianceIcon(product, "")}
+                                  size={14}
+                                  className="appliance-icon-inline"
+                                />
+                                {product}
+                              </span>
+                            ))}
+                          </span>
+                        </div>
+                      )}
+                    <div className="result-recs">
+                      <h4>Recomendações</h4>
+                      <ul>
+                        {result.recommendations.map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!result && !analyzing && lastAnalysis && (
-                <div className="profile-last-analysis">
-                  <h3>
-                    <LucideIcon name="Clock" size={18} /> Última Análise
-                  </h3>
-                  <div
-                    className="profile-last-badge"
-                    style={{
-                      backgroundColor:
-                        CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
-                        (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
-                    }}
-                  >
-                    {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
-                      lastAnalysis.category}
+                {!result && !analyzing && lastAnalysis && (
+                  <div className="profile-last-analysis">
+                    <h3>
+                      <LucideIcon name="Clock" size={18} /> Última Análise
+                    </h3>
+                    <div
+                      className="profile-last-badge"
+                      style={{
+                        backgroundColor:
+                          CATEGORY_COLORS[lastAnalysis.category as keyof typeof CATEGORY_COLORS] ??
+                          (backendCategorySet.has(lastAnalysis.category) ? "#6366f1" : "#6b7280"),
+                      }}
+                    >
+                      {CATEGORY_DISPLAY[lastAnalysis.category as keyof typeof CATEGORY_DISPLAY] ??
+                        lastAnalysis.category}
+                    </div>
+                    <div className="profile-last-stats">
+                      <span>Confiança: {(lastAnalysis.probability * 100).toFixed(0)}%</span>
+                      <span>Custo: R$ {(lastAnalysis.cost ?? 0).toFixed(2)}</span>
+                    </div>
+                    <p className="profile-last-date">
+                      {new Date(lastAnalysis.date).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                    <button
+                      type="button"
+                      className="dash-btn dash-btn--primary"
+                      onClick={() => navigate("/history")}
+                      style={{ marginTop: "0.75rem" }}
+                    >
+                      Ver histórico completo
+                    </button>
                   </div>
-                  <div className="profile-last-stats">
-                    <span>Confiança: {(lastAnalysis.probability * 100).toFixed(0)}%</span>
-                    <span>Custo: R$ {(lastAnalysis.cost ?? 0).toFixed(2)}</span>
-                  </div>
-                  <p className="profile-last-date">
-                    {new Date(lastAnalysis.date).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  <button
-                    type="button"
-                    className="dash-btn dash-btn--primary"
-                    onClick={() => navigate("/history")}
-                    style={{ marginTop: "0.75rem" }}
-                  >
-                    Ver histórico completo
-                  </button>
-                </div>
-              )}
+                )}
 
-              {!result && !analyzing && !lastAnalysis && (
-                <div className="result-placeholder">
-                  <LucideIcon name="UserCog" size={48} className="placeholder-icon" />
-                  <p>Configure seu perfil e clique em "Analisar Agora" para ver o resultado.</p>
-                </div>
-              )}
+                {!result && !analyzing && !lastAnalysis && (
+                  <div className="result-placeholder">
+                    <LucideIcon name="UserCog" size={48} className="placeholder-icon" />
+                    <p>Configure seu perfil e clique em "Analisar Agora" para ver o resultado.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {confirmDelete && property && (
+        <div
+          className="hist-modal-overlay"
+          onClick={() => !deletingProperty && setConfirmDelete(false)}
+        >
+          <div className="hist-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="hist-confirm-icon">
+              <LucideIcon name="AlertTriangle" size={32} />
+            </div>
+            <h3>Excluir imóvel?</h3>
+            <p>
+              O imóvel "{property.alias}" e todos os aparelhos associados serão removidos
+              permanentemente. As análises já realizadas continuam no histórico.
+            </p>
+            <div className="hist-confirm-actions">
+              <button
+                className="dash-btn dash-btn--secondary"
+                disabled={deletingProperty}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="hist-btn-delete-confirm"
+                disabled={deletingProperty}
+                onClick={handleDeleteProperty}
+              >
+                {deletingProperty ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
