@@ -21,6 +21,7 @@ import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../dat
 import { useDialogFocus } from "../hooks/useDialogFocus";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { useFocusTrap } from "../hooks/useFocusTrap";
+import { useInertBackground } from "../hooks/useInertBackground";
 import {
   listProperties,
   createProperty,
@@ -161,6 +162,8 @@ export default function ProfilePage() {
   // Confina a navegação por Tab dentro do diálogo de confirmação (ARIA APG)
   const confirmModalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(confirmModalRef, confirmDelete && !!property);
+  // Isola o conteúdo de fundo do leitor de tela e do foco enquanto aberto (ARIA APG)
+  useInertBackground(confirmModalRef, confirmDelete && !!property);
 
   const dynamicCategoryOrder = useMemo(() => {
     const cats = new Set(applianceTypes.map((t) => t.mlCategory));

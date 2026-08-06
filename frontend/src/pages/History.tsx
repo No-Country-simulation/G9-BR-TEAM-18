@@ -9,6 +9,7 @@ import { LucideIcon } from "../components/LucideIcon";
 import { useDialogFocus } from "../hooks/useDialogFocus";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { useFocusTrap } from "../hooks/useFocusTrap";
+import { useInertBackground } from "../hooks/useInertBackground";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string } | undefined> = {
@@ -160,6 +161,8 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
   // Confina a navegação por Tab dentro do diálogo (ARIA APG)
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
+  // Isola o conteúdo de fundo do leitor de tela e do foco enquanto aberto (ARIA APG)
+  useInertBackground(dialogRef);
 
   return (
     <div className="hist-modal-overlay" onClick={onClose}>
@@ -355,6 +358,8 @@ export default function History() {
   // Confina a navegação por Tab dentro do diálogo de confirmação (ARIA APG)
   const confirmModalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(confirmModalRef, !!confirmDeleteId);
+  // Isola o conteúdo de fundo do leitor de tela e do foco enquanto aberto (ARIA APG)
+  useInertBackground(confirmModalRef, !!confirmDeleteId);
 
   if (loading) {
     return (

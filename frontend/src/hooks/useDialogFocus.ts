@@ -27,11 +27,14 @@ export function useDialogFocus(open: boolean, focusTargetRef: RefObject<HTMLElem
       // Só restaura se o elemento original ainda estiver no DOM: após uma
       // exclusão confirmada, o elemento que abriu o diálogo pode ter sido
       // removido junto com a linha/item (.focus() em nó desconectado é no-op).
+      // Nota: o useInertBackground usa useLayoutEffect, então seu cleanup
+      // (remover o inert do fundo) roda na fase de commit ANTES deste cleanup
+      // passivo — o `.focus()` não esbarra em nó inert.
       const previous = previouslyFocusedRef.current;
+      previouslyFocusedRef.current = null;
       if (previous && document.contains(previous)) {
         previous.focus();
       }
-      previouslyFocusedRef.current = null;
     };
   }, [open, focusTargetRef]);
 }
