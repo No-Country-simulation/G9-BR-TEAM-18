@@ -11,16 +11,19 @@ export const MOCK_USER = {
   email: "teste@email.com",
 };
 
-export const MOCK_USER_NEEDS_RESET = {
-  ...MOCK_USER,
-  password_reset_required: true,
+/* ---------- mock user preferences (F069 / ADR-0046, contrato B051) ---------- */
+export const MOCK_USER_PREFS = {
+  consumption_goal: 250,
+  regularity: "instantanea",
+  peak_hour_usage: false,
+  high_consumption_hours: 6,
 };
 
-/* ---------- mock categories ---------- */
-export const MOCK_CATEGORIES = ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"];
+/* ---------- mock categories (uso interno) ---------- */
+const MOCK_CATEGORIES = ["EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"];
 
 /* ---------- mock contract-info (F063 / ADR-0027) ---------- */
-export const MOCK_CONTRACT_INFO = {
+const MOCK_CONTRACT_INFO = {
   property_types: ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
   consumption_categories: [
     "REFRIGERATION",
@@ -115,8 +118,8 @@ export const MOCK_PROPERTY_APPLIANCES = [
   },
 ];
 
-/* ---------- mock analysis response ---------- */
-export const MOCK_ANALYSIS_RESULT = {
+/* ---------- mock analysis response (uso interno) ---------- */
+const MOCK_ANALYSIS_RESULT = {
   category: "BOM",
   probability: 0.78,
   recommendations: [
@@ -265,6 +268,7 @@ export async function setupAuthenticatedMocks(
     dashboard?: typeof MOCK_DASHBOARD;
     properties?: (typeof MOCK_PROPERTY)[];
     propertyAppliances?: typeof MOCK_PROPERTY_APPLIANCES;
+    prefs?: Partial<typeof MOCK_USER_PREFS>;
   },
 ) {
   const {
@@ -272,12 +276,18 @@ export async function setupAuthenticatedMocks(
     dashboard = MOCK_DASHBOARD,
     properties = [MOCK_PROPERTY],
     propertyAppliances = MOCK_PROPERTY_APPLIANCES,
+    prefs = MOCK_USER_PREFS,
   } = options ?? {};
 
   const JSON_HEADERS = { "Content-Type": "application/json" };
 
   await page.route(`http://localhost:8080/auth/me`, async (route: Route) => {
-    await route.fulfill({ status: 200, headers: JSON_HEADERS, body: JSON.stringify(MOCK_USER) });
+    await route.fulfill({
+      status: 200,
+      headers: JSON_HEADERS,
+      // F069 / ADR-0046: /auth/me expõe as preferências do usuário (B051)
+      body: JSON.stringify({ ...MOCK_USER, ...prefs }),
+    });
   });
   await page.route(`http://localhost:8080/appliances`, async (route: Route) => {
     await route.fulfill({ json: MOCK_APPLIANCES, headers: JSON_HEADERS });

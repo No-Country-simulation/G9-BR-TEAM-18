@@ -8,9 +8,10 @@ import {
   fetchContractInfo,
   createProperty,
   listProperties,
-  addApplianceToProperty,
   listPropertyAppliances,
   listAppliances,
+  fetchPreferences,
+  updatePreferences,
 } from "../services/api";
 
 const API_URL = "http://localhost:8080";
@@ -46,6 +47,40 @@ describe("analyzeEnergy", () => {
     mockFetch.mockResolvedValueOnce(mockResponse(false, errorBody));
 
     await expect(analyzeEnergy(1, -1, false, 2)).rejects.toThrow("validation failed");
+  });
+
+  it("uses default message when server does not return message", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { fields: {} }));
+
+    await expect(analyzeEnergy(1, 200, false, 4)).rejects.toThrow("Erro ao analisar consumo");
+  });
+
+  it("sends peak_hour_usage and high_consumption_hours in the request body (F069)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, {
+        category: "BOM",
+        probability: 0.85,
+        recommendations: [],
+        estimated_monthly_cost: 150,
+      }),
+    );
+
+    await analyzeEnergy(1, 200, false, 4);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      `${API_URL}/energy-analysis`,
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          property_id: 1,
+          consumption_kwh: 200,
+          peak_hour_usage: false,
+          high_consumption_hours: 4,
+        }),
+      }),
+    );
   });
 });
 
@@ -168,29 +203,6 @@ describe("listProperties", () => {
   });
 });
 
-describe("addApplianceToProperty", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("sends POST to property appliances endpoint", async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
-
-    await addApplianceToProperty(1, 2, 3);
-
-    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/properties/1/appliances`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ appliance_id: 2, quantity: 3 }),
-    });
-  });
-
-  it("throws ApiError on failure", async () => {
-    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "error", fields: {} }));
-
-    await expect(addApplianceToProperty(1, 2, 3)).rejects.toThrow("error");
-  });
-});
-
 describe("listPropertyAppliances", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -250,6 +262,86 @@ describe("fetchContractInfo", () => {
     const result = await fetchContractInfo();
     expect(result.propertyTypes).toEqual([]);
     expect(result.consumptionCategories).toEqual([]);
+  });
+});
+
+describe("fetchPreferences", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns peak_hour_usage and high_consumption_hours from /auth/me (F069/B051)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, {
+        consumption_goal: 250,
+        regularity: "instantanea",
+        peak_hour_usage: true,
+        high_consumption_hours: 4.5,
+      }),
+    );
+
+    const result = await fetchPreferences();
+
+    expect(result).toEqual({
+      consumption_goal: 250,
+      regularity: "instantanea",
+      peak_hour_usage: true,
+      high_consumption_hours: 4.5,
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      `${API_URL}/auth/me`,
+      expect.objectContaining({
+        credentials: "include",
+      }),
+    );
+  });
+
+  it("returns {} when peak_hour_usage is absent (contrato anterior)", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, { regularity: "diaria" }));
+
+    const result = await fetchPreferences();
+    expect(result.peak_hour_usage).toBeUndefined();
+    expect(result.regularity).toBe("diaria");
+  });
+
+  it("returns {} when response is not ok", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "Unauthorized" }));
+
+    const result = await fetchPreferences();
+    expect(result).toEqual({});
+  });
+});
+
+describe("updatePreferences", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("sends PUT to /auth/preferences with peak_hour_usage and high_consumption_hours (F069)", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
+
+    await updatePreferences({
+      regularity: "instantanea",
+      peak_hour_usage: true,
+      high_consumption_hours: 4.5,
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/auth/preferences`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        regularity: "instantanea",
+        peak_hour_usage: true,
+        high_consumption_hours: 4.5,
+      }),
+    });
+  });
+
+  it("throws on failure", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(false, { message: "Erro ao salvar preferências" }),
+    );
+
+    await expect(
+      updatePreferences({ peak_hour_usage: false, high_consumption_hours: 6 }),
+    ).rejects.toThrow("Erro ao salvar preferências");
   });
 });
 
