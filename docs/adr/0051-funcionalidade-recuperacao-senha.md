@@ -6,7 +6,7 @@ Pendente
 
 ## Contexto
 
-Atualmente, o sistema EnergiIA não possui uma forma de o usuário redefinir sua senha caso a tenha esquecido. A única rota de alteração de senha disponível (`/auth/reset-password`) exige que o usuário já esteja autenticado e conheça sua senha atual.
+Atualmente, o sistema não possui uma forma de o usuário redefinir sua senha caso a tenha esquecido. A única rota de alteração de senha disponível (`/auth/reset-password`) exige que o usuário já esteja autenticado e conheça sua senha atual.
 
 Para melhorar a experiência do usuário e reduzir a necessidade de intervenção de administradores, é necessário implementar um fluxo seguro de recuperação de senha por e-mail. 
 
@@ -22,14 +22,6 @@ A equipe decidiu por implementar um fluxo assíncrono de recuperação de senha 
 1. **Frontend:** A tela de login receberá um link "Esqueceu sua senha?". Este link levará a uma nova página solicitando o e-mail do usuário. Ao enviar, por razões de segurança, a aplicação sempre exibirá a mesma mensagem: *"Se este e-mail estiver cadastrado, você receberá uma mensagem com as instruções para redefinir sua senha"*, independentemente de o e-mail existir no banco.
 2. **Backend:** O backend receberá a requisição, buscará o usuário e, se existir, gerará um token criptograficamente seguro com validade de 1 hora. Este token será salvo no banco de dados e enviado por e-mail com um link para o frontend.
 3. **Resgate:** O usuário clicará no link do e-mail, abrindo uma página no frontend onde inserirá a nova senha. O backend validará o token, atualizará a senha, invalidará o token utilizado e retornará sucesso.
-
-## Alternativas consideradas
-
-| Alternativa | Prós | Contras |
-|---|---|---|
-| Recuperação via perguntas de segurança | Não depende de envio de e-mail | Baixa segurança, usuários frequentemente esquecem as respostas |
-| Envio de senha temporária | Implementação mais simples no frontend | Menos seguro, obriga o usuário a fazer login e alterar a senha depois |
-| Link com Token de uso único (Escolhida) | Padrão da indústria, alta segurança | Exige integração com serviço de e-mail e criação de tabelas de tokens |
 
 ## Consequências
 
