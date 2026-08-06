@@ -43,4 +43,3 @@ A equipe decidiu por implementar um fluxo assíncrono de recuperação de senha 
 2. Criar página `ForgotPassword.tsx` (solicita e-mail e exibe mensagem padrão de segurança aprovada na ADR).
 3. Criar página `ResetPasswordExternal.tsx` (lê token da URL e solicita a nova senha).
 
-> **Nota:** Consulte o [glossário do projeto](../glossario.md) para definição dos termos utilizados neste documento.
