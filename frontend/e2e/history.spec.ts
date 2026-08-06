@@ -263,6 +263,37 @@ test.describe("Historico", () => {
     await expect(closeBtn).toBeFocused();
   });
 
+  test("modal de exclusao aplica inert no conteudo de fundo (ARIA APG)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").first().locator(".history-item-delete").click();
+    // Conteúdo de fundo fica inert enquanto o diálogo está aberto
+    await expect(page.locator(".history-header")).toHaveAttribute("inert", "");
+    // Escape fecha o modal e restaura o conteúdo de fundo
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".history-header")).not.toHaveAttribute("inert", "");
+    await expect(page.locator(".history-item")).toHaveCount(3);
+  });
+
+  test("detalhe da analise aplica inert no conteudo de fundo (ARIA APG)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.route(/\/analyses\/a1$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[0] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").nth(2).click();
+    // Conteúdo de fundo fica inert enquanto o detalhe está aberto
+    await expect(page.locator(".history-header")).toHaveAttribute("inert", "");
+    // Escape fecha e restaura o conteúdo de fundo
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".history-header")).not.toHaveAttribute("inert", "");
+  });
+
   test("modal de exclusao de analise fecha com tecla Escape (acessibilidade)", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.goto("/history");

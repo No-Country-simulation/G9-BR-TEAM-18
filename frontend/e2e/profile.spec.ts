@@ -369,6 +369,20 @@ test.describe("Profile Page", () => {
     await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
   });
 
+  test("modal de exclusao aplica inert no conteudo de fundo (ARIA APG)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: pt("Excluir imovel") }).click();
+    // Conteúdo de fundo (página do perfil) fica inert enquanto o diálogo está aberto
+    await expect(page.locator(".profile-page")).toHaveAttribute("inert", "");
+    // Escape fecha o modal e restaura o conteúdo de fundo
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".profile-page")).not.toHaveAttribute("inert", "");
+    // Imóvel continua intacto
+    await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
+  });
+
   test("modal de exclusao move foco para Cancelar e restaura ao fechar (acessibilidade)", async ({
     page,
   }) => {
