@@ -102,22 +102,6 @@ export async function listProperties(): Promise<PropertyResponse[]> {
   return response.json();
 }
 
-export async function addApplianceToProperty(
-  propertyId: number,
-  applianceId: number,
-  quantity: number,
-): Promise<void> {
-  const response = await authFetch(`/properties/${propertyId}/appliances`, {
-    method: "POST",
-    body: JSON.stringify({ appliance_id: applianceId, quantity }),
-  });
-
-  if (!response.ok) {
-    const err: ErrorResponse = await response.json();
-    throw new ApiError(err.message ?? "Erro ao adicionar aparelho", err.fields ?? {});
-  }
-}
-
 export async function updateProperty(
   propertyId: number,
   alias: string,
