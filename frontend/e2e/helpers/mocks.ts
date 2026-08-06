@@ -130,7 +130,7 @@ const MOCK_ANALYSIS_RESULT = {
   status: "CONCLUIDA",
 };
 
-/* ---------- mock analyses history ---------- */
+/* ---------- mock analyses history (F073: source/updated_at/highest_consumption_products) ---------- */
 export const MOCK_ANALYSES = [
   {
     id: "a1",
@@ -141,8 +141,11 @@ export const MOCK_ANALYSES = [
     peak_hour_usage: true,
     high_consumption_hours: 6,
     created_at: "2026-07-20T10:00:00Z",
+    updated_at: "2026-07-21T11:30:00Z",
+    source: "ML",
     recommendations: [],
     status: "CONCLUIDA",
+    highest_consumption_products: ["Ar Condicionado", "Geladeira"],
   },
   {
     id: "a2",
@@ -153,8 +156,10 @@ export const MOCK_ANALYSES = [
     peak_hour_usage: false,
     high_consumption_hours: 4,
     created_at: "2026-07-22T14:30:00Z",
+    source: "FALLBACK",
     recommendations: [],
     status: "CONCLUIDA",
+    highest_consumption_products: ["Lampada LED"],
   },
   {
     id: "a3",

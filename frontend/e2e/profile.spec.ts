@@ -5,6 +5,7 @@ import {
   pt,
   MOCK_APPLIANCES,
   MOCK_PROPERTY_APPLIANCES,
+  MOCK_PROPERTY,
 } from "./helpers/mocks";
 
 test.describe("Profile Page", () => {
@@ -275,5 +276,58 @@ test.describe("Profile Page", () => {
       await btn.click();
       await expect(page).toHaveURL(/\/history/);
     }
+  });
+
+  test("exclui imovel apos confirmacao no modal (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    // Lista mutável: começa com o imóvel e esvazia após o DELETE (LIFO sobrescreve o mock base)
+    let remainingProperties: unknown[] = [MOCK_PROPERTY];
+    await page.route(`http://localhost:8080/properties`, async (route) => {
+      await route.fulfill({
+        json: remainingProperties,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.route(/\/properties\/10$/, async (route, request) => {
+      if (request.method() === "DELETE") {
+        remainingProperties = [];
+        await route.fulfill({
+          status: 204,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else {
+        await route.fulfill({
+          json: MOCK_PROPERTY,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    });
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Abre o modal de confirmação
+    await page.getByRole("button", { name: pt("Excluir imovel") }).click();
+    await expect(page.getByText(pt("Excluir imovel?"))).toBeVisible();
+    // Captura o DELETE e confirma
+    const deleteRequest = page.waitForRequest(
+      (req) => req.method() === "DELETE" && /\/properties\/10$/.test(req.url()),
+    );
+    await page.getByRole("button", { name: pt("Sim, excluir") }).click();
+    const request = await deleteRequest;
+    expect(request.url()).toMatch(/\/properties\/10$/);
+    // Sem imóvel ativo, o botão de excluir some e o estado volta ao vazio
+    await expect(page.getByRole("button", { name: pt("Excluir imovel") })).not.toBeVisible();
+    await expect(page.getByRole("button", { name: pt("Salvar perfil do imovel") })).toBeEnabled();
+  });
+
+  test("cancelar exclusao mantem o imovel (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: pt("Excluir imovel") }).click();
+    await expect(page.getByText(pt("Excluir imovel?"))).toBeVisible();
+    await page.getByRole("button", { name: pt("Cancelar") }).click();
+    await expect(page.getByText(pt("Excluir imovel?"))).not.toBeVisible();
+    // Imóvel continua lá
+    await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
   });
 });

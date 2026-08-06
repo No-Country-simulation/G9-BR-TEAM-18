@@ -115,4 +115,70 @@ test.describe("Historico", () => {
     await page.getByRole("button", { name: pt("Fazer primeira analise") }).click();
     await expect(page).toHaveURL(/\/profile/);
   });
+
+  test("exibe top produtos consumidores no card (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    // a1 tem highest_consumption_products: ["Ar Condicionado", "Geladeira"]
+    await expect(page.getByText(pt("Maiores consumidores")).first()).toBeVisible();
+    await expect(page.getByText("Ar Condicionado").first()).toBeVisible();
+    await expect(page.getByText("Geladeira").first()).toBeVisible();
+  });
+
+  test("detalhe exibe badge de fonte ML e FALLBACK (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    // Detalhes: GET /analyses/{id} (LIFO apos setup)
+    await page.route(/\/analyses\/a1$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[0] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.route(/\/analyses\/a2$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[1] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    // Lista ordenada desc por created_at: a3 (index 0), a2 (index 1), a1 (index 2)
+    await page.locator(".history-item").nth(2).click();
+    await expect(page.locator(".hist-modal .analysis-source-badge")).toContainText("Modelo ML");
+    await page.locator(".hist-modal-close").click();
+    await page.locator(".history-item").nth(1).click();
+    await expect(page.locator(".hist-modal .analysis-source-badge")).toContainText("Fallback");
+  });
+
+  test("detalhe exibe updated_at quando diferente de created_at (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.route(/\/analyses\/a1$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[0] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").nth(2).click();
+    await expect(page.getByText(/atualizado em/i)).toBeVisible();
+  });
+
+  test("detalhe sem updated_at nem source nao quebra (contrato anterior)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    // a3 (index 0 na ordem desc) nao tem updated_at nem source
+    await page.route(/\/analyses\/a3$/, async (route) => {
+      await route.fulfill({
+        json: { ...MOCK_ANALYSES[2] },
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    await page.locator(".history-item").first().click();
+    await expect(page.locator(".hist-modal")).toBeVisible();
+    await expect(page.locator(".hist-modal .analysis-source-badge")).toHaveCount(0);
+    await expect(page.getByText(/atualizado em/i)).toHaveCount(0);
+  });
 });
