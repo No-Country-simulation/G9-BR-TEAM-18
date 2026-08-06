@@ -8,6 +8,8 @@ import {
   fetchContractInfo,
   createProperty,
   listProperties,
+  updateProperty,
+  deleteProperty,
   listPropertyAppliances,
   listAppliances,
   fetchPreferences,
@@ -134,6 +136,59 @@ describe("listAnalyses", () => {
     const result = await listAnalyses();
     expect(result).toEqual([]);
   });
+
+  it("mapeia updated_at, source e highest_consumption_products (F073)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, [
+        {
+          id: "a1",
+          property_id: 10,
+          category: "BOM",
+          probability: 0.78,
+          consumption_kwh: 280,
+          estimated_monthly_cost: 210,
+          peak_hour_usage: false,
+          high_consumption_hours: 4,
+          created_at: "2026-07-22T14:30:00Z",
+          updated_at: "2026-07-23T09:00:00Z",
+          source: "ML",
+          recommendations: [],
+          status: "CONCLUIDA",
+          highest_consumption_products: ["Ar Condicionado", "Geladeira"],
+        },
+      ]),
+    );
+
+    const result = await listAnalyses();
+    expect(result[0].updated_at).toBe("2026-07-23T09:00:00Z");
+    expect(result[0].source).toBe("ML");
+    expect(result[0].highest_consumption_products).toEqual(["Ar Condicionado", "Geladeira"]);
+  });
+
+  it("deixa updated_at e source undefined quando o backend nao retorna (contrato anterior)", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockResponse(true, [
+        {
+          id: "a1",
+          property_id: 10,
+          category: "BOM",
+          probability: 0.78,
+          consumption_kwh: 280,
+          estimated_monthly_cost: 210,
+          peak_hour_usage: false,
+          high_consumption_hours: 4,
+          created_at: "2026-07-22T14:30:00Z",
+          recommendations: [],
+          status: "CONCLUIDA",
+        },
+      ]),
+    );
+
+    const result = await listAnalyses();
+    expect(result[0].updated_at).toBeUndefined();
+    expect(result[0].source).toBeUndefined();
+    expect(result[0].highest_consumption_products).toBeUndefined();
+  });
 });
 
 describe("fetchDashboard", () => {
@@ -211,6 +266,64 @@ describe("listPropertyAppliances", () => {
 
     const result = await listPropertyAppliances(1);
     expect(result).toEqual([]);
+  });
+});
+
+describe("deleteProperty", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("sends DELETE to /properties/{id} (F073)", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(true, {}));
+
+    await deleteProperty(10);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      `${API_URL}/properties/10`,
+      expect.objectContaining({
+        method: "DELETE",
+        credentials: "include",
+      }),
+    );
+  });
+
+  it("não lança quando o backend responde 204 no content", async () => {
+    const resp = { ok: true, status: 204 } as Response;
+    mockFetch.mockResolvedValueOnce(resp);
+
+    await expect(deleteProperty(10)).resolves.toBeUndefined();
+  });
+
+  it("throws ApiError on failure", async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(false, { message: "erro ao excluir" }));
+
+    await expect(deleteProperty(10)).rejects.toThrow("erro ao excluir");
+  });
+});
+
+describe("updateProperty", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("sends PUT to /properties/{id} with snake_case fields", async () => {
+    const data = { id: 1, alias: "Casa", property_type: "Casa", active: true };
+    mockFetch.mockResolvedValueOnce(mockResponse(true, data));
+
+    const result = await updateProperty(1, "Casa", "Casa", true, "Rua X", 2, 50);
+
+    expect(result).toEqual(data);
+    expect(mockFetch).toHaveBeenCalledWith(
+      `${API_URL}/properties/1`,
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({
+          alias: "Casa",
+          property_type: "Casa",
+          active: true,
+          address: "Rua X",
+          resident_count: 2,
+          area_sqm: 50,
+        }),
+      }),
+    );
   });
 });
 
