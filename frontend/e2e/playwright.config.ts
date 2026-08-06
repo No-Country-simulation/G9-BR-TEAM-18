@@ -10,10 +10,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: [
-    ["list"],
-    ["html", { outputFolder: "playwright-report" }],
-  ],
+  reporter: [["list"], ["html", { outputFolder: "playwright-report" }]],
   outputDir: "test-results",
   use: {
     baseURL: BASE_URL,
