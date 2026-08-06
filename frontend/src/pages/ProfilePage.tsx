@@ -19,6 +19,7 @@ import {
 } from "../types";
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import { useDialogFocus } from "../hooks/useDialogFocus";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import {
   listProperties,
   createProperty,
@@ -146,15 +147,11 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
-  // Fecha o modal de exclusão com a tecla Escape (acessibilidade)
-  useEffect(() => {
-    if (!confirmDelete) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !deletingProperty) setConfirmDelete(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [confirmDelete, deletingProperty]);
+  // Fecha o modal de exclusão com a tecla Escape (acessibilidade).
+  // O guard `!deletingProperty` fica dentro do callback (sempre atual via ref).
+  useEscapeKey(() => {
+    if (!deletingProperty) setConfirmDelete(false);
+  }, !!confirmDelete);
 
   // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
   const cancelDeleteRef = useRef<HTMLButtonElement>(null);

@@ -7,6 +7,7 @@ import { CATEGORY_COLORS, CATEGORY_DISPLAY } from "../types";
 import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
 import { useDialogFocus } from "../hooks/useDialogFocus";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string } | undefined> = {
@@ -144,14 +145,9 @@ function ApplianceChart({ appliances }: { appliances: ApplianceSnapshot[] }) {
 
 function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onClose: () => void }) {
   // Fecha o modal de detalhe com a tecla Escape (acessibilidade).
-  // O listener é adicionado na montagem e removido no desmonte (cleanup).
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  // O componente só é renderizado enquanto o modal está aberto, então o hook
+  // fica ativo desde a montagem e é limpo no desmonte (fechar).
+  useEscapeKey(onClose);
 
   // Foco no botão de fechar ao abrir o modal; restaura ao desmontar (a11y).
   // Este componente só é renderizado enquanto o modal está aberto (ver
@@ -339,15 +335,12 @@ export default function History() {
       .finally(() => setLoadingDetail(false));
   }, [selectedId]);
 
-  // Fecha o modal de confirmação com a tecla Escape (acessibilidade)
-  useEffect(() => {
-    if (!confirmDeleteId) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !deleting) setConfirmDeleteId(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [confirmDeleteId, deleting]);
+  // Fecha o modal de confirmação com a tecla Escape (acessibilidade).
+  // O guard `!deleting` fica dentro do callback (sempre atual via ref): evita
+  // fechar o modal no meio de uma exclusão em andamento.
+  useEscapeKey(() => {
+    if (!deleting) setConfirmDeleteId(null);
+  }, !!confirmDeleteId);
 
   // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
   const cancelDeleteRef = useRef<HTMLButtonElement>(null);
