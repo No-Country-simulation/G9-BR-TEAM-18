@@ -428,3 +428,21 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   não dispara (comportamento do GitHub Actions com path filters), validado no push 75620bb.
 - Contagens do board refletem também movimentações de backend/ML feitas pela equipe desde
   01/08: B048-B054 e Q007 em In review, Q008 e análise de datasets PPH em In progress.
+
+## Movimentações (06/08/2026) - Rodada 2: Novo card F073 (Backlog)
+
+### Novo card em Backlog
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | Excluir imóvel (DELETE /properties/{id}); badge source ML/FALLBACK; updated_at no detalhe; highest_consumption_products no card do histórico |
+
+### Notas
+
+- Criado após análise backend x frontend (06/08): o endpoint DELETE /properties/{propertyId}
+  já existe no PropertyController (com ownership check) mas não é consumido pelo frontend
+  (nenhuma função no api.ts nem UI - ProfilePage só permite criar/trocar/editar).
+- Os polimentos aproveitam campos que o backend já retorna: source (ML/FALLBACK),
+  updated_at (AnalysisResponseDTO) e highest_consumption_products (hoje exibido só no
+  resultado da análise - F048).
+- Card em Backlog aguardando implementação.
