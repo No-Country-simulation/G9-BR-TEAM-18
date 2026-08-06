@@ -145,6 +145,16 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
+  // Fecha o modal de exclusão com a tecla Escape (acessibilidade)
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !deletingProperty) setConfirmDelete(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirmDelete, deletingProperty]);
+
   const dynamicCategoryOrder = useMemo(() => {
     const cats = new Set(applianceTypes.map((t) => t.mlCategory));
     return sortCategories(Array.from(cats));
@@ -841,7 +851,13 @@ export default function ProfilePage() {
           className="hist-modal-overlay"
           onClick={() => !deletingProperty && setConfirmDelete(false)}
         >
-          <div className="hist-confirm-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="hist-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar exclusão de imóvel"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="hist-confirm-icon">
               <LucideIcon name="AlertTriangle" size={32} />
             </div>

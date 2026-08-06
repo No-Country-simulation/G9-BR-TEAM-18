@@ -315,6 +315,16 @@ export default function History() {
       .finally(() => setLoadingDetail(false));
   }, [selectedId]);
 
+  // Fecha o modal de confirmação com a tecla Escape (acessibilidade)
+  useEffect(() => {
+    if (!confirmDeleteId) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !deleting) setConfirmDeleteId(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirmDeleteId, deleting]);
+
   if (loading) {
     return (
       <div className="history-page" style={{ display: "flex", justifyContent: "center" }}>
@@ -510,7 +520,13 @@ export default function History() {
 
       {confirmDeleteId && (
         <div className="hist-modal-overlay" onClick={() => !deleting && setConfirmDeleteId(null)}>
-          <div className="hist-confirm-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="hist-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar exclusão de análise"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="hist-confirm-icon">
               <LucideIcon name="AlertTriangle" size={32} />
             </div>
