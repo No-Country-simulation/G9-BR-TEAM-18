@@ -20,7 +20,7 @@ export interface ApplianceItem {
   quantity: number;
 }
 
-export type AnalysisStatus = "PENDENTE" | "CONCLUIDA" | "FALHA";
+type AnalysisStatus = "PENDENTE" | "CONCLUIDA" | "FALHA";
 
 export interface AnalysisResponse {
   category: EfficiencyClassification;
@@ -108,7 +108,7 @@ export interface AnalysisHistory {
   highest_consumption_products?: string[];
 }
 
-export interface MonthlyConsumption {
+interface MonthlyConsumption {
   month: string;
   consumptionKwh: number;
 }
