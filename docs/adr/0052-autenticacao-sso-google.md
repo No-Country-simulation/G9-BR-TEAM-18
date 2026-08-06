@@ -22,14 +22,6 @@ Implementar autenticação com o Google utilizando OAuth2/OpenID Connect.
 3. **Mapeamento de Usuário:** Se o e-mail recebido do Google já existir, o backend fará login na conta existente. Se não existir, o backend criará uma nova conta (sem senha ou com senha gerada aleatória), configurando preferências padrão.
 4. **Sessão:** Ao final do fluxo, o backend gerará o mesmo cookie `SESSION_TOKEN` (JWT nativo) usado no login normal e redirecionará o usuário de volta ao Dashboard do frontend.
 
-## Alternativas consideradas
-
-| Alternativa | Prós | Contras |
-|---|---|---|
-| Frontend gerenciar o token (ex: Firebase Auth) | Implementação tranquila no frontend | O backend perde controle do fluxo, exigindo trocar o sistema atual de JWT |
-| Login via OAuth2 nativo no Backend (Escolhida) | Mantém a sessão atual intacta (JWT em HttpOnly cookie), backend no controle | Configuração inicial mais complexa no Spring Security |
-| OAuth2 Proxy na frente da aplicação | Sem mudança no código da aplicação | Requer infraestrutura adicional (proxy) e complica o ambiente de dev local |
-
 ## Consequências
 
 - **Positivo:** Aumento previsto na taxa de conversão de cadastros por reduzir a fricção (menos campos para preencher).
