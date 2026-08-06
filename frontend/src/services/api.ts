@@ -129,6 +129,21 @@ export async function updateProperty(
   return response.json();
 }
 
+/**
+ * Exclui um imóvel do usuário (F073). O backend já expõe
+ * DELETE /properties/{propertyId} com ownership check (PropertyController).
+ */
+export async function deleteProperty(propertyId: number): Promise<void> {
+  const response = await authFetch(`/properties/${propertyId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    if (response.status === 401) redirectToLogin();
+    const err: ErrorResponse = await response.json();
+    throw new ApiError(err.message ?? "Erro ao excluir imóvel", err.fields ?? {});
+  }
+}
+
 export async function listPropertyAppliances(propertyId: number): Promise<PropertyAppliance[]> {
   const response = await authFetch(`/properties/${propertyId}/appliances`);
   if (!response.ok) {
@@ -199,6 +214,8 @@ export async function listAnalyses(): Promise<AnalysisHistory[]> {
     peak_hour_usage: a.peak_hour_usage === true || a.peak_hour_usage === "true",
     high_consumption_hours: Number(a.high_consumption_hours ?? 0),
     created_at: String(a.created_at ?? ""),
+    updated_at: a.updated_at ? String(a.updated_at) : undefined,
+    source: a.source as string | undefined,
     recommendations: (a.recommendations as string[]) ?? [],
     status: a.status as AnalysisHistory["status"],
     appliances: (a.appliances as AnalysisHistory["appliances"]) ?? [],
@@ -283,6 +300,8 @@ export async function fetchAnalysisById(analysisId: string): Promise<AnalysisHis
     peak_hour_usage: raw.peak_hour_usage === true || raw.peak_hour_usage === "true",
     high_consumption_hours: raw.high_consumption_hours ?? 0,
     created_at: raw.created_at,
+    updated_at: raw.updated_at ? String(raw.updated_at) : undefined,
+    source: raw.source as string | undefined,
     recommendations: raw.recommendations ?? [],
     status: raw.status,
     appliances: (raw.appliances ?? []).map(

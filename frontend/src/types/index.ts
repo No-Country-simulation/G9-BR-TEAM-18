@@ -102,6 +102,10 @@ export interface AnalysisHistory {
   peak_hour_usage: boolean;
   high_consumption_hours: number;
   created_at: string;
+  /** F073: data da última atualização da análise (backend AnalysisResponseDTO.updatedAt) */
+  updated_at?: string;
+  /** F073: fonte da classificação ("ML" ou "FALLBACK") */
+  source?: string;
   recommendations: string[];
   status?: AnalysisStatus;
   appliances?: ApplianceSnapshot[];
