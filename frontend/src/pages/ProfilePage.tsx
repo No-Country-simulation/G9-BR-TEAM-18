@@ -20,6 +20,7 @@ import {
 import { resolveApplianceIcon, getCategoryDisplay, sortCategories } from "../data/appliance-icons";
 import { useDialogFocus } from "../hooks/useDialogFocus";
 import { useEscapeKey } from "../hooks/useEscapeKey";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
   listProperties,
   createProperty,
@@ -156,6 +157,10 @@ export default function ProfilePage() {
   // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
   const cancelDeleteRef = useRef<HTMLButtonElement>(null);
   useDialogFocus(confirmDelete && !!property, cancelDeleteRef);
+
+  // Confina a navegação por Tab dentro do diálogo de confirmação (ARIA APG)
+  const confirmModalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(confirmModalRef, confirmDelete && !!property);
 
   const dynamicCategoryOrder = useMemo(() => {
     const cats = new Set(applianceTypes.map((t) => t.mlCategory));
@@ -854,6 +859,7 @@ export default function ProfilePage() {
           onClick={() => !deletingProperty && setConfirmDelete(false)}
         >
           <div
+            ref={confirmModalRef}
             className="hist-confirm-modal"
             role="dialog"
             aria-modal="true"

@@ -8,6 +8,7 @@ import { resolveApplianceIcon } from "../data/appliance-icons";
 import { LucideIcon } from "../components/LucideIcon";
 import { useDialogFocus } from "../hooks/useDialogFocus";
 import { useEscapeKey } from "../hooks/useEscapeKey";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string } | undefined> = {
@@ -156,9 +157,14 @@ function AnalysisDetail({ analysis, onClose }: { analysis: AnalysisHistory; onCl
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialogFocus(true, closeRef);
 
+  // Confina a navegação por Tab dentro do diálogo (ARIA APG)
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
+
   return (
     <div className="hist-modal-overlay" onClick={onClose}>
       <div
+        ref={dialogRef}
         className="hist-modal"
         role="dialog"
         aria-modal="true"
@@ -345,6 +351,10 @@ export default function History() {
   // Foco no botão "Cancelar" ao abrir o modal e restauração ao fechar (a11y)
   const cancelDeleteRef = useRef<HTMLButtonElement>(null);
   useDialogFocus(!!confirmDeleteId, cancelDeleteRef);
+
+  // Confina a navegação por Tab dentro do diálogo de confirmação (ARIA APG)
+  const confirmModalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(confirmModalRef, !!confirmDeleteId);
 
   if (loading) {
     return (
@@ -542,6 +552,7 @@ export default function History() {
       {confirmDeleteId && (
         <div className="hist-modal-overlay" onClick={() => !deleting && setConfirmDeleteId(null)}>
           <div
+            ref={confirmModalRef}
             className="hist-confirm-modal"
             role="dialog"
             aria-modal="true"
