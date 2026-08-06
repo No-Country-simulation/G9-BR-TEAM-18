@@ -346,4 +346,22 @@ test.describe("Profile Page", () => {
     // Imóvel continua intacto
     await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
   });
+
+  test("modal de exclusao move foco para Cancelar e restaura ao fechar (acessibilidade)", async ({
+    page,
+  }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    const deleteBtn = page.getByRole("button", { name: pt("Excluir imovel") });
+    await deleteBtn.click();
+    // Foco vai para o botão Cancelar ao abrir o modal
+    const cancelBtn = page.getByRole("button", { name: pt("Cancelar") });
+    await expect(cancelBtn).toBeFocused();
+    // Fechar (Escape) restaura o foco para o botão que abriu o modal
+    await page.keyboard.press("Escape");
+    await expect(deleteBtn).toBeFocused();
+    // Imóvel continua intacto
+    await expect(page.getByLabel(pt("Endereco"))).toHaveValue("Rua Exemplo, 123");
+  });
 });

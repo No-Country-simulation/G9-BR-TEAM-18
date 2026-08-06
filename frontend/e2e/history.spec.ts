@@ -205,6 +205,23 @@ test.describe("Historico", () => {
     await expect(page.getByText(/atualizado em/i)).toHaveCount(0);
   });
 
+  test("modal de exclusao move foco para Cancelar e restaura ao fechar (acessibilidade)", async ({
+    page,
+  }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    const deleteBtn = page.locator(".history-item").first().locator(".history-item-delete");
+    await deleteBtn.click();
+    // Foco vai para o botão Cancelar ao abrir
+    const cancelBtn = page.getByRole("button", { name: "Cancelar" });
+    await expect(cancelBtn).toBeFocused();
+    // Fechar restaura o foco para o botão de exclusão que abriu o modal
+    await page.keyboard.press("Escape");
+    await expect(deleteBtn).toBeFocused();
+    await expect(page.locator(".history-item")).toHaveCount(3);
+  });
+
   test("modal de exclusao de analise fecha com tecla Escape (acessibilidade)", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.goto("/history");
