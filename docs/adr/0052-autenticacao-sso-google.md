@@ -11,7 +11,7 @@ Atualmente, o projeto utiliza apenas autenticação local nativa (e-mail e senha
 Forças e restrições:
 - **Usabilidade:** Usuários preferem "Login com 1 clique" em vez de preencher formulários ou digitar senha.
 - **Segurança:** O sistema existente baseia sua sessão em cookies HttpOnly. A integração com o Google precisa terminar devolvendo esse mesmo cookie para manter a compatibilidade com o resto do sistema.
-- **Base de dados:** Atual é exigido que o usuário defina preferências (peak hours, metas). Precisamos garantir que usuários cadastrados via Google recebam valores padrão.
+- **Base de dados:** Atualmente é exigido que o usuário defina preferências (peak hours, metas). Precisamos garantir que usuários cadastrados via Google recebam valores padrão.
 
 ## Decisão
 
