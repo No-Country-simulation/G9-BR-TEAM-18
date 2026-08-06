@@ -1,5 +1,4 @@
-import React from "react";
-import * as Icons from "lucide-react";
+import { ICON_REGISTRY } from "./iconRegistry";
 
 interface LucideIconProps {
   name: string;
@@ -17,14 +16,13 @@ interface LucideIconProps {
  *
  * Isso permite que o ícone seja definido por uma string (vinda de
  * catálogo de ícones, API, etc.) em vez de ser hardcoded no JSX.
+ *
+ * O registry estático vive em iconRegistry.ts (ver lá para como adicionar
+ * novos ícones). Defensivo: nomes desconhecidos/ausentes renderizam `null`
+ * (nunca crasham).
  */
 export function LucideIcon({ name, size = 16, className }: LucideIconProps) {
-  const IconComponent = (
-    Icons as unknown as Record<
-      string,
-      React.ComponentType<{ size?: number; className?: string }>
-    >
-  )[name];
+  const IconComponent = ICON_REGISTRY[name];
 
   return IconComponent ? <IconComponent size={size} className={className} /> : null;
 }
