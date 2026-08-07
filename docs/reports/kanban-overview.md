@@ -29,13 +29,13 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 127 | | Frontend (F) | 56 |
-| In review | 11 | | Backend (B) | 44 |
+| Done | 128 | | Frontend (F) | 57 |
+| In review | 12 | | Backend (B) | 44 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
 | Backlog | 1 | | Banco de Dados (M) | 9 |
-| **Total** | **141** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **141** |
+| **Total** | **143** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **143** |
 
 ## Movimentações (24/07/2026)
 
@@ -479,3 +479,32 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   DELETE /properties/{id} já existente, badge de fonte ML/FALLBACK, updated_at no detalhe
   e top produtos no card do histórico, sem mudança de contrato no backend).
 - Issue #158 fechada pela automação do board (mover para Done fecha a issue vinculada).
+
+## Movimentações (06/08/2026) - Rodada 5: F074 badge de fonte (source do contrato real)
+
+### Novo card → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F074 | Frontend - Corrigir badge de fonte da análise (normalizar source do contrato real) | #159 | bcfb8f7, 7f22260, 476137e | ADR-0047 |
+
+### Notas
+
+- Reporte do usuário: análises feitas pelo modelo exibiam a tag "Fallback" mesmo sem
+  nenhuma chamada à Groq. Causa raiz 100% frontend: o ML Service retorna `source` com os
+  valores do contrato documentado (`model`, `model+groq (confidence X%)`, `rule-based (model
+  error)`, `rule-based (model unavailable)`) e o backend repassa a string, mas o frontend
+  comparava `source === "ML"` - valor que nunca chega - exibindo "Fallback" para toda
+  análise, inclusive as classificadas pelo modelo.
+- Correção (somente frontend, commits bcfb8f7/7f22260/476137e): helper `resolveAnalysisSource()`
+  em types/index.ts normalizando o contrato real (`model*` → ML, `rule-based*` → Fallback,
+  legado `ML`/`FALLBACK` → compat, ausente/desconhecido → sem badge); novo componente
+  reutilizável `AnalysisSourceBadge` aplicado no Dashboard, Histórico e Perfil (elimina a
+  tripla duplicação); mocks E2E atualizados para valores reais; novo `analysis-source.test.ts`
+  (9 casos) + api.test.ts ajustado. ADR-0047 seção 9 documenta a decisão.
+- Suítes verdes: unit 236/236, E2E history+profile+dashboard 62/62 (Firefox), typecheck,
+  lint 0.
+- Conclusão: nenhuma task de backend/ML é necessária - ML Service e backend já seguem o
+  contrato documentado; quem estava fora do contrato era o frontend.
+- Contagens do board atualizadas (Done 128, In review 12, Total 143, Frontend 57);
+  In review 12 reflete também movimentações da equipe desde a rodada anterior.

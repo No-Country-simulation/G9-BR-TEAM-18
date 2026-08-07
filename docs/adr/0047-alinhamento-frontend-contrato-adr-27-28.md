@@ -173,6 +173,53 @@ atualizados com `MOCK_USER_PREFS` espelhando o contrato B051.
 o **Q008** (retreino do ML com `peak_hour_usage` como feature independente -
 ADR-0046, Decisão B). O frontend já cumpre a sua parte (Decisão A).
 
+### 9. F074 - Badge de fonte da análise corrigido (source do contrato real, 06/08/2026)
+
+Após a entrega do F073 (que introduziu o badge de fonte no detalhe do
+histórico, resultado do perfil e simulação do dashboard comparando `source ===
+"ML"`), o teste manual em produção revelou que **toda** análise exibia
+"Fallback", mesmo quando classificada pelo modelo sem nenhuma chamada à Groq.
+
+**Causa raiz (100% frontend):** o ML Service (`main.py`) retorna `source` com
+os valores do contrato documentado (`docs/contrato-api.md`): `model`,
+`model+groq (confidence X%)`, `rule-based (model error)`, `rule-based (model
+unavailable)` - e o backend (`AnalysisMapper`) repassa a string sem
+normalização. O frontend, porém, comparava `source === "ML"`, valor que
+nunca chega pela API, fazendo todo `source` cair no ramo "Fallback".
+
+**Correção implementada (somente frontend, commits `bcfb8f7`, `7f22260`,
+`476137e`):**
+
+- Novo helper `resolveAnalysisSource()` em `types/index.ts` que normaliza o
+  `source` do contrato real: `model*` (incluindo `model+groq` e o caso
+  `model+rule-based (groq failed)`) -> **ML**; `rule-based*` -> **Fallback**;
+  legado `ML`/`FALLBACK` -> compatibilidade; ausente/desconhecido -> sem
+  badge.
+- Novo componente reutilizável `AnalysisSourceBadge` (`components/`)
+  aplicado nos 3 pontos de exibição (Dashboard, Histórico, Perfil),
+  eliminando a tripla duplicação de JSX/ícones.
+- Mocks E2E atualizados para os valores reais do contrato (`model`,
+  `rule-based (model unavailable)`), de modo que os testes E2E validam o
+  comportamento verdadeiro em vez do fictício `"ML"`.
+- Novo teste unitário `analysis-source.test.ts` (9 casos cobrindo todo o
+  contrato, incluindo `model+rule-based (groq failed)`) e `api.test.ts`
+  ajustado.
+
+Validações executadas:
+
+| Validação | Resultado |
+| --- | --- |
+| `npm run typecheck` | sem erros |
+| `npm run lint` | 0 warnings |
+| `npm test` (unitários) | 236/236 passando |
+| E2E history + profile + dashboard (Firefox) | 62/62 passando |
+
+**Conclusão:** nenhuma task de backend/ML é necessária - o ML Service e o
+backend já seguem o contrato documentado; quem estava fora do contrato era a
+comparação literal do frontend. O badge agora exibe "Modelo ML" para
+classificações do modelo (com ou sem Groq) e "Fallback" apenas para
+predições rule-based.
+
 ## Alternativas consideradas
 
 | Alternativa | Prós | Contras |

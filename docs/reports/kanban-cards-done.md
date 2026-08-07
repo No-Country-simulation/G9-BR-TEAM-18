@@ -116,3 +116,4 @@
 | F072 | Frontend - Otimizar LucideIcon (registry estático 529kB -> 22kB) + dead code (knip, F030) | - | - |
 | I022 | Infraestrutura/Base - CI: rodar linters frontend/docs/infra em push direto para dev | - | - |
 | F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | ADR-0050 |
+| F074 | Frontend - Corrigir badge de fonte da análise (normalizar source do contrato real) | #159 | ADR-0047 |
