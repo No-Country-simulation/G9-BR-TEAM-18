@@ -24,12 +24,12 @@ public record AnalysisResponseDTO(
         @Schema(
                         description = "Status da análise",
                         example = "CONCLUIDA",
-                        allowableValues = {"PENDENTE", "CONCLUIDA", "FALHA"})
+                        allowableValues = {"PENDENTE", "CONCLUIDA", "FALHA", "SIMULADO"})
                 String status,
         @Schema(
-                        description = "Fonte da classificação (ML ou FALLBACK)",
-                        example = "ML",
-                        allowableValues = {"ML", "FALLBACK"})
+                        description = "Fonte da classificação (model do ML Service, com fallback Groq ou regras)",
+                        example = "model",
+                        allowableValues = {"model", "model+groq", "rule-based"})
                 String source,
         @Schema(description = "Recomendações para melhoria da eficiência") List<String> recommendations,
         @Schema(description = "Lista dos 3 equipamentos de maior consumo no momento da análise")
