@@ -26,7 +26,7 @@ export default function FeatureCards() {
         <p className="features-subtitle">
           Recursos inteligentes para entender e otimizar seu consumo de energia
         </p>
-        <div className="features-grid">
+        <div className="features-grid features-grid--three">
           {FEATURES.map((f, i) => (
             <div key={i} className="feature-card">
               <div className="feature-icon">
