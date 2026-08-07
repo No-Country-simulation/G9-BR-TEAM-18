@@ -104,7 +104,12 @@ Gerenciado pelo npm (`frontend/package.json`).
 
 Gerenciado pelo pip (`ml-service/requirements.txt`).
 
-| Biblioteca | Versão | Propósito |
+> **Nota:** o `requirements.txt` **não pinna versões** (apenas `groq>=1.5.0` e
+> `python-dotenv>=1.1.0`). A tabela abaixo lista versões de referência
+> (validadas em 03/08/2026), não um lock de versões: a instalação real depende
+> do resolvido pelo pip no momento do build.
+
+| Biblioteca | Versão de referência | Propósito |
 |---|---|---|
 | `fastapi` | 0.139.0 | Framework web |
 | `uvicorn` | 0.51.0 | Servidor ASGI |
