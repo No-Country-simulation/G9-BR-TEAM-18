@@ -169,6 +169,41 @@ test.describe("Profile Page", () => {
     await expect(page.getByRole("button", { name: pt("Salvar perfil do imovel") })).toBeEnabled();
   });
 
+  test("salvar perfil persiste peak_hour_usage e high_consumption_hours no PUT /auth/preferences (F069)", async ({
+    page,
+  }) => {
+    await setupAuthenticatedMocks(page);
+    // Captura o PUT de preferências (rota registrada após o setup -> LIFO)
+    const prefsRequest = page.waitForRequest(
+      (req) => req.method() === "PUT" && /\/auth\/preferences$/.test(req.url()),
+    );
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Marca o checkbox de pico e ajusta as horas de alto consumo
+    await page.getByLabel(/uso em hor[aá]rio de pico/i).check();
+    await page.getByLabel(/horas de alto consumo/i).fill("4.5");
+    await page.getByRole("button", { name: pt("Salvar perfil do imovel") }).click();
+    const request = await prefsRequest;
+    const parsed = JSON.parse(request.postData() ?? "{}");
+    // Contrato completo de preferências (B051): regularity + campos F069
+    expect(parsed.regularity).toBe("instantanea");
+    expect(parsed.peak_hour_usage).toBe(true);
+    expect(parsed.high_consumption_hours).toBe(4.5);
+    await expect(page.getByRole("button", { name: pt("Salvar perfil do imovel") })).toBeEnabled();
+  });
+
+  test("recarrega preferencias de pico e horas salvas do GET /auth/me (F069)", async ({ page }) => {
+    // Backend (B051) devolve os campos salvos em /auth/me
+    await setupAuthenticatedMocks(page, {
+      prefs: { peak_hour_usage: true, high_consumption_hours: 4.5 },
+    });
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // Checkbox reflete o valor persistido após o reload
+    await expect(page.getByLabel(/uso em hor[aá]rio de pico/i)).toBeChecked();
+    await expect(page.getByLabel(/horas de alto consumo/i)).toHaveValue("4.5");
+  });
+
   test("botao 'Analisar Agora' esta presente apos carregar imovel", async ({ page }) => {
     await setupAuthenticatedMocks(page);
     await page.goto("/profile");
@@ -228,6 +263,8 @@ test.describe("Profile Page", () => {
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
     await expect(page.getByText(pt("Ultima analise"))).toBeVisible();
+    // F076: deve exibir a MAIS RECENTE (a3 - 25/07, R$ 195.00), nao a mais antiga (a1 - R$ 240.00)
+    await expect(page.getByText("R$ 195.00")).toBeVisible();
     await expect(page.getByRole("button", { name: pt("Ver historico completo") })).toBeVisible();
   });
 

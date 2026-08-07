@@ -33,7 +33,7 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 |---|---|
 | Gatilho | PR para `dev` |
 | Jobs | `test` (ubuntu-latest) |
-| Passos | Checkout → Setup Node 22 → `npm ci` → `npm test` |
+| Passos | Checkout → Setup Node 24 → `npm ci` → `npm test` |
 | Cobertura | Testes Vitest + Testing Library |
 
 ### `test-ml-service.yml`
@@ -62,7 +62,7 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 |---|---|
 | Gatilho | PR para `dev` |
 | Jobs | `lint` (ubuntu-latest) |
-| Passos | Setup Node 22 → `npm ci` → `npx eslint src/` → `npx prettier --check .` |
+| Passos | Setup Node 24 → `npm ci` → `npx eslint src/` → `npx prettier --check .` |
 | Abrange | ESLint (regras recomendadas + react-hooks + react-refresh) + Prettier |
 
 ### `lint-ml-service.yml`

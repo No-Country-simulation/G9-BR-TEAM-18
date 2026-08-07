@@ -10,11 +10,11 @@
  * garante que sempre haverá um ícone representativo.
  */
 
-export interface ApplianceIconEntry {
+interface ApplianceIconEntry {
   icon: string;
 }
 
-export const APPLIANCE_ICONS: Record<string, ApplianceIconEntry> = {
+const APPLIANCE_ICONS: Record<string, ApplianceIconEntry> = {
   // Refrigeração
   geladeira: { icon: "Refrigerator" },
   refrigerador: { icon: "Refrigerator" },
@@ -65,7 +65,7 @@ export const APPLIANCE_ICONS: Record<string, ApplianceIconEntry> = {
   fritadeira: { icon: "ChefHat" },
   cafeteira: { icon: "Coffee" },
   "ferro de passar": { icon: "Sparkles" },
-  aspirador: { icon: "Vacuum" },
+  aspirador: { icon: "Brush" },
 
   // Serviços
   chuveiro: { icon: "ShowerHead" },

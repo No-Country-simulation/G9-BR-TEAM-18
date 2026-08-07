@@ -115,4 +115,14 @@ test.describe("Historico", () => {
     await page.getByRole("button", { name: pt("Fazer primeira analise") }).click();
     await expect(page).toHaveURL(/\/profile/);
   });
+
+  test("exibe top produtos consumidores no card (F073)", async ({ page }) => {
+    await setupAuthenticatedMocks(page);
+    await page.goto("/history");
+    await page.waitForLoadState("networkidle");
+    // a1 tem highest_consumption_products: ["Ar Condicionado", "Geladeira"]
+    await expect(page.getByText(pt("Maiores consumidores")).first()).toBeVisible();
+    await expect(page.getByText("Ar Condicionado").first()).toBeVisible();
+    await expect(page.getByText("Geladeira").first()).toBeVisible();
+  });
 });

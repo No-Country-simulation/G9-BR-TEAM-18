@@ -21,22 +21,23 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 
 | Tecnologia | Versão | Função |
 |---|---|---|
-| React | 19 | Biblioteca de UI |
-| TypeScript | ~5.7 | Tipagem estática |
-| Vite | ~6 | Bundler e dev server |
-| React Router | 7 | Roteamento SPA |
-| Recharts | ~2 | Gráficos (Dashboard) |
-| Lucide React | ~0.47 | Ícones |
-| Vitest | ~3 | Test runner (unitários) |
-| Testing Library | ~16 | Testes de componentes |
-| Playwright | ~1.50 | Testes E2E (navegador) |
+| React | 19.2 | Biblioteca de UI |
+| TypeScript | 6.0 | Tipagem estática |
+| Vite | 8.2 | Bundler e dev server |
+| React Router | 8.3 | Roteamento SPA |
+| Recharts | 3.10 | Gráficos (Dashboard) |
+| Lucide React | 1.29 | Ícones |
+| Vitest | 4.1 | Test runner (unitários) |
+| Testing Library | 16.3 | Testes de componentes |
+| Playwright | 1.62 | Testes E2E (navegador) |
 
 ## Estrutura de Diretórios
 
 ```text
 frontend/src/
 ├── components/        # Componentes reutilizáveis
-│   ├── AnalysisForm.tsx    # Formulário principal de análise
+│   ├── AnalysisSourceBadge.tsx  # Badge de fonte da análise (ML/Fallback)
+│   ├── LucideIcon.tsx    # Ícone com registry estático
 │   ├── Navbar.tsx          # Barra de navegação superior
 │   ├── Footer.tsx          # Rodapé
 │   ├── Hero.tsx            # Seção hero da landing page
@@ -92,7 +93,7 @@ frontend/src/
 
 ## Roteamento
 
-Definido em `App.tsx` com React Router v7:
+Definido em `App.tsx` com React Router v8:
 
 | Caminho | Página | Acesso |
 |---|---|---|
@@ -195,22 +196,29 @@ Funções exportadas:
 | `createProperty()` | `POST /properties` | Criar imóvel |
 | `listProperties()` | `GET /properties` | Listar imóveis |
 | `updateProperty()` | `PUT /properties/{id}` | Atualizar imóvel |
-| `addApplianceToProperty()` | `POST /properties/{id}/appliances` | Adicionar aparelho |
-| `batchUpdateAppliances()` | `PUT /properties/{id}/appliances/batch` | Atualizar lote de aparelhos |
+| `deleteProperty()` | `DELETE /properties/{id}` | Excluir imóvel |
 | `listPropertyAppliances()` | `GET /properties/{id}/appliances` | Listar aparelhos do imóvel |
+| `batchUpdateAppliances()` | `PUT /properties/{id}/appliances/batch` | Atualizar lote de aparelhos |
 | `listAppliances()` | `GET /appliances` | Catálogo de aparelhos |
 | `analyzeEnergy()` | `POST /energy-analysis` | Executar análise |
+| `simulateEnergy()` | `POST /energy-analysis/simulate` | Simular análise (sem persistir) |
 | `listAnalyses()` | `GET /analyses` | Histórico de análises |
+| `fetchAnalysisById()` | `GET /analyses/{id}` | Buscar análise por ID |
+| `deleteAnalysis()` | `DELETE /analyses/{id}` | Excluir análise |
 | `fetchDashboard()` | `GET /dashboard` | Dados do dashboard |
+| `fetchPreferences()` | `GET /auth/me` | Preferências (regularidade, pico) |
+| `updatePreferences()` | `PUT /auth/preferences` | Atualizar preferências |
+| `fetchCategories()` | `GET /energy-analysis/categories` | Categorias válidas |
+| `fetchContractInfo()` | `GET /contract-info` | Tipos de imóvel e categorias (schema discovery) |
 
 ## Tipos e Constantes
 
 Centralizados em `types/index.ts`:
 
 - **Interfaces de domínio**: `User`, `AnalysisRequest`, `AnalysisResponse`, `AnalysisHistory`, `DashboardData`
-- **Tipos de dados**: `PropertyType` (`RESIDENCIAL` | `COMERCIAL`), `Regularity`, `HighestConsumptionCategory`
+- **Tipos de dados**: `PropertyType` (`RESIDENCIAL` | `APARTAMENTO` | `COMERCIAL`), `Regularity`, `HighestConsumptionCategory`
 - **Tipos de aparelho**: `ApplianceType`, `ApplianceItem`, `PropertyAppliance`
-- **Constantes de UI**: `CATEGORY_COLORS`, `CATEGORY_DISPLAY`, `PROPERTY_TYPES`, `REGULARITY_OPTIONS`
+- **Constantes de UI**: `CATEGORY_COLORS`, `CATEGORY_DISPLAY`, `DEFAULT_PROPERTY_TYPES`, `REGULARITY_OPTIONS`
 - **Classe de erro**: `ApiError` com suporte a `fields` para erros de validação
 
 ## Tema
@@ -236,9 +244,9 @@ Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 | `AuthContext.test.tsx` | Fluxo de autenticação (login, registro, logout, reset de senha) |
 | `PrivateRoute.test.tsx` | Proteção de rotas (autenticado/não autenticado/reset pendente) |
 | `ResetPasswordPage.test.tsx` | Validação de formulário de redefinição de senha |
-| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegacao) |
-| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validacao, erros, navegacao) |
-| `Navbar.test.tsx` | Testes da barra de navegacao (6 testes: estados autenticado/anonimo) |
+| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegação) |
+| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validação, erros, navegação) |
+| `Navbar.test.tsx` | Testes da barra de navegação (6 testes: estados autenticado/anonimo) |
 | `types.test.ts` | Constantes de UI e classe ApiError |
 
 ### Testes E2E (Playwright)

@@ -72,7 +72,11 @@ test.describe("Autenticacao", () => {
     test("botao de login mostra 'Entrando...' durante requisicao", async ({ page }) => {
       await page.route(`http://localhost:8080/auth/login`, async (route) => {
         await new Promise((r) => setTimeout(r, 500));
-        await route.fulfill({ status: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(MOCK_USER) });
+        await route.fulfill({
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(MOCK_USER),
+        });
       });
 
       await page.getByLabel(/e-mail/i).fill("teste@email.com");
@@ -110,10 +114,18 @@ test.describe("Autenticacao", () => {
 
     test("registro com sucesso redireciona para home", async ({ page }) => {
       await page.route(`http://localhost:8080/auth/register`, async (route) => {
-        await route.fulfill({ status: 201, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "Usuario criado com sucesso" }) });
+        await route.fulfill({
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "Usuario criado com sucesso" }),
+        });
       });
       await page.route(`http://localhost:8080/auth/login`, async (route) => {
-        await route.fulfill({ status: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(MOCK_USER) });
+        await route.fulfill({
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(MOCK_USER),
+        });
       });
 
       await page.getByLabel(/nome completo/i).fill("Teste");
@@ -127,7 +139,11 @@ test.describe("Autenticacao", () => {
 
     test("registro mostra erro de API", async ({ page }) => {
       await page.route(`http://localhost:8080/auth/register`, async (route) => {
-        await route.fulfill({ status: 400, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "Email ja cadastrado" }) });
+        await route.fulfill({
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "Email ja cadastrado" }),
+        });
       });
 
       await page.getByLabel(/nome completo/i).fill("Teste");

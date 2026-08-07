@@ -69,7 +69,7 @@ dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
 #### Requisitos
 
 - Docker versão 24 ou superior (recomendado)
-- Ou Node.js 20 LTS + Playwright browsers instalados (para execução local)
+- Ou Node.js 24 LTS + Playwright browsers instalados (para execução local)
 
 #### Via Docker (recomendado)
 
@@ -79,7 +79,7 @@ dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
 # Construir a imagem de testes
 docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
 
-# Executar os 68 testes
+# Executar os 71 testes
 docker run --rm energiaia-e2e
 ```
 
@@ -117,7 +117,7 @@ npx playwright test --config=e2e/playwright.config.ts --browser=firefox
 ```
 
 O flag `--browser=firefox` sobrescreve o browser padrão (Chromium) apenas para
-aquela execução, sem alterar a configuração. Os 68 testes da suíte rodam
+aquela execução, sem alterar a configuração. Os 71 testes da suíte rodam
 indistintamente em ambos os browsers.
 
 #### Relatórios e artefatos
@@ -144,7 +144,7 @@ npx playwright show-report playwright-report
 |---|---|---|
 | Java JDK | 21 (Eclipse Temurin recomendado) | <https://adoptium.net/> |
 | Maven | 3.9 ou utilizar o wrapper (`mvnw`) incluso | Já incluso no projeto |
-| Node.js | 20 LTS | <https://nodejs.org/> |
+| Node.js | 24 LTS | <https://nodejs.org/> |
 | Python | 3.12 | <https://www.python.org/> |
 | Git | Qualquer versão recente | <https://git-scm.com/> |
 

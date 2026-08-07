@@ -93,7 +93,7 @@ flowchart LR
         E -->|POST /predict| F[_run_prediction]
         F --> G[Modelo ML]
         F --> H[Groq LLM]
-        H -->|usa highestConsumptionProducts<br/>para recomendacoes<br/>especificas| I[PredictResponse]
+        H -->|usa highestConsumptionProducts<br/>para recomendações<br/>específicas| I[PredictResponse]
         G --> I
     end
     I --> J[AnalysisResponseDTO]

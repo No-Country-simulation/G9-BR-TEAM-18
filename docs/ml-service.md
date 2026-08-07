@@ -138,7 +138,7 @@ Sem a chave `GROQ_API_KEY` configurada, o serviço funciona apenas com modelo + 
   "equipment_quantity": 10,
   "property_type": "RESIDENCIAL",
   "high_consumption_hours": 8.5,
-  "highest_consumption_category": "Climatizacao",
+  "highest_consumption_category": "CLIMATE_CONTROL",
   "daily_consumption_distribution": {
     "REFRIGERATION_WATTS": 1500.0,
     "HEATING_WATTS": 7500.0,

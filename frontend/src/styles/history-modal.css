@@ -1,0 +1,197 @@
+/* ─── History Modal ─── */
+
+.hist-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hist-modal {
+  background: var(--bg-surface);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  max-width: 640px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-hard-lg);
+  position: relative;
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.hist-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-base);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.hist-modal-close:hover {
+  background: var(--state-error-bg);
+  color: var(--state-error);
+  border-color: var(--state-error);
+}
+
+.hist-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 3.5rem 0 1.5rem;
+  flex-wrap: wrap;
+}
+
+.hist-modal-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+/* F073: badge da fonte da classificacao (ML vs FALLBACK) */
+.analysis-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  white-space: nowrap;
+}
+
+/* F073: linha "Atualizado em" no detalhe da analise */
+.hist-modal-updated {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding: 0.5rem 1.5rem 0;
+  font-style: italic;
+}
+
+.hist-modal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--ink);
+  margin: 1.25rem 1.5rem 0;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.hist-stat {
+  background: var(--bg-base);
+  padding: 1rem;
+  text-align: center;
+}
+
+.hist-stat-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-display);
+}
+
+.hist-stat-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+}
+
+.hist-chart-section {
+  margin: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-base);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.hist-chart-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+}
+
+.hist-modal-recs {
+  margin: 1.5rem;
+}
+
+.hist-modal-recs h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+}
+
+.hist-modal-recs ul {
+  list-style: none;
+  padding: 0;
+}
+
+.hist-modal-recs li {
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-base);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  border-left: 3px solid var(--accent-cyan);
+  line-height: 1.5;
+}

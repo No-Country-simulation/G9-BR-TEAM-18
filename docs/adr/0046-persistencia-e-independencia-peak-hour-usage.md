@@ -4,11 +4,22 @@
 
 Aceito
 
-> **Nota (Agosto/2026):** A Decisão A (persistência no Backend e Frontend) foi totalmente implementada através da Task **B051**. A migration V15 adicionou as colunas `peak_hour_usage` (boolean) e `high_consumption_hours` (numeric) na base de dados, e a API já expõe e persiste esses valores corretamente. A Decisão B (retreino do ML) segue pendente pela equipe de Dados.
+> **Nota (Agosto/2026):** A Decisão A (persistência no Backend e Frontend) foi totalmente
+> implementada. O backend através da Task **B051** (migration V15 adicionou `peak_hour_usage`
+> boolean e `high_consumption_hours` numeric; a API expõe e persiste esses valores
+> corretamente) e o frontend através da Task **F069**, que passou a enviar
+> `peak_hour_usage`/`high_consumption_hours` no `PUT /auth/preferences` (handleSave) e a
+> restaurá-los via `GET /auth/me` (fetchPreferences). A validação do frontend foi concluída em
+> 01/08/2026: 2 testes E2E novos (persistência no save + recarga refletindo o valor salvo), 6
+> testes unitários novos em `api.test.ts` e suíte E2E completa 71/71 (Firefox). A Decisão B
+> (retreino do ML, Q008) segue pendente pela equipe de Dados.
 
 ## Contexto
 
-Durante a investigação de um bug reportado pelo usuário (marcar "Sim" ou "Não" para uso em horário de pico das 18h às 21h resultava na mesma classificação de eficiência energética), a equipe identificou dois problemas independentes no fluxo end-to-end do campo `peak_hour_usage`:
+Durante a investigação de um bug reportado pelo usuário (marcar "Sim" ou "Não"
+para uso em horário de pico das 18h às 21h resultava na mesma classificação de
+eficiência energética), a equipe identificou dois problemas independentes no
+fluxo end-to-end do campo `peak_hour_usage`:
 
 ### Problema A: `peak_hour_usage` não é persistido no perfil do usuário
 
@@ -16,9 +27,9 @@ O frontend (`ProfilePage.tsx`) possui um checkbox "Uso em horário de pico (18h 
 
 1. A função `handleSave()` não envia `peakHourUsage` para nenhum endpoint da API: ela salva apenas dados da propriedade, aparelhos e `regularity`.
 
-1. A função `fetchPreferences()` retorna apenas `consumption_goal` e `regularity`, sem incluir `peak_hour_usage`.
+2. A função `fetchPreferences()` retorna apenas `consumption_goal` e `regularity`, sem incluir `peak_hour_usage`.
 
-1. O backend não possui um endpoint ou campo para persistir `peak_hour_usage` como preferência do usuário.
+3. O backend não possui um endpoint ou campo para persistir `peak_hour_usage` como preferência do usuário.
 
 **Impacto:** Toda vez que a página recarrega, `peakHourUsage` volta para `false`. O usuário precisa lembrar de marcar manualmente antes de cada análise.
 
@@ -31,12 +42,16 @@ Durante o treinamento do modelo (`train_model.py`), a coluna `peak_hour_usage` �
 df["peak_hour_usage"] = df.apply(_infer_peak_usage, axis=1)
 ```
 
-Isso significa que, no conjunto de treino, `peak_hour_usage` é altamente correlacionado com`consumption_kwh`, `high_consumption_hours` e outras features. Consequentemente, o modeloRandomForest aprendeu que `peak_hour_usage` não adiciona informação independente. Por isso,na inferência, alterar apenas este campo não muda a predição do modelo quando a confiança éalta (>80%).
+Isso significa que, no conjunto de treino, `peak_hour_usage` é altamente correlacionado com
+`consumption_kwh`, `high_consumption_hours` e outras features. Consequentemente, o modelo
+RandomForest aprendeu que `peak_hour_usage` não adiciona informação independente. Por isso, na
+inferência, alterar apenas este campo não muda a predição do modelo quando a confiança é alta
+(>80%).
 
 Já na classificação rule-based (fallback quando o modelo não está disponível), `peak_hour_usage` contribui com 25% do índice:
 
 ```python
-indice = 0.40 * consumo + 0.25 * pico_norm + 0.20 * equip + 0.15 * horas
+índice = 0.40 * consumo + 0.25 * pico_norm + 0.20 * equip + 0.15 * horas
 ```
 
 Neste caso, alterar `peak_hour_usage` de `false` para `true` adiciona 0.25 ao índice, o que é suficiente para mudar a categoria na maioria dos cenários.
@@ -68,7 +83,7 @@ flowchart TD
     subgraph ML["ML Service"]
         L["Treino do modelo"] --> M["peak_hour_usage inferido de outras colunas"]
         M --> N["Modelo aprende que peak_hour_usage é redundante"]
-        N --> O["Na inferencia, mudar peak_hour_usage sozinho nao altera a predicao"]
+        N --> O["Na inferência, mudar peak_hour_usage sozinho não altera a predição"]
     end
 
     K --> O
@@ -82,9 +97,9 @@ A equipe decidiu adicionar `peak_hour_usage` como um campo persistente nas prefe
 
 1. **Backend:** Adicionar campo `peak_hour_usage` (booleano) ao endpoint `PUT /auth/preferences` e ao retorno de `GET /auth/me`
 
-1. **Frontend:** Incluir `peakHourUsage` no corpo de `updatePreferences()` e lê-lo em `fetchPreferences()`
+2. **Frontend:** Incluir `peakHourUsage` no corpo de `updatePreferences()` e lê-lo em `fetchPreferences()`
 
-1. **`handleSave()`****:** Enviar `peakHourUsage` para `updatePreferences()` juntamente com `regularity`
+3. **`handleSave()`:** Enviar `peakHourUsage` para `updatePreferences()` juntamente com `regularity`
 
 **Status da Implementação (Task B051 - Concluída):**O backend foi atualizado com sucesso. Além do `peak_hour_usage`, o campo `high_consumption_hours` também foi exposto nas preferências. Ambos os campos trafegam na API em formato `snake_case` e são persistidos de forma segura no banco de dados, destravando o fluxo do frontend.
 
@@ -92,11 +107,9 @@ A equipe decidiu adicionar `peak_hour_usage` como um campo persistente nas prefe
 
 A equipe de ML deve re-treinar o modelo tratando `peak_hour_usage` como um campo lido diretamente dos dados, e não inferido a partir de outras colunas. As opções avaliadas foram:
 
-1. **Usar dados reais de ****`peak_hour_usage`****:** Se houver dados coletados de usuários reais com o campo preenchido manualmente, usá-los diretamente no treino.
-
-1. **Remover a inferência e usar valor aleatório controlado:** Gerar `peak_hour_usage` com uma distribuição conhecida (ex: 40% sim, 60% não) para que o modelo aprenda o peso real da feature.
-
-1. **Forçar o uso da regra ****`_classify_rule_based()`** para análises com `peak_hour_usage`: alternativa temporária enquanto o modelo não é retreinado.
+1. **Usar dados reais de `peak_hour_usage`:** Se houver dados coletados de usuários reais com o campo preenchido manualmente, usá-los diretamente no treino.
+2. **Remover a inferência e usar valor aleatório controlado:** Gerar `peak_hour_usage` com uma distribuição conhecida (ex: 40% sim, 60% não) para que o modelo aprenda o peso real da feature.
+3. **Forçar o uso da regra `_classify_rule_based()`:** alternativa temporária enquanto o modelo não é retreinado, usando a classificação rule-based para análises com `peak_hour_usage`.
 
 **Decisão:** A equipe optou pela **opção 2 (valor aleatório controlado)** como solução de curto prazo, com a **opção 1 (dados reais)** como meta de longo prazo, aguardando coleta de dados de usuários reais.
 
@@ -127,7 +140,7 @@ flowchart TD
     subgraph ML["ML Service - Retreinado"]
         L["Treino do modelo"] --> M["peak_hour_usage lido diretamente dos dados"]
         M --> N["Modelo aprende o peso real da feature"]
-        N --> O["Na inferencia, mudar peak_hour_usage altera a predicao corretamente"]
+        N --> O["Na inferência, mudar peak_hour_usage altera a predição corretamente"]
     end
 
     K --> O

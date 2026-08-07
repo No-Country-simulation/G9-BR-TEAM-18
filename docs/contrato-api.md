@@ -92,7 +92,7 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
   "estimatedMonthlyCost": 315.00,
   "category": "MEDIANO",
   "probability": 0.78,
-  "status": "FINALIZADO",
+  "status": "CONCLUIDA",
   "source": "model",
   "recommendations": [
     "Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h).",
@@ -106,7 +106,9 @@ Definição das interfaces de comunicação entre o frontend, o backend (Spring 
 
 **Categorias válidas:** `EXCELENTE`, `BOM`, `MEDIANO`, `RUIM`, `CRITICO`
 
-**Valores de `source`:** `model` (classificador treinado), `model+groq` (com fallback LLM), `rule-based` (fallback por regras).
+**Valores de `status`:** `PENDENTE` (em processamento), `CONCLUIDA` (processada com sucesso), `FALHA` (erro no processamento). Análises simuladas via `/energy-analysis/simulate` retornam `SIMULADO`.
+
+**Valores de `source`:** `model` (classificador treinado), `model+groq` (com fallback LLM), `rule-based` (fallback por regras). O frontend normaliza estes valores exibindo "Modelo ML" para `model*` e "Fallback" para `rule-based*` (ADR-0047).
 
 ### Endpoint: Simulação de análise (não persiste)
 
@@ -182,7 +184,7 @@ O campo `status` retorna `"SIMULADO"` e `id`/`createdAt`/`updatedAt` vêm `null`
 }
 ```
 
-**Tipos de imóvel válidos:** `RESIDENCIAL`, `COMERCIAL`
+**Tipos de imóvel válidos:** `RESIDENCIAL`, `APARTAMENTO`, `COMERCIAL` (migration V13)
 
 ### Endpoint: Aparelhos do imóvel
 
@@ -226,7 +228,7 @@ Comunicação entre o backend Java e a API Python de predição.
   "equipment_quantity": 10,
   "property_type": "RESIDENCIAL",
   "high_consumption_hours": 8.5,
-  "highest_consumption_category": "Climatizacao",
+  "highest_consumption_category": "CLIMATE_CONTROL",
   "daily_consumption_distribution": {
     "REFRIGERATION_WATTS": 1500.0,
     "HEATING_WATTS": 7500.0,

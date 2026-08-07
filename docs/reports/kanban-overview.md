@@ -25,17 +25,17 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria (atualizado em 01/08/2026)
+## Cards por coluna e categoria (atualizado em 06/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 121 | | Frontend (F) | 54 |
-| In review | 5 | | Backend (B) | 44 |
-| In progress | 3 | | Infraestrutura (I) | 19 |
-| Ready | 0 | | ML Service / Queries (Q) | 9 |
-| Backlog | 8 | | Banco de Dados (M) | 9 |
-| **Total** | **137** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **135** |
+| Done | 130 | | Frontend (F) | 58 |
+| In review | 13 | | Backend (B) | 45 |
+| In progress | 2 | | Infraestrutura (I) | 20 |
+| Ready | 0 | | ML Service / Queries (Q) | 10 |
+| Backlog | 1 | | Banco de Dados (M) | 9 |
+| **Total** | **146** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **146** |
 
 ## Movimentações (24/07/2026)
 
@@ -48,14 +48,14 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | B030 | EfficiencyCategory Value Object |
 | B031 | Contract Tests para integração ML |
 | B032 | Refactor: remover hardcoded, config via env vars |
-| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) |
 | F029 | Corrigir property_type e highestConsumptionCategory |
 | B033 | V9 migration: remover aparelhos sem cobertura PPH |
 | F030 | Remover dead code (updateApplianceQuantity, demo.test.ts) |
 | F031 | Adicionar testes: Login, Register, Navbar (19 testes) |
 | B034 | Adicionar testes: PropertyServiceExtended, AnalysisMapperExtended |
 | F032 | Corrigir createProperty test e remover demo.test.ts |
-| I018 | Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) |
+| I018 | Atualizar documentação (kanban, ADR-0024, frontend.md, testing.md) |
 
 ### In Progress - movidos para In review
 
@@ -69,7 +69,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | F008 | Unificar páginas de análise e remover dados avançados |
 | F009 | Reformular Dashboard com propósito (meta, simulação, progresso) |
 | I017 | Atualizar contrato-api.md e glossario.md |
-| F028 | Alinhar catalogo de aparelhos com cobertura ML (PPH) |
+| F028 | Alinhar catálogo de aparelhos com cobertura ML (PPH) |
 | F029 | Corrigir property_type e highestConsumptionCategory |
 | F030 | Remover dead code |
 | F031 | Adicionar testes frontend |
@@ -392,3 +392,196 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - B054 (não relacionado à B052): NPE no retry do Schema Discovery quando o ML responde listas nulas.
 - O card F070 (frontend) permanece Done - o consumo do `id` está correto e validado por mocks/E2E;
   a validação ponta a ponta em produção fica condicionada à correção B053.
+
+## Movimentações (06/08/2026) - Frontend: F069 Done + Sessão Node 24/deps/CI
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário | #143 | 9d4178d, 7120d57, 8ea109a | ADR-0046 |
+
+### Novos cards em Done (draft items, implementados e validados na sessão)
+
+| ID | Título | Commits associados |
+|---|---|---|
+| F071 | Frontend - Atualizar para Node 24 e dependências @latest (TS 6.0.3 pinado, engines Node 24, audit 0) | 86be85a, 1545925, 2f02742 |
+| F072 | Frontend - Otimizar LucideIcon com registry estático (529kB -> 22kB) + remoção de dead code (knip, F030) | 8ed8f23, 3502ca2, 70b164b |
+| I022 | Infraestrutura/Base - CI: rodar linters de frontend/docs/infra em push direto para dev | 75620bb |
+
+### Notas
+
+- F069: frontend concluído e revisado. O perfil persiste e restaura os hábitos de consumo
+  (peak_hour_usage/high_consumption_hours) via PUT /auth/preferences e GET /auth/me, consumindo
+  o contrato do B051. Suítes verdes: E2E 71/71 (Firefox), unit 169/169, typecheck, lint 0,
+  build, audit 0. Comentado na issue #143.
+- F071: Node 24 em Dockerfiles, workflows (node-version 20/22 -> 24) e engines `>=24.15.0`
+  (jsdom@30 exige 24.15+); dependências @latest (lucide-react 1.29, vite 8.2.1, jest-dom 7,
+  jsdom 30, react-is 19). TypeScript travado em `~6.0.3` por compatibilidade com
+  typescript-eslint@8.66.0 (peer `>=4.8.4 <6.1.0`; TS 7 incompatível). Removidos o flag
+  `--legacy-peer-deps` (Dockerfiles/workflows) e overrides desnecessários. npm audit 0.
+- F072: knip 0 exports não utilizados; F030 (dead code: addApplianceToProperty, demo.test.ts
+  duplicado) concluído nesta sessão; LucideIcon com registry estático de ~55 ícones
+  (chunk de 529kB para 22kB), mantendo fallback para nomes desconhecidos.
+- I022: lint-frontend, test-frontend, lint-docs e lint-infra agora disparam em push direto para
+  `dev` (além de PR), espelhando o lint-backend. Push que altera apenas `.github/workflows/**`
+  não dispara (comportamento do GitHub Actions com path filters), validado no push 75620bb.
+- Contagens do board refletem também movimentações de backend/ML feitas pela equipe desde
+  01/08: B048-B054 e Q007 em In review, Q008 e análise de datasets PPH em In progress.
+
+## Movimentações (06/08/2026) - Rodada 2: Novo card F073 (Backlog)
+
+### Novo card em Backlog
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | Excluir imóvel (DELETE /properties/{id}); badge source ML/FALLBACK; updated_at no detalhe; highest_consumption_products no card do histórico |
+
+### Notas
+
+- Criado após análise backend x frontend (06/08): o endpoint DELETE /properties/{propertyId}
+  já existe no PropertyController (com ownership check) mas não é consumido pelo frontend
+  (nenhuma função no api.ts nem UI - ProfilePage só permite criar/trocar/editar).
+- Os polimentos aproveitam campos que o backend já retorna: source (ML/FALLBACK),
+  updated_at (AnalysisResponseDTO) e highest_consumption_products (hoje exibido só no
+  resultado da análise - F048).
+
+## Movimentações (06/08/2026) - Rodada 3: F073 implementado (Backlog → In review)
+
+### Backlog → In review
+
+| ID | Título | Issue | Commits associados |
+|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | 30457cd, c9e7825, 3e41293, bdc3832, 8e4e36e |
+
+### Notas
+
+- Implementado e validado: `deleteProperty` no api.ts (DELETE /properties/{id}); botão
+  Excluir Imóvel no ProfilePage com modal de confirmação e reset do formulário; badge de
+  fonte ML/FALLBACK no detalhe do histórico, no resultado do perfil e na simulação do
+  dashboard; linha "Atualizado em" (updated_at) no detalhe; top produtos consumidores no
+  card do histórico.
+- Suítes verdes: unit 175/175, E2E 77/77 (Firefox), typecheck, lint 0, build OK.
+- Comentado na issue #158; card movido para In review.
+
+## Movimentações (06/08/2026) - Rodada 4: F073 Done + ADR-0050
+
+### In review → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | 30457cd, c9e7825, 3e41293, bdc3832, 8e4e36e, 5a3fd39 | ADR-0050 |
+
+### Notas
+
+- Revisão concluída: suítes verdes (unit 175/175, E2E 77/77 Firefox, typecheck, lint 0,
+  build) e ADR-0050 criada documentando a decisão (exclusão de imóvel consumindo o
+  DELETE /properties/{id} já existente, badge de fonte ML/FALLBACK, updated_at no detalhe
+  e top produtos no card do histórico, sem mudança de contrato no backend).
+- Issue #158 fechada pela automação do board (mover para Done fecha a issue vinculada).
+
+## Movimentações (06/08/2026) - Rodada 5: F074 badge de fonte (source do contrato real)
+
+### Novo card → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F074 | Frontend - Corrigir badge de fonte da análise (normalizar source do contrato real) | #159 | bcfb8f7, 7f22260, 476137e | ADR-0047 |
+
+### Notas
+
+- Reporte do usuário: análises feitas pelo modelo exibiam a tag "Fallback" mesmo sem
+  nenhuma chamada à Groq. Causa raiz 100% frontend: o ML Service retorna `source` com os
+  valores do contrato documentado (`model`, `model+groq (confidence X%)`, `rule-based (model
+  error)`, `rule-based (model unavailable)`) e o backend repassa a string, mas o frontend
+  comparava `source === "ML"` - valor que nunca chega - exibindo "Fallback" para toda
+  análise, inclusive as classificadas pelo modelo.
+- Correção (somente frontend, commits bcfb8f7/7f22260/476137e): helper `resolveAnalysisSource()`
+  em types/index.ts normalizando o contrato real (`model*` → ML, `rule-based*` → Fallback,
+  legado `ML`/`FALLBACK` → compat, ausente/desconhecido → sem badge); novo componente
+  reutilizável `AnalysisSourceBadge` aplicado no Dashboard, Histórico e Perfil (elimina a
+  tripla duplicação); mocks E2E atualizados para valores reais; novo `analysis-source.test.ts`
+  (9 casos) + api.test.ts ajustado. ADR-0047 seção 9 documenta a decisão.
+- Suítes verdes: unit 236/236, E2E history+profile+dashboard 62/62 (Firefox), typecheck,
+  lint 0.
+- Conclusão: nenhuma task de backend/ML é necessária - ML Service e backend já seguem o
+  contrato documentado; quem estava fora do contrato era o frontend.
+- Contagens do board atualizadas (Done 128, In review 12, Total 143, Frontend 57);
+  In review 12 reflete também movimentações da equipe desde a rodada anterior.
+
+## Movimentações (06/08/2026) - Rodada 6: B055 card de documentação Swagger (Backlog)
+
+### Novo card em Backlog
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| B055 | Backend - Corrigir @Schema do AnalysisResponseDTO (source do contrato real + status SIMULADO) | #160 | Atualizar os `allowableValues`/`example` do `@Schema` no `AnalysisResponseDTO`: `source` de `{"ML", "FALLBACK"}` para `{model, model+groq, rule-based}` (contrato ADR-0045) e adicionar `SIMULADO` ao `status` |
+
+### Notas
+
+- Criado após a auditoria de literais do frontend (06/08): o F074 provou que o valor real de
+  `source` é `model`/`rule-based` (nunca `"ML"`), mas o `@Schema` do backend ainda documenta
+  `{"ML", "FALLBACK"}`; e o `status` não lista `SIMULADO`, embora o `/energy-analysis/simulate`
+  o retorne (`EnergyAnalysisService.java` linha 135).
+- Correção é documental (apenas anotações `@Schema`), sem mudança de comportamento em runtime.
+  Referências no card: ADR-0045, ADR-0047 seção 9, `docs/contrato-api.md` linhas 95-116/109,
+  `ml-service/main.py`.
+- Contagens do board atualizadas (Backlog 1→2, Total 143→144, Backend 44→45).
+- As docs de contrato (`contrato-api.md`, `ml-service.md`, `arquitetura.md`, `frontend.md`,
+  `dependency-doc.md`) foram alinhadas nesta rodada aos valores reais (commits 70f459e, fa29bd8,
+  9f2c8b6, 1e5db59), deixando apenas o `@Schema` do backend pendente (B055).
+
+## Movimentações (06/08/2026) - Rodada 7: F075 refinamentos de layout + regra de 300 linhas (Done)
+
+### Card em In progress
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| F075 | Frontend - Refinamentos de layout + regra de no máximo 300 linhas por arquivo | #161 | Corrigir sobreposição do botão fechar no modal do histórico; corrigir espaço vazio nos cards da Home; quebrar todos os arquivos TS/TSX/CSS acima de 300 linhas em módulos temáticos |
+
+### Notas
+
+- **Fixes de layout**: `.hist-modal-header` com `padding-right: 3.5rem` (data não invade a zona
+  do botão X); removido o full-width global do `:first-child` e adicionado
+  `.features-grid--three` para o `FeatureCards` (3 cards na mesma linha).
+- **Regra de ≤300 linhas aplicada em todo o frontend**: `App.css` (3.828) dividido em 22
+  arquivos em `src/styles/` com barrel de `@import`; `ProfilePage` (898), `Dashboard` (663) e
+  `History` (612) quebrados em subcomponentes/hooks; `api.ts` (430) em módulos por domínio;
+  testes (api.test 509, appliance-icons.test 575, mocks 349) e specs E2E (profile 403,
+  history 311) divididos; novos testes unitários para `dashboard-helpers` e `appliance-calc`.
+- Suítes verdes: unit 249/249, E2E 88/88 (Firefox), typecheck, lint 0, prettier e build de
+  produção OK. Nenhum arquivo TS/TSX/CSS acima de 300 linhas.
+- Documentado na ADR-0053 (commits 1822326, 55785f0, c5df1b0, cc74421, 4a27d6f, 4d5be28,
+  dbf3a4a, 6bad1be).
+- Contagens do board atualizadas (Total 145; F075 em In progress → Done após validação
+  manual; issue #161 fechada).
+
+## Movimentações (06/08/2026) - Rodada 8: F076 última análise (ordem DESC do GET /analyses)
+
+### Novo card → Done
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F076 | Frontend - Corrigir "Última Análise" exibida (GET /analyses retorna DESC mas o frontend assumia ASC) | #162 | cd54d2f, cffd36f, 986b7bf, e3c9580 | ADR-0054 |
+
+### Notas
+
+- Card criado em In review (06/08) e movido para Done após validação manual;
+  issue #162 fechada.
+- Reporte do usuário (06/08): o card "Última Análise" do Perfil mostrava a análise
+  mais antiga e nunca atualizava.
+- Causa raiz 100% frontend: o backend `GET /analyses` retorna DESC
+  (`findByPropertyIdInOrderByCreatedAtDesc`), mas o frontend assumia ASC
+  (`all[length - 1]`), exibindo a mais antiga. Bug antigo (pré-F075); os mocks E2E
+  (ordem crescente) mascaravam o bug.
+- Correção: novo `src/utils/analyses.ts` (`sortAnalysesDesc`/`latestAnalysis`)
+  aplicado no Perfil e no Dashboard; `interpretTrend`, `rankDiff` e mensagem de
+  progresso corrigidos; `useProfile` dividido em `useProfile.ts` (mutações) +
+  `useProfileState.ts` (estado/load) mantendo <=300 linhas.
+- Suítes verdes: unit 257/257, E2E 39/39 (profile-form + profile-delete +
+  dashboard, Firefox), typecheck, lint 0, prettier. Nenhuma task de backend/ML
+  necessária.
+- Documentado na ADR-0054. Validação manual confirmou o card "Última Análise"
+  exibindo a mais recente e o Dashboard refletindo tendência/progresso corretos.
+- Contagens do board atualizadas (In review 14→13, Done 129→130, Total 146,
+  Frontend 58).
