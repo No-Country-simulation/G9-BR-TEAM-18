@@ -21,15 +21,15 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 
 | Tecnologia | Versão | Função |
 |---|---|---|
-| React | 19 | Biblioteca de UI |
-| TypeScript | ~5.7 | Tipagem estática |
-| Vite | ~6 | Bundler e dev server |
-| React Router | 7 | Roteamento SPA |
-| Recharts | ~2 | Gráficos (Dashboard) |
-| Lucide React | ~0.47 | Ícones |
-| Vitest | ~3 | Test runner (unitários) |
-| Testing Library | ~16 | Testes de componentes |
-| Playwright | ~1.50 | Testes E2E (navegador) |
+| React | 19.2 | Biblioteca de UI |
+| TypeScript | 6.0 | Tipagem estática |
+| Vite | 8.2 | Bundler e dev server |
+| React Router | 8.3 | Roteamento SPA |
+| Recharts | 3.10 | Gráficos (Dashboard) |
+| Lucide React | 1.29 | Ícones |
+| Vitest | 4.1 | Test runner (unitários) |
+| Testing Library | 16.3 | Testes de componentes |
+| Playwright | 1.62 | Testes E2E (navegador) |
 
 ## Estrutura de Diretórios
 
@@ -93,7 +93,7 @@ frontend/src/
 
 ## Roteamento
 
-Definido em `App.tsx` com React Router v7:
+Definido em `App.tsx` com React Router v8:
 
 | Caminho | Página | Acesso |
 |---|---|---|
