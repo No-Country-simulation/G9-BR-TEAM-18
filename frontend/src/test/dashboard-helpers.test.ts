@@ -77,8 +77,8 @@ describe("interpretTrend", () => {
 
   it("retorna down quando o consumo caiu", () => {
     const list = [
-      analysis({ id: "a1", consumption_kwh: 300 }),
-      analysis({ id: "a2", consumption_kwh: 200 }),
+      analysis({ id: "a1", consumption_kwh: 300, created_at: "2026-07-20T10:00:00Z" }),
+      analysis({ id: "a2", consumption_kwh: 200, created_at: "2026-07-25T10:00:00Z" }),
     ];
     expect(interpretTrend(list).trend).toBe("down");
     expect(interpretTrend(list).percentage).toBeCloseTo(33.33, 0);
@@ -86,8 +86,8 @@ describe("interpretTrend", () => {
 
   it("retorna up quando o consumo subiu", () => {
     const list = [
-      analysis({ id: "a1", consumption_kwh: 200 }),
-      analysis({ id: "a2", consumption_kwh: 300 }),
+      analysis({ id: "a1", consumption_kwh: 200, created_at: "2026-07-20T10:00:00Z" }),
+      analysis({ id: "a2", consumption_kwh: 300, created_at: "2026-07-25T10:00:00Z" }),
     ];
     expect(interpretTrend(list).trend).toBe("up");
     expect(interpretTrend(list).percentage).toBeCloseTo(50, 0);
@@ -99,5 +99,27 @@ describe("interpretTrend", () => {
       analysis({ id: "a2", consumption_kwh: 101 }),
     ];
     expect(interpretTrend(list)).toEqual({ trend: "stable", percentage: 0 });
+  });
+
+  it("com dados DESC (contrato real do GET /analyses) compara a mais recente com a anterior", () => {
+    // O backend retorna OrderByCreatedAtDesc: mais recente primeiro.
+    // a2 (25/07, 200 kWh) é mais recente que a1 (20/07, 300 kWh) -> consumo caiu.
+    const list = [
+      analysis({ id: "a2", consumption_kwh: 200, created_at: "2026-07-25T10:00:00Z" }),
+      analysis({ id: "a1", consumption_kwh: 300, created_at: "2026-07-20T10:00:00Z" }),
+    ];
+    expect(interpretTrend(list).trend).toBe("down");
+    expect(interpretTrend(list).percentage).toBeCloseTo(33.33, 0);
+  });
+
+  it("com dados fora de ordem (aleatórios) ordena pela data antes de comparar", () => {
+    const list = [
+      analysis({ id: "a2", consumption_kwh: 300, created_at: "2026-07-22T10:00:00Z" }),
+      analysis({ id: "a3", consumption_kwh: 200, created_at: "2026-07-25T10:00:00Z" }),
+      analysis({ id: "a1", consumption_kwh: 250, created_at: "2026-07-20T10:00:00Z" }),
+    ];
+    // mais recente = a3 (200), anterior = a2 (300) -> caiu 33%
+    expect(interpretTrend(list).trend).toBe("down");
+    expect(interpretTrend(list).percentage).toBeCloseTo(33.33, 0);
   });
 });

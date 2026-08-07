@@ -263,6 +263,8 @@ test.describe("Profile Page", () => {
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
     await expect(page.getByText(pt("Ultima analise"))).toBeVisible();
+    // F076: deve exibir a MAIS RECENTE (a3 - 25/07, R$ 195.00), nao a mais antiga (a1 - R$ 240.00)
+    await expect(page.getByText("R$ 195.00")).toBeVisible();
     await expect(page.getByRole("button", { name: pt("Ver historico completo") })).toBeVisible();
   });
 

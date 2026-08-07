@@ -128,7 +128,12 @@ export const MOCK_ANALYSIS_RESULT = {
   status: "CONCLUIDA",
 };
 
-/* ---------- mock analyses history (F073: source/updated_at/highest_consumption_products) ---------- */
+/* ---------- mock analyses history (F073: source/updated_at/highest_consumption_products) ----------
+ * ATENCAO (F076): o backend real (GET /analyses) retorna em ordem DESC (mais recente
+ * primeiro - findByPropertyIdInOrderByCreatedAtDesc), mas este fixture e mantido em ordem
+ * ASCENDENTE de proposito para tornar os cenarios dos specs deterministicos por indice.
+ * O frontend ordena por created_at antes de exibir, entao a ordem do fixture nao afeta a UI.
+ */
 export const MOCK_ANALYSES = [
   {
     id: "a1",
