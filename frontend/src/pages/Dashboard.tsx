@@ -17,6 +17,7 @@ import {
   CATEGORY_RANK,
   type TimeGranularity,
 } from "./dashboard/helpers";
+import { sortAnalysesDesc } from "../utils/analyses";
 import { StatsCards } from "./dashboard/StatsCards";
 import { GoalCard } from "./dashboard/GoalCard";
 import { PropertySelector } from "./dashboard/PropertySelector";
@@ -56,7 +57,9 @@ export default function Dashboard() {
     ])
       .then(([dash, allAnalyses, cats, prefs, props]) => {
         setData(dash);
-        setAnalyses(allAnalyses);
+        // GET /analyses retorna DESC (mais recente primeiro); normaliza para que
+        // índice 0 seja sempre a análise mais recente (robusto a mudanças de contrato)
+        setAnalyses(sortAnalysesDesc(allAnalyses));
         if (cats.length > 0) setBackendCategories(cats);
         if (prefs.consumption_goal) {
           setGoalKwh(prefs.consumption_goal);
@@ -123,14 +126,14 @@ export default function Dashboard() {
     );
   }
 
-  const lastAnalysis = analyses.length > 0 ? analyses[analyses.length - 1] : null;
+  const lastAnalysis = analyses.length > 0 ? analyses[0] : null;
   const trendInfo = interpretTrend(analyses);
 
-  const recentCategories = analyses.slice(-2).map((a) => a.category);
+  const recentCategories = analyses.slice(0, 2).map((a) => a.category);
   const rankDiff =
     analyses.length >= 2
-      ? (dynamicCategoryRank[recentCategories[1]] ?? 999) -
-        (dynamicCategoryRank[recentCategories[0]] ?? 999)
+      ? (dynamicCategoryRank[recentCategories[0]] ?? 999) -
+        (dynamicCategoryRank[recentCategories[1]] ?? 999)
       : 0;
 
   const currentKwh = lastAnalysis?.consumption_kwh ?? data.averageConsumptionKwh;

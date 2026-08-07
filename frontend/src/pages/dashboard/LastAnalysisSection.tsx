@@ -59,15 +59,15 @@ export function LastAnalysisSection({
       {rankDiff !== 0 && recentCategories.length >= 2 && (
         <div className={`dash-progress-msg ${rankDiff > 0 ? "dash-progress-msg--worse" : ""}`}>
           {rankDiff < 0 ? <TrendingUp size={16} /> : <ArrowDown size={16} />}
-          {rankDiff < 0 ? "Voce evoluiu de " : "Seu consumo piorou de "}
-          <strong>
-            {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY] ??
-              recentCategories[0]}
-          </strong>{" "}
-          para{" "}
+          {rankDiff < 0 ? "Você evoluiu de " : "Seu consumo piorou de "}
           <strong>
             {CATEGORY_DISPLAY[recentCategories[1] as keyof typeof CATEGORY_DISPLAY] ??
               recentCategories[1]}
+          </strong>{" "}
+          para{" "}
+          <strong>
+            {CATEGORY_DISPLAY[recentCategories[0] as keyof typeof CATEGORY_DISPLAY] ??
+              recentCategories[0]}
           </strong>
           !
         </div>

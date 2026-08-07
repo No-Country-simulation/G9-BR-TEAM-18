@@ -1,4 +1,5 @@
 import type { AnalysisHistory } from "../../types";
+import { sortAnalysesDesc } from "../../utils/analyses";
 
 export type TimeGranularity = "month" | "day" | "hour";
 
@@ -91,8 +92,10 @@ export interface TrendInfo {
 export function interpretTrend(analyses: AnalysisHistory[]): TrendInfo {
   const valid = analyses.filter((a) => a.consumption_kwh != null);
   if (valid.length < 2) return { trend: "stable", percentage: 0 };
-  const latest = valid[valid.length - 1];
-  const prev = valid[valid.length - 2];
+  // GET /analyses retorna DESC; ordena para comparar a mais recente com a anterior
+  const sorted = sortAnalysesDesc(valid);
+  const latest = sorted[0];
+  const prev = sorted[1];
   const diff = latest.consumption_kwh - prev.consumption_kwh;
   const pct = prev.consumption_kwh > 0 ? (diff / prev.consumption_kwh) * 100 : 0;
   if (Math.abs(pct) < 3) return { trend: "stable", percentage: 0 };
