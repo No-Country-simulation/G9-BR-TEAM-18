@@ -488,7 +488,7 @@ def contract() -> dict:
 @app.get("/appliance-catalog")
 def appliance_catalog() -> dict:
     """Retorna o catálogo de aparelhos que o modelo reconhece."""
-    df_pph = pd.read_csv(os.path.join(BASE_DIR, "data", "pph-data-complete.csv"))
+    df_pph = pd.read_csv(os.path.join(BASE_DIR, "data", "main-dataset.csv"))
     catalog = []
     APPLIANCE_COLUMNS = {
         "qtd_geladeira":         {"name": "Geladeira",        "ml_category": "REFRIGERATION",  "watts": 150,  "hours": 24},
