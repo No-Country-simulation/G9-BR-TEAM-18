@@ -4,9 +4,11 @@
 
 Aceito
 
-> **Nota (06/08/2026):** Task F075 implementada e validada (issue #161).
-> Suítes verdes: unit 249/249, E2E 88/88 (Firefox), typecheck, lint 0,
-> prettier e build de produção OK.
+> **Nota (06/08/2026):** Task F075 implementada, validada e movida para Done
+> (issue #161 fechada). Suítes verdes: unit 249/249, E2E 88/88 (Firefox),
+> typecheck, lint 0, prettier e build de produção OK. Validação manual
+> concluída (sobreposição do modal e grid da Home corrigidos, sem regressão
+> nas quatro telas principais).
 
 ## Contexto
 

@@ -531,7 +531,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   `dependency-doc.md`) foram alinhadas nesta rodada aos valores reais (commits 70f459e, fa29bd8,
   9f2c8b6, 1e5db59), deixando apenas o `@Schema` do backend pendente (B055).
 
-## Movimentações (06/08/2026) - Rodada 7: F075 refinamentos de layout + regra de 300 linhas (In progress)
+## Movimentações (06/08/2026) - Rodada 7: F075 refinamentos de layout + regra de 300 linhas (Done)
 
 ### Card em In progress
 
@@ -553,4 +553,5 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   produção OK. Nenhum arquivo TS/TSX/CSS acima de 300 linhas.
 - Documentado na ADR-0053 (commits 1822326, 55785f0, c5df1b0, cc74421, 4a27d6f, 4d5be28,
   dbf3a4a, 6bad1be).
-- Contagens do board atualizadas (Total 144→145; F075 em In progress).
+- Contagens do board atualizadas (Total 145; F075 em In progress → Done após validação
+  manual; issue #161 fechada).
