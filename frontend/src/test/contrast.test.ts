@@ -1,33 +1,27 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { CATEGORY_COLORS } from "../types";
 
 /**
  * Testes de contraste WCAG (AA) para os temas claro e escuro.
  *
- * O App.css define as cores como variáveis CSS em `:root` (tema escuro, padrão)
- * e em `[data-theme="light"]` (tema claro). Este teste parseia o arquivo,
- * resolve as variáveis (inclusive var() aninhadas) e valida a razão de
- * contraste entre os pares críticos de texto/fundo usados na UI.
+ * Os estilos vivem em src/styles/*.css (barrel em App.css, regra ≤300 linhas —
+ * F075). As variáveis estão em `:root` (tema escuro) e `[data-theme="light"]`
+ * no base.css. Este teste concatena todos os arquivos, parseia os blocos de
+ * variáveis, resolve var() aninhadas e valida o contraste dos pares críticos.
  *
- * Referência WCAG 2.1:
- *  - Texto normal:     >= 4.5:1 (AA)
- *  - Texto grande (18.66px bold / 24px): >= 3:1 (AA)
- *  - Componentes de UI (bordas, ícones essenciais): >= 3:1 (AA)
- *
- * Pares cobertos (extraídos do uso real no App.css):
- *  - texto base sobre fundos (surface/surface-alt)
- *  - botão primário (ink sobre accent-green vibrante)
- *  - botão danger (--btn-danger-text sobre state-error)
- *  - accents como texto sobre fundo base (links, ícones, destaques)
- *  - mensagens de erro/sucesso sobre seus fundos tintados
- *  - texto sobre accents (--on-accent-text: hover de botões, chips, check)
- *  - texto accent sobre fundo ink (--accent-green-bright: badges, qty)
- *  - badges de categoria (texto ink sobre CATEGORY_COLORS + fallbacks)
+ * Referência WCAG 2.1: texto normal >= 4.5:1 (AA); texto grande/UI >= 3:1 (AA).
  */
 
-const css = readFileSync(join(process.cwd(), "src", "App.css"), "utf-8");
+const stylesDir = join(process.cwd(), "src", "styles");
+const css = [
+  readFileSync(join(process.cwd(), "src", "App.css"), "utf-8"),
+  ...readdirSync(stylesDir)
+    .filter((f) => f.endsWith(".css"))
+    .sort()
+    .map((f) => readFileSync(join(stylesDir, f), "utf-8")),
+].join("\n");
 
 type Vars = Record<string, string>;
 

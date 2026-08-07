@@ -1,0 +1,175 @@
+:root {
+  --bg-base: #0b0e14;
+  --bg-surface: #151a24;
+  --bg-surface-alt: #1e2530;
+  --ink: #0a0a0a;
+  --text-primary: #f4f1e8;
+  --text-secondary: #a9afbc;
+  --accent-green: #c6ff3d;
+  --accent-cyan: #29e7cd;
+  --accent-magenta: #ff4fa3;
+  --accent-mustard: #f2c230;
+  --on-accent-text: var(--ink);
+  --btn-danger-text: var(--ink);
+  --accent-green-bright: var(--accent-green);
+  --state-error: #ff3b3b;
+  --state-error-bg: #3a0d0d;
+  --state-success: #c6ff3d;
+  --state-success-bg: #1a2a00;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-hard-lg: 6px 6px 0 var(--ink);
+  --shadow-hard-sm: 2px 2px 0 var(--ink);
+  --font-display: "Anton", sans-serif;
+  --font-accent: "Bangers", cursive;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Space Mono", monospace;
+  --font-size-h1: clamp(2.5rem, 5vw, 4.5rem);
+  --font-size-h2: clamp(2rem, 4vw, 3rem);
+  --font-size-h3: clamp(1.5rem, 2.5vw, 2rem);
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --max-width: 1120px;
+  --navbar-bg: rgba(11, 14, 20, 0.85);
+  --border-color: var(--ink);
+
+  --primary: var(--accent-green);
+  --primary-dark: var(--accent-green);
+  --primary-light: var(--bg-surface-alt);
+  --primary-lighter: var(--bg-surface);
+  --accent: var(--accent-mustard);
+  --accent-light: var(--bg-surface-alt);
+  --bg: var(--bg-base);
+  --surface: var(--bg-surface);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --text-light: var(--text-secondary);
+  --border: var(--ink);
+  --error: var(--state-error);
+  --error-bg: var(--state-error-bg);
+  --success: var(--state-success);
+  --success-bg: var(--state-success-bg);
+  --font: var(--font-body);
+}
+
+[data-theme="light"] {
+  --bg-base: #f4f1e8;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #e8e4d8;
+  --ink: #1a1a1a;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4440;
+  --accent-green: #3f7a0a;
+  --accent-cyan: #0f766e;
+  --accent-magenta: #a61e5c;
+  --accent-mustard: #7c5e0e;
+  --state-error: #b3261e;
+  --state-error-bg: #fde8e8;
+  --state-success: #3f7a0a;
+  --state-success-bg: #e8f5d8;
+  --on-accent-text: #fff;
+  --btn-danger-text: #fff;
+  --accent-green-bright: #5aa00f;
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-hard-lg: 6px 6px 0 var(--ink);
+  --shadow-hard-sm: 2px 2px 0 var(--ink);
+  --navbar-bg: rgba(244, 241, 232, 0.85);
+
+  --primary: var(--accent-green);
+  --primary-dark: var(--accent-green);
+  --primary-light: var(--bg-surface-alt);
+  --primary-lighter: var(--bg-surface);
+  --accent: var(--accent-mustard);
+  --accent-light: var(--bg-surface-alt);
+  --bg: var(--bg-base);
+  --surface: var(--bg-surface);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --text-light: var(--text-secondary);
+  --border: var(--ink);
+  --error: var(--state-error);
+  --error-bg: var(--state-error-bg);
+  --success: var(--state-success);
+  --success-bg: var(--state-success-bg);
+  --font: var(--font-body);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 0.4s,
+    color 0.4s;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+}
+
+.section-divider {
+  height: 24px;
+  position: relative;
+  background: var(--bg-base);
+  clip-path: polygon(0 60%, 100% 0, 100% 100%, 0 100%);
+  margin-top: -12px;
+  z-index: 2;
+}
+
+.section-divider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 / 16px
+    16px;
+  opacity: 0.08;
+}
+
+.section-divider--flip {
+  clip-path: polygon(0 0, 100% 40%, 100% 100%, 0 100%);
+  background: var(--bg-surface);
+}
+
+.halftone-bg {
+  position: relative;
+}
+
+.halftone-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--ink) 1px, transparent 1px);
+  background-size: 12px 12px;
+  opacity: 0.04;
+  pointer-events: none;
+}
