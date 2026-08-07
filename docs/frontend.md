@@ -36,7 +36,8 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 ```text
 frontend/src/
 ├── components/        # Componentes reutilizáveis
-│   ├── AnalysisForm.tsx    # Formulário principal de análise
+│   ├── AnalysisSourceBadge.tsx  # Badge de fonte da análise (ML/Fallback)
+│   ├── LucideIcon.tsx    # Ícone com registry estático
 │   ├── Navbar.tsx          # Barra de navegação superior
 │   ├── Footer.tsx          # Rodapé
 │   ├── Hero.tsx            # Seção hero da landing page
@@ -195,22 +196,29 @@ Funções exportadas:
 | `createProperty()` | `POST /properties` | Criar imóvel |
 | `listProperties()` | `GET /properties` | Listar imóveis |
 | `updateProperty()` | `PUT /properties/{id}` | Atualizar imóvel |
-| `addApplianceToProperty()` | `POST /properties/{id}/appliances` | Adicionar aparelho |
-| `batchUpdateAppliances()` | `PUT /properties/{id}/appliances/batch` | Atualizar lote de aparelhos |
+| `deleteProperty()` | `DELETE /properties/{id}` | Excluir imóvel |
 | `listPropertyAppliances()` | `GET /properties/{id}/appliances` | Listar aparelhos do imóvel |
+| `batchUpdateAppliances()` | `PUT /properties/{id}/appliances/batch` | Atualizar lote de aparelhos |
 | `listAppliances()` | `GET /appliances` | Catálogo de aparelhos |
 | `analyzeEnergy()` | `POST /energy-analysis` | Executar análise |
+| `simulateEnergy()` | `POST /energy-analysis/simulate` | Simular análise (sem persistir) |
 | `listAnalyses()` | `GET /analyses` | Histórico de análises |
+| `fetchAnalysisById()` | `GET /analyses/{id}` | Buscar análise por ID |
+| `deleteAnalysis()` | `DELETE /analyses/{id}` | Excluir análise |
 | `fetchDashboard()` | `GET /dashboard` | Dados do dashboard |
+| `fetchPreferences()` | `GET /auth/me` | Preferências (regularidade, pico) |
+| `updatePreferences()` | `PUT /auth/preferences` | Atualizar preferências |
+| `fetchCategories()` | `GET /energy-analysis/categories` | Categorias válidas |
+| `fetchContractInfo()` | `GET /contract-info` | Tipos de imóvel e categorias (schema discovery) |
 
 ## Tipos e Constantes
 
 Centralizados em `types/index.ts`:
 
 - **Interfaces de domínio**: `User`, `AnalysisRequest`, `AnalysisResponse`, `AnalysisHistory`, `DashboardData`
-- **Tipos de dados**: `PropertyType` (`RESIDENCIAL` | `COMERCIAL`), `Regularity`, `HighestConsumptionCategory`
+- **Tipos de dados**: `PropertyType` (`RESIDENCIAL` | `APARTAMENTO` | `COMERCIAL`), `Regularity`, `HighestConsumptionCategory`
 - **Tipos de aparelho**: `ApplianceType`, `ApplianceItem`, `PropertyAppliance`
-- **Constantes de UI**: `CATEGORY_COLORS`, `CATEGORY_DISPLAY`, `PROPERTY_TYPES`, `REGULARITY_OPTIONS`
+- **Constantes de UI**: `CATEGORY_COLORS`, `CATEGORY_DISPLAY`, `DEFAULT_PROPERTY_TYPES`, `REGULARITY_OPTIONS`
 - **Classe de erro**: `ApiError` com suporte a `fields` para erros de validação
 
 ## Tema

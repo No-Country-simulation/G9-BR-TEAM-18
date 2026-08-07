@@ -78,13 +78,13 @@ Os modelos de domínio estão no pacote `core/domain/model/` e representam os co
 
 | Modelo | Função |
 |---|---|
-| `Property` | Imóvel do usuário: alias, tipo (residencial/comercial), endereço, número de moradores, área em m² |
+| `Property` | Imóvel do usuário: alias, tipo (residencial/apartamento/comercial), endereço, número de moradores, área em m² |
 | `PropertyAppliance` | Relacionamento N:N entre imóvel e aparelho, com quantidade |
 | `Appliance` | Catálogo de aparelhos com potência média (W) e horas de uso diário |
 | `EnergyAnalysis` | Resultado de uma análise energética: consumo, categoria, probabilidade, recomendações, origem (source), custo estimado |
 | `ApplianceType` | Enum de tipos de aparelho (LAMPS, REFRIGERATOR, FAN, AIR_CONDITIONER, etc.) com vínculo à `EquipmentCategory` |
 | `EquipmentCategory` | Enum de categorias de equipamento (LIGHTING, REFRIGERATION, CLIMATE_CONTROL, APPLIANCES, TECHNOLOGY) |
-| `PropertyType` | Enum de tipos de imóvel válidos (RESIDENCIAL, COMERCIAL) |
+| `PropertyType` | Enum de tipos de imóvel válidos (RESIDENCIAL, APARTAMENTO, COMERCIAL) |
 | `MlResult` | Objeto de valor que encapsula o resultado do ML Service (category, probability, recommendations, source) |
 | `EfficiencyCategory` | Value object que valida categorias de eficiência (EXCELENTE, BOM, MEDIANO, RUIM, CRITICO) |
 
