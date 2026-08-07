@@ -29,13 +29,13 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 128 | | Frontend (F) | 57 |
-| In review | 12 | | Backend (B) | 45 |
+| Done | 129 | | Frontend (F) | 58 |
+| In review | 14 | | Backend (B) | 45 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
-| Backlog | 2 | | Banco de Dados (M) | 9 |
-| **Total** | **144** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **144** |
+| Backlog | 1 | | Banco de Dados (M) | 9 |
+| **Total** | **146** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **146** |
 
 ## Movimentações (24/07/2026)
 
@@ -555,3 +555,29 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   dbf3a4a, 6bad1be).
 - Contagens do board atualizadas (Total 145; F075 em In progress → Done após validação
   manual; issue #161 fechada).
+
+## Movimentações (06/08/2026) - Rodada 8: F076 última análise (ordem DESC do GET /analyses)
+
+### Novo card → In review
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| F076 | Frontend - Corrigir "Última Análise" exibida (GET /analyses retorna DESC mas o frontend assumia ASC) | #162 | cd54d2f, cffd36f, 986b7bf, e3c9580 | ADR-0054 |
+
+### Notas
+
+- Reporte do usuário (06/08): o card "Última Análise" do Perfil mostrava a análise
+  mais antiga e nunca atualizava.
+- Causa raiz 100% frontend: o backend `GET /analyses` retorna DESC
+  (`findByPropertyIdInOrderByCreatedAtDesc`), mas o frontend assumia ASC
+  (`all[length - 1]`), exibindo a mais antiga. Bug antigo (pré-F075); os mocks E2E
+  (ordem crescente) mascaravam o bug.
+- Correção: novo `src/utils/analyses.ts` (`sortAnalysesDesc`/`latestAnalysis`)
+  aplicado no Perfil e no Dashboard; `interpretTrend`, `rankDiff` e mensagem de
+  progresso corrigidos; `useProfile` dividido em `useProfile.ts` (mutações) +
+  `useProfileState.ts` (estado/load) mantendo <=300 linhas.
+- Suítes verdes: unit 257/257, E2E 39/39 (profile-form + profile-delete +
+  dashboard, Firefox), typecheck, lint 0, prettier. Nenhuma task de backend/ML
+  necessária.
+- Documentado na ADR-0054. Contagens do board atualizadas (In review 13→14,
+  Total 145→146, Frontend 57→58).
