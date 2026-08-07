@@ -30,12 +30,12 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
 | Done | 128 | | Frontend (F) | 57 |
-| In review | 12 | | Backend (B) | 44 |
+| In review | 12 | | Backend (B) | 45 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
-| Backlog | 1 | | Banco de Dados (M) | 9 |
-| **Total** | **143** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **143** |
+| Backlog | 2 | | Banco de Dados (M) | 9 |
+| **Total** | **144** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **144** |
 
 ## Movimentações (24/07/2026)
 
@@ -508,3 +508,25 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   contrato documentado; quem estava fora do contrato era o frontend.
 - Contagens do board atualizadas (Done 128, In review 12, Total 143, Frontend 57);
   In review 12 reflete também movimentações da equipe desde a rodada anterior.
+
+## Movimentações (06/08/2026) - Rodada 6: B055 card de documentação Swagger (Backlog)
+
+### Novo card em Backlog
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| B055 | Backend - Corrigir @Schema do AnalysisResponseDTO (source do contrato real + status SIMULADO) | #160 | Atualizar os `allowableValues`/`example` do `@Schema` no `AnalysisResponseDTO`: `source` de `{"ML", "FALLBACK"}` para `{model, model+groq, rule-based}` (contrato ADR-0045) e adicionar `SIMULADO` ao `status` |
+
+### Notas
+
+- Criado após a auditoria de literais do frontend (06/08): o F074 provou que o valor real de
+  `source` é `model`/`rule-based` (nunca `"ML"`), mas o `@Schema` do backend ainda documenta
+  `{"ML", "FALLBACK"}`; e o `status` não lista `SIMULADO`, embora o `/energy-analysis/simulate`
+  o retorne (`EnergyAnalysisService.java` linha 135).
+- Correção é documental (apenas anotações `@Schema`), sem mudança de comportamento em runtime.
+  Referências no card: ADR-0045, ADR-0047 seção 9, `docs/contrato-api.md` linhas 95-116/109,
+  `ml-service/main.py`.
+- Contagens do board atualizadas (Backlog 1→2, Total 143→144, Backend 44→45).
+- As docs de contrato (`contrato-api.md`, `ml-service.md`, `arquitetura.md`, `frontend.md`,
+  `dependency-doc.md`) foram alinhadas nesta rodada aos valores reais (commits 70f459e, fa29bd8,
+  9f2c8b6, 1e5db59), deixando apenas o `@Schema` do backend pendente (B055).
