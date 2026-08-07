@@ -530,3 +530,27 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - As docs de contrato (`contrato-api.md`, `ml-service.md`, `arquitetura.md`, `frontend.md`,
   `dependency-doc.md`) foram alinhadas nesta rodada aos valores reais (commits 70f459e, fa29bd8,
   9f2c8b6, 1e5db59), deixando apenas o `@Schema` do backend pendente (B055).
+
+## Movimentações (06/08/2026) - Rodada 7: F075 refinamentos de layout + regra de 300 linhas (In progress)
+
+### Card em In progress
+
+| ID | Título | Issue | Escopo |
+|---|---|---|---|
+| F075 | Frontend - Refinamentos de layout + regra de no máximo 300 linhas por arquivo | #161 | Corrigir sobreposição do botão fechar no modal do histórico; corrigir espaço vazio nos cards da Home; quebrar todos os arquivos TS/TSX/CSS acima de 300 linhas em módulos temáticos |
+
+### Notas
+
+- **Fixes de layout**: `.hist-modal-header` com `padding-right: 3.5rem` (data não invade a zona
+  do botão X); removido o full-width global do `:first-child` e adicionado
+  `.features-grid--three` para o `FeatureCards` (3 cards na mesma linha).
+- **Regra de ≤300 linhas aplicada em todo o frontend**: `App.css` (3.828) dividido em 22
+  arquivos em `src/styles/` com barrel de `@import`; `ProfilePage` (898), `Dashboard` (663) e
+  `History` (612) quebrados em subcomponentes/hooks; `api.ts` (430) em módulos por domínio;
+  testes (api.test 509, appliance-icons.test 575, mocks 349) e specs E2E (profile 403,
+  history 311) divididos; novos testes unitários para `dashboard-helpers` e `appliance-calc`.
+- Suítes verdes: unit 249/249, E2E 88/88 (Firefox), typecheck, lint 0, prettier e build de
+  produção OK. Nenhum arquivo TS/TSX/CSS acima de 300 linhas.
+- Documentado na ADR-0053 (commits 1822326, 55785f0, c5df1b0, cc74421, 4a27d6f, 4d5be28,
+  dbf3a4a, 6bad1be).
+- Contagens do board atualizadas (Total 144→145; F075 em In progress).
