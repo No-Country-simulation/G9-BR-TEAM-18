@@ -29,8 +29,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
-| Done | 129 | | Frontend (F) | 58 |
-| In review | 14 | | Backend (B) | 45 |
+| Done | 130 | | Frontend (F) | 58 |
+| In review | 13 | | Backend (B) | 45 |
 | In progress | 2 | | Infraestrutura (I) | 20 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
 | Backlog | 1 | | Banco de Dados (M) | 9 |
@@ -558,7 +558,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 ## Movimentações (06/08/2026) - Rodada 8: F076 última análise (ordem DESC do GET /analyses)
 
-### Novo card → In review
+### Novo card → Done
 
 | ID | Título | Issue | Commits associados | ADR |
 |---|---|---|---|---|
@@ -566,6 +566,8 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 
 ### Notas
 
+- Card criado em In review (06/08) e movido para Done após validação manual;
+  issue #162 fechada.
 - Reporte do usuário (06/08): o card "Última Análise" do Perfil mostrava a análise
   mais antiga e nunca atualizava.
 - Causa raiz 100% frontend: o backend `GET /analyses` retorna DESC
@@ -579,5 +581,7 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 - Suítes verdes: unit 257/257, E2E 39/39 (profile-form + profile-delete +
   dashboard, Firefox), typecheck, lint 0, prettier. Nenhuma task de backend/ML
   necessária.
-- Documentado na ADR-0054. Contagens do board atualizadas (In review 13→14,
-  Total 145→146, Frontend 57→58).
+- Documentado na ADR-0054. Validação manual confirmou o card "Última Análise"
+  exibindo a mais recente e o Dashboard refletindo tendência/progresso corretos.
+- Contagens do board atualizadas (In review 14→13, Done 129→130, Total 146,
+  Frontend 58).

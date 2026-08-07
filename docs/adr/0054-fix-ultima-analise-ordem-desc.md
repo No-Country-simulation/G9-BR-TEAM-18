@@ -4,10 +4,12 @@
 
 Aceito
 
-> **Nota (06/08/2026):** Task F076 implementada, validada e movida para In
-> review (issue #162). Suítes verdes: unit 257/257, E2E 39/39
+> **Nota (06/08/2026):** Task F076 implementada, validada e movida para Done
+> (issue #162 fechada). Suítes verdes: unit 257/257, E2E 39/39
 > (profile-form + profile-delete + dashboard, Firefox), typecheck, lint 0 e
-> prettier. Nenhuma mudança de contrato no backend foi necessária.
+> prettier. Validação manual concluída: o card "Última Análise" do Perfil
+> exibe a análise mais recente e o Dashboard reflete a tendência/progresso
+> corretos. Nenhuma mudança de contrato no backend foi necessária.
 
 ## Contexto
 
