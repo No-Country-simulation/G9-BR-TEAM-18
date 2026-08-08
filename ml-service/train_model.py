@@ -29,7 +29,7 @@ from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 
-from features import HIGHEST_CONSUMPTION_CATEGORIES, feature_engineering, normalize_category
+from features import APPLIANCE_COLUMNS, REDUNDANT_APPLIANCE_COLUMNS, HIGHEST_CONSUMPTION_CATEGORIES, feature_engineering, normalize_category
 
 warnings.filterwarnings("ignore")
 
@@ -103,20 +103,7 @@ TOTAL_NUMERIC_COLUMNS = BASE_NUMERIC_COLUMNS + BOOLEAN_COLUMNS + ENGINEERED_COLU
 
 FEATURE_COLUMNS = BASE_NUMERIC_COLUMNS + CATEGORICAL_COLUMNS + BOOLEAN_COLUMNS
 
-# Columns in PPH CSV used for feature extraction
-PPH_APPLIANCE_QTY_COLUMNS = [
-    "qtd_geladeira",
-    "qtd_ar_condicionado",
-    "qtd_ventilador",
-    "qtd_lampadas",
-    "qtd_microondas",
-    "qtd_air_fryer",
-    "qtd_lavar_secar",
-    "qtd_computadores",
-    "qtd_videogame",
-    "qtd_tv",
-    "qtd_chuveiro_eletrico",
-]
+PPH_APPLIANCE_QTY_COLUMNS = list(APPLIANCE_COLUMNS.keys())
 
 def _assign_region_property(region: str, counter: int) -> str:
     """Assign property type based on region with proportional distribution."""
@@ -237,16 +224,24 @@ def load_pph_data(path: str) -> pd.DataFrame:
 
     main-dataset.csv already contains categoria_maior_consumo and
     produtos_maior_consumo, merged and validated (row alignment by
-    ENTREVISTA + REGIAO + UF + MUNICIPIO) in M003_merge_datasets.ipynb.
-    No positional join or fallback is needed here anymore.
+    ENTREVISTA + REGIAO + UF + MUNICIPIO) in M003_merge_datasets.ipynb,
+    and appliance columns from consumo-energetico-completo.csv, merged
+    and validated the same way in M004_merge_appliance_data.ipynb.
 
     Features derived from PPH columns:
       - consumption_kwh: consumo_real_medio_kwh_mes
-      - equipment_quantity: sum of qtd_* appliance columns
+      - equipment_quantity: sum of qtd_* appliance columns (APPLIANCE_COLUMNS,
+        shared with appliance_catalog() in main.py). Columns listed in
+        REDUNDANT_APPLIANCE_COLUMNS (same appliance extracted by two
+        different surveys, e.g. qtd_computador_desktop vs qtd_computadores)
+        are merged into their canonical column via max() before summing,
+        so the same physical appliance isn't counted twice.
       - property_type: inferred from REGIAO with proportional distribution
       - high_consumption_hours: estimated from consumption per equipment
       - peak_hour_usage: inferred from multiple habit columns
-      - consumption distribution: from kwh_categoria_* columns
+      - consumption distribution: from kwh_categoria_* columns (unrelated
+        to individual appliance columns above -- legacy 5-category split,
+        see ADR-0025 on daily_consumption_distribution)
 
     Rows without a categoria_maior_consumo value (missing/non-string)
     fall back to "Outros" via normalize_category().
@@ -267,6 +262,12 @@ def load_pph_data(path: str) -> pd.DataFrame:
         ),
         axis=1,
     )
+
+    # Merge redundant appliance columns (same appliance, two survey sources)
+    # into their canonical column via max(), before computing equipment_quantity.
+    for redundant_col, canonical_col in REDUNDANT_APPLIANCE_COLUMNS.items():
+        if redundant_col in df.columns and canonical_col in df.columns:
+            df[canonical_col] = df[[canonical_col, redundant_col]].fillna(0).max(axis=1)
 
     # Calculate total equipment quantity from all appliance columns
     qty_cols = [c for c in PPH_APPLIANCE_QTY_COLUMNS if c in df.columns]
@@ -315,7 +316,6 @@ def load_pph_data(path: str) -> pd.DataFrame:
     result = df[result_columns].copy()
     result["peak_hour_usage"] = result["peak_hour_usage"].astype(int)
     return result
-
 
 def load_feedback(path: str) -> pd.DataFrame:
     if not os.path.exists(path):
