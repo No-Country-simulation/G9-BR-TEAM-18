@@ -35,10 +35,6 @@ public enum EquipmentCategory {
         }
     }
 
-    public static String toPortugueseFromEnglish(String englishValue) {
-        return fromEnglish(englishValue).map(EquipmentCategory::toPortuguese).orElse("Outros");
-    }
-
     private static final Map<String, EquipmentCategory> LOOKUP = new HashMap<>();
 
     static {

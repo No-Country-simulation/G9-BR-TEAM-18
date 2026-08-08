@@ -6,9 +6,7 @@ import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ApplianceAggregationService {
 
     public AggregationResult aggregate(List<PropertyAppliance> appliances) {

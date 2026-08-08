@@ -1,6 +1,8 @@
 package br.com.group18.energiai.application.services;
 
+import br.com.group18.energiai.application.dto.EnergySimulationResult;
 import br.com.group18.energiai.application.exception.InvalidRequestException;
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.core.domain.model.ApplianceSnapshot;
 import br.com.group18.energiai.core.domain.model.EnergyAnalysis;
 import br.com.group18.energiai.core.domain.model.MlResult;
@@ -8,36 +10,33 @@ import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.core.ports.in.GenerateAnalysisUseCase;
 import br.com.group18.energiai.core.ports.out.AnalysisRepositoryPort;
-import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AnalysisResponseDTO;
-import br.com.group18.energiai.infrastructure.client.AnalysisMapper;
-import br.com.group18.energiai.infrastructure.client.MlEnvelope;
-import br.com.group18.energiai.infrastructure.client.MlServiceClient;
-import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
+import br.com.group18.energiai.core.ports.out.EnergyPredictionPort;
+import br.com.group18.energiai.core.ports.out.PredictionInput;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Map;
-import org.springframework.stereotype.Service;
 
-@Service
 public class EnergyAnalysisService implements GenerateAnalysisUseCase {
 
-    private static final BigDecimal KWH_TARIFF = new BigDecimal(System.getenv().getOrDefault("KWH_TARIFF", "0.75"));
+    private static final String COMPLETED_STATUS = "CONCLUIDA";
+    private static final String FAILED_STATUS = "FALHA";
+    private static final String SERVICE_UNAVAILABLE_MESSAGE =
+            "Serviço de análise temporariamente indisponível. Tente novamente em instantes.";
 
-    private final AnalysisRepositoryPort repository;
-    private final MlServiceClient mlServiceClient;
+    private final AnalysisRepositoryPort analysisRepository;
+    private final EnergyPredictionPort predictionPort;
     private final ApplianceAggregationService aggregationService;
-    private final AnalysisMapper analysisMapper;
+    private final BigDecimal kwhTariff;
 
     public EnergyAnalysisService(
-            AnalysisRepositoryPort repository,
-            MlServiceClient mlServiceClient,
+            AnalysisRepositoryPort analysisRepository,
+            EnergyPredictionPort predictionPort,
             ApplianceAggregationService aggregationService,
-            AnalysisMapper analysisMapper) {
-        this.repository = repository;
-        this.mlServiceClient = mlServiceClient;
+            BigDecimal kwhTariff) {
+        this.analysisRepository = analysisRepository;
+        this.predictionPort = predictionPort;
         this.aggregationService = aggregationService;
-        this.analysisMapper = analysisMapper;
+        this.kwhTariff = kwhTariff;
     }
 
     @Override
@@ -57,36 +56,30 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
         analysis.setPropertyType(property.getPropertyType());
         analysis.setAppliancesSnapshot(toSnapshots(appliances));
 
-        analysis = repository.save(analysis);
+        analysis = analysisRepository.save(analysis);
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
         try {
-            MlEnvelope request = buildMlRequest(analysis, property, aggregation, highestConsumptionCategory);
-            MlEnvelope response = mlServiceClient.predict(request);
-
-            if (response == null) {
-                throw new MlServiceUnavailableException(
-                        "Serviço de análise temporariamente indisponível. Tente novamente em instantes.");
-            }
-
-            MlResult mlResult = analysisMapper.toMlResult(response);
+            MlResult mlResult = predictionPort.predict(
+                    toPredictionInput(analysis, property, aggregation, highestConsumptionCategory));
+            requireSuccessfulPrediction(mlResult);
 
             analysis.setCategory(mlResult.category());
             analysis.setProbability(BigDecimal.valueOf(mlResult.probability()).setScale(2, RoundingMode.HALF_UP));
             analysis.setRecommendations(mlResult.recommendations());
             analysis.setSource(mlResult.source());
             analysis.setEstimatedMonthlyCost(
-                    analysis.getConsumptionKwh().multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP));
-            analysis.setStatus("CONCLUIDA");
-            return repository.save(analysis);
+                    analysis.getConsumptionKwh().multiply(kwhTariff).setScale(2, RoundingMode.HALF_UP));
+            analysis.setStatus(COMPLETED_STATUS);
+            return analysisRepository.save(analysis);
         } catch (RuntimeException exception) {
-            analysis.setStatus("FALHA");
-            repository.save(analysis);
+            analysis.setStatus(FAILED_STATUS);
+            analysisRepository.save(analysis);
             throw exception;
         }
     }
 
-    public AnalysisResponseDTO simulate(
+    public EnergySimulationResult simulate(
             Property property,
             List<PropertyAppliance> appliances,
             BigDecimal consumptionKwh,
@@ -95,72 +88,56 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             String highestConsumptionCategory) {
         ApplianceAggregationService.AggregationResult aggregation = aggregationService.aggregate(appliances);
 
-        MlEnvelope request = buildMlRequest(
+        MlResult mlResult = predictionPort.predictSimulated(toPredictionInput(
                 consumptionKwh.doubleValue(),
                 Boolean.TRUE.equals(peakHourUsage),
                 aggregation.totalEquipment(),
                 property.getPropertyType(),
                 highConsumptionHours.doubleValue(),
                 aggregation,
-                highestConsumptionCategory);
-        MlEnvelope response = mlServiceClient.predictSimulate(request);
+                highestConsumptionCategory));
+        requireSuccessfulPrediction(mlResult);
 
-        if (response == null) {
-            throw new MlServiceUnavailableException(
-                    "Serviço de análise temporariamente indisponível. Tente novamente em instantes.");
-        }
-
-        MlResult mlResult = analysisMapper.toMlResult(response);
-        BigDecimal estimatedCost = consumptionKwh.multiply(KWH_TARIFF).setScale(2, RoundingMode.HALF_UP);
-
-        List<AnalysisResponseDTO.ApplianceSnapshotDTO> snapshots = toSnapshots(appliances).stream()
-                .map(snap -> new AnalysisResponseDTO.ApplianceSnapshotDTO(
-                        snap.getApplianceName(),
-                        snap.getApplianceCategory(),
-                        snap.getQuantity(),
-                        snap.getAveragePowerWatts(),
-                        snap.getAverageDailyUseHours(),
-                        snap.getMonthlyConsumptionKwh()))
-                .toList();
-
-        return new AnalysisResponseDTO(
-                null,
+        return new EnergySimulationResult(
                 property.getId(),
                 scale(consumptionKwh),
                 peakHourUsage,
                 scale(highConsumptionHours),
-                estimatedCost,
+                consumptionKwh.multiply(kwhTariff).setScale(2, RoundingMode.HALF_UP),
                 mlResult.category(),
                 BigDecimal.valueOf(mlResult.probability()).setScale(2, RoundingMode.HALF_UP),
-                "SIMULADO",
                 mlResult.source(),
                 mlResult.recommendations(),
                 aggregation.highestConsumptionProducts(),
-                null,
-                null,
-                snapshots);
+                toSnapshots(appliances));
+    }
+
+    private void requireSuccessfulPrediction(MlResult mlResult) {
+        if (mlResult == null) {
+            throw new MlServiceUnavailableException(SERVICE_UNAVAILABLE_MESSAGE);
+        }
     }
 
     private List<ApplianceSnapshot> toSnapshots(List<PropertyAppliance> appliances) {
         return appliances.stream()
-                .map(pa -> new ApplianceSnapshot(
-                        pa.getAppliance().getName(),
-                        pa.getAppliance().getApplianceCategory(),
-                        pa.getQuantity(),
-                        pa.getAppliance().getAveragePowerWatts(),
-                        pa.getAppliance().getAverageDailyUseHours(),
-                        pa.getMonthlyConsumptionKwh()))
+                .map(propertyAppliance -> new ApplianceSnapshot(
+                        propertyAppliance.getAppliance().getName(),
+                        propertyAppliance.getAppliance().getApplianceCategory(),
+                        propertyAppliance.getQuantity(),
+                        propertyAppliance.getAppliance().getAveragePowerWatts(),
+                        propertyAppliance.getAppliance().getAverageDailyUseHours(),
+                        propertyAppliance.getMonthlyConsumptionKwh()))
                 .toList();
     }
 
-    private MlEnvelope buildMlRequest(
+    private PredictionInput toPredictionInput(
             EnergyAnalysis analysis,
             Property property,
             ApplianceAggregationService.AggregationResult aggregation,
             String highestConsumptionCategory) {
-        return buildMlRequest(
+        return toPredictionInput(
                 analysis.getConsumptionKwh().doubleValue(),
-                analysis.getPeakHourUsage(),
+                Boolean.TRUE.equals(analysis.getPeakHourUsage()),
                 aggregation.totalEquipment(),
                 property.getPropertyType(),
                 analysis.getHighConsumptionHours().doubleValue(),
@@ -168,7 +145,7 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
                 highestConsumptionCategory);
     }
 
-    private MlEnvelope buildMlRequest(
+    private PredictionInput toPredictionInput(
             double consumptionKwh,
             boolean peakHourUsage,
             int equipmentQuantity,
@@ -176,34 +153,19 @@ public class EnergyAnalysisService implements GenerateAnalysisUseCase {
             double highConsumptionHours,
             ApplianceAggregationService.AggregationResult aggregation,
             String highestConsumptionCategory) {
-        Map<String, Object> dist = Map.of(
-                "REFRIGERATION_WATTS", aggregation.refrigerationWatts(),
-                "HEATING_WATTS", aggregation.heatingWatts(),
-                "AIR_CONDITIONING_WATTS", aggregation.airConditioningWatts(),
-                "LIGHTING_WATTS", aggregation.lightingWatts());
-
-        List<String> topProducts = aggregation.highestConsumptionProducts();
-
-        java.util.HashMap<String, Object> body = new java.util.HashMap<>();
-        body.put("consumption_kwh", consumptionKwh);
-        body.put("peak_hour_usage", peakHourUsage);
-        body.put("equipment_quantity", equipmentQuantity);
-
-        // Substituído: Passando o propertyType original direto para o Payload em vez da versão traduzida
-        body.put("property_type", propertyType);
-
-        body.put("high_consumption_hours", highConsumptionHours);
-        body.put("daily_consumption_distribution", dist);
-
-        if (highestConsumptionCategory != null && !highestConsumptionCategory.isBlank()) {
-            body.put("highest_consumption_category", highestConsumptionCategory);
-        }
-
-        if (topProducts != null && !topProducts.isEmpty()) {
-            body.put("highest_consumption_products", topProducts);
-        }
-
-        return new MlEnvelope(body);
+        return new PredictionInput(
+                consumptionKwh,
+                peakHourUsage,
+                equipmentQuantity,
+                propertyType,
+                highConsumptionHours,
+                new PredictionInput.PowerDistribution(
+                        aggregation.refrigerationWatts(),
+                        aggregation.heatingWatts(),
+                        aggregation.airConditioningWatts(),
+                        aggregation.lightingWatts()),
+                highestConsumptionCategory,
+                aggregation.highestConsumptionProducts());
     }
 
     private BigDecimal scale(BigDecimal value) {

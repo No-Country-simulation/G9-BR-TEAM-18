@@ -1,11 +1,11 @@
 package br.com.group18.energiai.application.services;
 
 import br.com.group18.energiai.core.domain.model.Appliance;
+import br.com.group18.energiai.core.domain.model.ApplianceCatalogItem;
 import br.com.group18.energiai.core.domain.model.EquipmentCategory;
 import br.com.group18.energiai.core.domain.util.ApplianceNameNormalizer;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
-import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
-import br.com.group18.energiai.infrastructure.client.dto.MlApplianceDTO;
+import br.com.group18.energiai.core.ports.out.MlContractPort;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -13,78 +13,82 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ApplianceCatalogSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(ApplianceCatalogSyncService.class);
 
-    private final MlSchemaRegistry mlSchemaRegistry;
+    private final MlContractPort mlContract;
     private final ApplianceRepositoryPort applianceRepository;
 
-    public ApplianceCatalogSyncService(MlSchemaRegistry mlSchemaRegistry, ApplianceRepositoryPort applianceRepository) {
-        this.mlSchemaRegistry = mlSchemaRegistry;
+    public ApplianceCatalogSyncService(MlContractPort mlContract, ApplianceRepositoryPort applianceRepository) {
+        this.mlContract = mlContract;
         this.applianceRepository = applianceRepository;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void syncCatalogOnStartup() {
+    public void syncCatalog() {
         log.info("Iniciando sincronização do catálogo de aparelhos do ML com o banco de dados...");
 
-        List<MlApplianceDTO> catalog = mlSchemaRegistry.getApplianceCatalog();
+        List<ApplianceCatalogItem> catalog = mlContract.applianceCatalog();
         if (catalog == null || catalog.isEmpty()) {
             log.warn("Catálogo do ML Service está vazio. Sincronização ignorada.");
             return;
         }
 
-        List<Appliance> existingAppliances = applianceRepository.findAll();
+        Map<String, Appliance> existingAppliancesByName = indexByName(applianceRepository.findAll());
 
-        Map<String, Appliance> dbApplianceMap = new HashMap<>();
-        for (Appliance app : existingAppliances) {
-            dbApplianceMap.put(ApplianceNameNormalizer.normalize(app.getName()), app);
-        }
+        for (ApplianceCatalogItem mlAppliance : catalog) {
+            Appliance existing = existingAppliancesByName.get(ApplianceNameNormalizer.normalize(mlAppliance.name()));
+            Optional<EquipmentCategory> category = EquipmentCategory.fromEnglish(mlAppliance.category());
 
-        for (MlApplianceDTO mlApp : catalog) {
-            String normalizedMlName = ApplianceNameNormalizer.normalize(mlApp.name());
-            Appliance appliance = dbApplianceMap.get(normalizedMlName);
-
-            Optional<EquipmentCategory> category = EquipmentCategory.fromEnglish(mlApp.mlCategory());
-
-            if (appliance != null) {
-                if (category.isPresent()) {
-                    appliance.setApplianceCategory(category.get().toPortuguese());
-                } else {
-                    log.warn(
-                            "mlCategory '{}' desconhecida para o aparelho existente '{}'. Mantendo categoria"
-                                    + " anterior '{}' para não violar chk_appliance_category.",
-                            mlApp.mlCategory(),
-                            mlApp.name(),
-                            appliance.getApplianceCategory());
-                }
-                appliance.setAveragePowerWatts(BigDecimal.valueOf(mlApp.watts()));
-                appliance.setAverageDailyUseHours(BigDecimal.valueOf(mlApp.hours()));
-                applianceRepository.save(appliance);
+            if (existing != null) {
+                updateExistingAppliance(existing, mlAppliance, category);
             } else if (category.isPresent()) {
-                Appliance newAppliance = new Appliance();
-                newAppliance.setName(mlApp.name());
-                newAppliance.setApplianceCategory(category.get().toPortuguese());
-                newAppliance.setAveragePowerWatts(BigDecimal.valueOf(mlApp.watts()));
-                newAppliance.setAverageDailyUseHours(BigDecimal.valueOf(mlApp.hours()));
-
-                applianceRepository.save(newAppliance);
-                log.info("Novo aparelho cadastrado via ML Sync: {}", mlApp.name());
+                applianceRepository.save(createAppliance(mlAppliance, category.get()));
+                log.info("Novo aparelho cadastrado via ML Sync: {}", mlAppliance.name());
             } else {
                 log.warn(
                         "mlCategory '{}' desconhecida para o novo aparelho '{}'. Item pulado nesta"
                                 + " sincronização (sem categoria anterior para preservar).",
-                        mlApp.mlCategory(),
-                        mlApp.name());
+                        mlAppliance.category(),
+                        mlAppliance.name());
             }
         }
 
         log.info("Sincronização do catálogo concluída com sucesso!");
+    }
+
+    private Map<String, Appliance> indexByName(List<Appliance> appliances) {
+        Map<String, Appliance> index = new HashMap<>();
+        for (Appliance appliance : appliances) {
+            index.put(ApplianceNameNormalizer.normalize(appliance.getName()), appliance);
+        }
+        return index;
+    }
+
+    private void updateExistingAppliance(
+            Appliance existing, ApplianceCatalogItem mlAppliance, Optional<EquipmentCategory> category) {
+        if (category.isPresent()) {
+            existing.setApplianceCategory(category.get().toPortuguese());
+        } else {
+            log.warn(
+                    "mlCategory '{}' desconhecida para o aparelho existente '{}'. Mantendo categoria anterior '{}'"
+                            + " para não violar chk_appliance_category.",
+                    mlAppliance.category(),
+                    mlAppliance.name(),
+                    existing.getApplianceCategory());
+        }
+        existing.setAveragePowerWatts(BigDecimal.valueOf(mlAppliance.watts()));
+        existing.setAverageDailyUseHours(BigDecimal.valueOf(mlAppliance.hours()));
+        applianceRepository.save(existing);
+    }
+
+    private Appliance createAppliance(ApplianceCatalogItem mlAppliance, EquipmentCategory category) {
+        Appliance appliance = new Appliance();
+        appliance.setName(mlAppliance.name());
+        appliance.setApplianceCategory(category.toPortuguese());
+        appliance.setAveragePowerWatts(BigDecimal.valueOf(mlAppliance.watts()));
+        appliance.setAverageDailyUseHours(BigDecimal.valueOf(mlAppliance.hours()));
+        return appliance;
     }
 }

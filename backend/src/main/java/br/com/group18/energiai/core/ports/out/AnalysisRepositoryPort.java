@@ -9,8 +9,6 @@ public interface AnalysisRepositoryPort {
 
     Optional<EnergyAnalysis> findById(Long id);
 
-    List<EnergyAnalysis> listByPropertyId(Long propertyId);
-
     List<EnergyAnalysis> listByPropertyIds(List<Long> propertyIds);
 
     void deleteById(Long id);
