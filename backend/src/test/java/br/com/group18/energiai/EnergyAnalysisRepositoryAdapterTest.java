@@ -2,6 +2,7 @@ package br.com.group18.energiai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -24,20 +25,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/**
- * Testa a persistência transacional dos snapshots de aparelhos (Card B038 / Migration M005)
- * no EnergyAnalysisRepositoryAdapter: salvar em cascata no save(), reconstruir no findById()
- * e o batch fetch usado na listagem por propriedade.
- *
- * Usa a EnergyAnalysisMapper real (classe simples, sem dependências externas) e mocka apenas
- * os repositórios Spring Data JPA, seguindo o mesmo padrão do EnergyAnalysisServiceTest.
- */
 class EnergyAnalysisRepositoryAdapterTest {
 
     private EnergyAnalysisJpaRepository analysisRepository;
     private AnalysisRecommendationJpaRepository recommendationRepository;
     private AnalysisApplianceSnapshotJpaRepository snapshotRepository;
-    private EnergyAnalysisMapper mapper;
     private EnergyAnalysisRepositoryAdapter adapter;
 
     @BeforeEach
@@ -45,14 +37,13 @@ class EnergyAnalysisRepositoryAdapterTest {
         analysisRepository = mock(EnergyAnalysisJpaRepository.class);
         recommendationRepository = mock(AnalysisRecommendationJpaRepository.class);
         snapshotRepository = mock(AnalysisApplianceSnapshotJpaRepository.class);
-        mapper = new EnergyAnalysisMapper();
 
         adapter = new EnergyAnalysisRepositoryAdapter(
-                analysisRepository, mapper, recommendationRepository, snapshotRepository);
+                analysisRepository, new EnergyAnalysisMapper(), recommendationRepository, snapshotRepository);
     }
 
     @Test
-    void deveSalvarSnapshotsDosAparelhosNaMesmaTransacaoDaAnalise() {
+    void shouldSaveApplianceSnapshotsInSameTransactionAsAnalysis() {
         EnergyAnalysis analysis = new EnergyAnalysis(1L, new BigDecimal("108.00"), true, new BigDecimal("6.50"));
         analysis.setPropertyType("RESIDENCIAL");
         analysis.setAppliancesSnapshot(List.of(new ApplianceSnapshot(
@@ -60,8 +51,7 @@ class EnergyAnalysisRepositoryAdapterTest {
 
         EnergyAnalysisEntity savedEntity = new EnergyAnalysisEntity();
         savedEntity.setId(42L);
-        when(analysisRepository.save(org.mockito.ArgumentMatchers.any(EnergyAnalysisEntity.class)))
-                .thenReturn(savedEntity);
+        when(analysisRepository.save(any(EnergyAnalysisEntity.class))).thenReturn(savedEntity);
 
         adapter.save(analysis);
 
@@ -71,22 +61,20 @@ class EnergyAnalysisRepositoryAdapterTest {
         ArgumentCaptor<List<AnalysisApplianceSnapshotEntity>> captor = ArgumentCaptor.forClass(List.class);
         verify(snapshotRepository).saveAll(captor.capture());
 
-        List<AnalysisApplianceSnapshotEntity> persistidos = captor.getValue();
-        assertEquals(1, persistidos.size());
-        assertEquals("Geladeira", persistidos.get(0).getApplianceName());
-        assertEquals(42L, persistidos.get(0).getAnalysisId());
+        List<AnalysisApplianceSnapshotEntity> persisted = captor.getValue();
+        assertEquals(1, persisted.size());
+        assertEquals("Geladeira", persisted.get(0).getApplianceName());
+        assertEquals(42L, persisted.get(0).getAnalysisId());
     }
 
     @Test
-    void naoDeveChamarSaveAllQuandoNaoHaSnapshots() {
+    void shouldNotCallSaveAllWhenThereAreNoSnapshots() {
         EnergyAnalysis analysis = new EnergyAnalysis(1L, new BigDecimal("50.00"), false, new BigDecimal("0.00"));
         analysis.setPropertyType("COMERCIAL");
-        // appliancesSnapshot fica vazio por padrão (ArrayList novo em EnergyAnalysis)
 
         EnergyAnalysisEntity savedEntity = new EnergyAnalysisEntity();
         savedEntity.setId(7L);
-        when(analysisRepository.save(org.mockito.ArgumentMatchers.any(EnergyAnalysisEntity.class)))
-                .thenReturn(savedEntity);
+        when(analysisRepository.save(any(EnergyAnalysisEntity.class))).thenReturn(savedEntity);
 
         adapter.save(analysis);
 
@@ -95,7 +83,7 @@ class EnergyAnalysisRepositoryAdapterTest {
     }
 
     @Test
-    void deveReconstruirSnapshotsAoBuscarAnalisePorId() {
+    void shouldRebuildSnapshotsWhenFindingAnalysisById() {
         EnergyAnalysisEntity entity = new EnergyAnalysisEntity();
         entity.setId(10L);
         entity.setPropertyId(1L);
@@ -115,10 +103,10 @@ class EnergyAnalysisRepositoryAdapterTest {
                 new BigDecimal("576"));
         when(snapshotRepository.findByAnalysisIdIn(List.of(10L))).thenReturn(List.of(snapshotEntity));
 
-        Optional<EnergyAnalysis> resultado = adapter.findById(10L);
+        Optional<EnergyAnalysis> result = adapter.findById(10L);
 
-        assertTrue(resultado.isPresent());
-        List<ApplianceSnapshot> snapshots = resultado.get().getAppliancesSnapshot();
+        assertTrue(result.isPresent());
+        List<ApplianceSnapshot> snapshots = result.get().getAppliancesSnapshot();
         assertEquals(1, snapshots.size());
         assertEquals("Ar-condicionado", snapshots.get(0).getApplianceName());
         assertEquals("AIR_CONDITIONING", snapshots.get(0).getApplianceCategory());

@@ -18,7 +18,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(ApplianceController.class)
+@WebMvcTest(
+        controllers = ApplianceController.class,
+        properties = {"spring.jackson.property-naming-strategy=SNAKE_CASE"})
 class ApplianceControllerTest {
 
     @Autowired
@@ -34,13 +36,12 @@ class ApplianceControllerTest {
     private TokenBlacklistRepositoryPort tokenBlacklistRepository;
 
     @Test
-    void deveRetornarCatalogoDeAparelhosDoBancoComId() throws Exception {
+    void shouldReturnCatalogWithId() throws Exception {
         Appliance mockAppliance = new Appliance(
                 1L, "Geladeira Frost Free", "Refrigeração", new BigDecimal("150.0"), new BigDecimal("24.0"));
 
         when(applianceRepository.findAll()).thenReturn(List.of(mockAppliance));
 
-        // Act & Assert
         mockMvc.perform(get("/appliances"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -49,7 +50,7 @@ class ApplianceControllerTest {
     }
 
     @Test
-    void naoDeveQuebrarQuandoCategoriaPersistidaNaoForReconhecida() throws Exception {
+    void shouldNotFailWhenStoredCategoryIsUnrecognized() throws Exception {
         Appliance mockAppliance = new Appliance(
                 2L, "Aparelho Legado", "Categoria Antiga", new BigDecimal("100.0"), new BigDecimal("5.0"));
 

@@ -5,9 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.group18.energiai.core.ports.out.MlContractPort;
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.controllers.ContractInfoController;
-import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
 import br.com.group18.energiai.infrastructure.config.JwtService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,14 +16,16 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(ContractInfoController.class)
+@WebMvcTest(
+        controllers = ContractInfoController.class,
+        properties = {"spring.jackson.property-naming-strategy=SNAKE_CASE"})
 class ContractInfoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private MlSchemaRegistry registry;
+    private MlContractPort registry;
 
     @MockitoBean
     private JwtService jwtService;
@@ -32,13 +34,11 @@ class ContractInfoControllerTest {
     private TokenBlacklistRepositoryPort tokenBlacklistRepository;
 
     @Test
-    void deveRetornarInformacoesDoContrato() throws Exception {
-        // Arrange: Mockando o que está na memória do Registry
-        when(registry.getPropertyTypes()).thenReturn(List.of("RESIDENCIAL", "COMERCIAL"));
-        when(registry.getConsumptionCategories()).thenReturn(List.of("BAIXO", "ALTO"));
-        when(registry.getEfficiencyCategories()).thenReturn(List.of("A", "B", "C"));
+    void shouldReturnContractInformation() throws Exception {
+        when(registry.propertyTypes()).thenReturn(List.of("RESIDENCIAL", "COMERCIAL"));
+        when(registry.consumptionCategories()).thenReturn(List.of("BAIXO", "ALTO"));
+        when(registry.efficiencyCategories()).thenReturn(List.of("A", "B", "C"));
 
-        // Act & Assert: Chamando a API e validando o JSON de retorno
         mockMvc.perform(get("/contract-info"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.property_types[0]").value("RESIDENCIAL"))
