@@ -1,6 +1,5 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
-import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ public record AnalysisResponseDTO(
                         description = "Classificação de eficiência energética",
                         example = "BOM",
                         allowableValues = {"EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"})
-                EfficiencyCategory category,
+                String category,
         @Schema(description = "Probabilidade da classificação (0 a 1)", example = "0.85") BigDecimal probability,
         @Schema(
                         description = "Status da análise",
@@ -27,7 +26,10 @@ public record AnalysisResponseDTO(
                         allowableValues = {"PENDENTE", "CONCLUIDA", "FALHA", "SIMULADO"})
                 String status,
         @Schema(
-                        description = "Fonte da classificação (model do ML Service, com fallback Groq ou regras)",
+                        description = "Fonte da classificação (contrato do ML Service - docs/contrato-api.md): 'model' "
+                                + "(classificador treinado), 'model+groq' (com fallback LLM) ou 'rule-based' (fallback por regras). "
+                                + "Em runtime, os valores podem vir com sufixos descritivos, ex.: "
+                                + "'model (confidence 62.5%)' ou 'rule-based (model error)'",
                         example = "model",
                         allowableValues = {"model", "model+groq", "rule-based"})
                 String source,

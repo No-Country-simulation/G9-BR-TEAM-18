@@ -1,7 +1,7 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
+import br.com.group18.energiai.core.ports.out.MlContractPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ContractInfoResponseDTO;
-import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/contract-info")
 public class ContractInfoController {
 
-    private final MlSchemaRegistry registry;
+    private final MlContractPort mlContract;
 
-    public ContractInfoController(MlSchemaRegistry registry) {
-        this.registry = registry;
+    public ContractInfoController(MlContractPort mlContract) {
+        this.mlContract = mlContract;
     }
 
     @Operation(
@@ -27,7 +27,7 @@ public class ContractInfoController {
     @GetMapping
     public ResponseEntity<ContractInfoResponseDTO> getContractInfo() {
         ContractInfoResponseDTO response = new ContractInfoResponseDTO(
-                registry.getPropertyTypes(), registry.getConsumptionCategories(), registry.getEfficiencyCategories());
+                mlContract.propertyTypes(), mlContract.consumptionCategories(), mlContract.efficiencyCategories());
         return ResponseEntity.ok(response);
     }
 }

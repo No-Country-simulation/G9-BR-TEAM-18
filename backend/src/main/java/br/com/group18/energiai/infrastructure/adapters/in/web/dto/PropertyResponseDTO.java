@@ -9,7 +9,7 @@ public record PropertyResponseDTO(
         @Schema(
                         description = "Tipo da propriedade",
                         example = "RESIDENCIAL",
-                        allowableValues = {"RESIDENCIAL", "COMERCIAL"})
+                        allowableValues = {"RESIDENCIAL", "APARTAMENTO", "COMERCIAL"})
                 String propertyType,
         @Schema(description = "Indica se a propriedade está ativa", example = "true") boolean active,
         @Schema(description = "Endereço da propriedade", example = "Rua das Flores, 123, Centro") String address,

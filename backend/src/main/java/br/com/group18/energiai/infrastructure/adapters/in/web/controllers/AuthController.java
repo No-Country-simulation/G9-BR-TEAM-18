@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
+import br.com.group18.energiai.application.dto.UserPreferences;
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
@@ -8,6 +9,8 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginRequestDT
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ResetPasswordRequestDTO;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.UserPreferencesRequestDTO;
+import br.com.group18.energiai.infrastructure.adapters.in.web.security.SessionUserResolver;
 import br.com.group18.energiai.infrastructure.config.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -38,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static final String USER_ID_ATTR = "auth.userId";
+    private static final String SESSION_COOKIE_NAME = "SESSION_TOKEN";
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
@@ -67,16 +69,11 @@ public class AuthController {
         @ApiResponse(responseCode = "409", description = "Conflito: e-mail já cadastrado no sistema")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
-        try {
-            User user = authenticationService.register(request.getName(), request.getEmail(), request.getPassword());
-            String token = createSession(user, response);
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(user, token));
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
-        }
+    public ResponseEntity<LoginResponseDTO> register(
+            @Valid @RequestBody RegisterRequestDTO request, HttpServletResponse response) {
+        User user = authenticationService.register(request.getName(), request.getEmail(), request.getPassword());
+        String token = createSession(user, response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(user, token));
     }
 
     @Operation(
@@ -88,16 +85,12 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse response) {
-        var userOpt = authenticationService.login(request.getEmail(), request.getPassword());
-        if (userOpt.isEmpty()) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("message", "E-mail ou senha inválidos");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+        var user = authenticationService.login(request.getEmail(), request.getPassword());
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "E-mail ou senha inválidos"));
         }
-
-        User user = userOpt.get();
-        String token = createSession(user, response);
-        return ResponseEntity.ok(toResponse(user, token));
+        String token = createSession(user.get(), response);
+        return ResponseEntity.ok(toResponse(user.get(), token));
     }
 
     @Operation(
@@ -111,18 +104,12 @@ public class AuthController {
         if (token != null) {
             Date expiration = jwtService.getExpiration(token);
             if (expiration != null) {
-                String tokenHash = jwtService.hashToken(token);
                 blacklistRepository.save(
-                        tokenHash,
+                        jwtService.hashToken(token),
                         expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
             }
         }
-        Cookie cookie = new Cookie("SESSION_TOKEN", "");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        cookie.setSecure(sessionSecure);
-        cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
-        response.addCookie(cookie);
+        response.addCookie(expiredSessionCookie());
         return ResponseEntity.ok().build();
     }
 
@@ -135,24 +122,17 @@ public class AuthController {
     })
     @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
+    public ResponseEntity<LoginResponseDTO> resetPassword(
             @Valid @RequestBody ResetPasswordRequestDTO request,
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
-        Long userId = getUserId(servletRequest);
+        Long userId = SessionUserResolver.userId(servletRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        try {
-            User user =
-                    authenticationService.resetPassword(userId, request.getCurrentPassword(), request.getNewPassword());
-            String token = createSession(user, servletResponse);
-            return ResponseEntity.ok(toResponse(user, token));
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
-        }
+        User user = authenticationService.resetPassword(userId, request.getCurrentPassword(), request.getNewPassword());
+        String token = createSession(user, servletResponse);
+        return ResponseEntity.ok(toResponse(user, token));
     }
 
     @Operation(
@@ -164,19 +144,13 @@ public class AuthController {
     })
     @SecurityRequirement(name = "sessionCookie")
     @PostMapping("/admin/reset-password/{userId}")
-    public ResponseEntity<?> adminResetPassword(
+    public ResponseEntity<LoginResponseDTO> adminResetPassword(
             @PathVariable Long userId,
             @Valid @RequestBody AdminResetPasswordRequestDTO request,
             HttpServletResponse servletResponse) {
-        try {
-            User user = authenticationService.adminResetPassword(userId, request.getNewPassword());
-            String token = createSession(user, servletResponse);
-            return ResponseEntity.ok(toResponse(user, token));
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-        }
+        User user = authenticationService.adminResetPassword(userId, request.getNewPassword());
+        String token = createSession(user, servletResponse);
+        return ResponseEntity.ok(toResponse(user, token));
     }
 
     @Operation(
@@ -189,59 +163,61 @@ public class AuthController {
     @SecurityRequirement(name = "sessionCookie")
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
-        Long userId = getUserId(request);
+        Long userId = SessionUserResolver.userId(request);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return authenticationService
                 .findById(userId)
-                .map(u -> ResponseEntity.ok(toResponse(u)))
+                .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @Operation(
             summary = "Atualizar preferências do usuário",
-            description = "Atualiza meta de consumo e regularidade da análise para o usuário autenticado.")
+            description = "Atualiza meta de consumo, regularidade e hábitos de consumo do usuário autenticado.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Preferências atualizadas"),
         @ApiResponse(responseCode = "401", description = "Não autorizado")
     })
     @SecurityRequirement(name = "sessionCookie")
     @PutMapping("/preferences")
-    public ResponseEntity<?> updatePreferences(
-            @RequestBody Map<String, Object> preferences, HttpServletRequest request) {
-        Long userId = getUserId(request);
+    public ResponseEntity<LoginResponseDTO> updatePreferences(
+            @RequestBody UserPreferencesRequestDTO request, HttpServletRequest servletRequest) {
+        Long userId = SessionUserResolver.userId(servletRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        try {
-            User user = authenticationService.updatePreferences(userId, preferences);
-            return ResponseEntity.ok(toResponse(user));
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(body);
-        }
-    }
-
-    public static Long getUserId(HttpServletRequest request) {
-        Object attr = request.getAttribute(USER_ID_ATTR);
-        if (attr instanceof Long) {
-            return (Long) attr;
-        }
-        return null;
+        User user = authenticationService.updatePreferences(userId, toPreferences(request));
+        return ResponseEntity.ok(toResponse(user));
     }
 
     private String createSession(User user, HttpServletResponse response) {
         String token = jwtService.createToken(user.getId());
-
-        Cookie cookie = new Cookie("SESSION_TOKEN", token);
+        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, token);
         cookie.setPath("/");
         cookie.setMaxAge(sessionMaxAge);
         cookie.setSecure(sessionSecure);
         cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         response.addCookie(cookie);
         return token;
+    }
+
+    private Cookie expiredSessionCookie() {
+        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, "");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setSecure(sessionSecure);
+        cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
+        return cookie;
+    }
+
+    private UserPreferences toPreferences(UserPreferencesRequestDTO request) {
+        return new UserPreferences(
+                request.getConsumptionGoal(),
+                request.getRegularity(),
+                request.getPeakHourUsage(),
+                request.getHighConsumptionHours());
     }
 
     private LoginResponseDTO toResponse(User user, String token) {
@@ -262,9 +238,9 @@ public class AuthController {
     private String extractToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
-            for (Cookie c : cookies) {
-                if ("SESSION_TOKEN".equals(c.getName())) {
-                    return c.getValue();
+            for (Cookie cookie : cookies) {
+                if (SESSION_COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
                 }
             }
         }

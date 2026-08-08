@@ -1,9 +1,10 @@
 package br.com.group18.energiai.infrastructure.config;
 
+import br.com.group18.energiai.application.exception.EmailAlreadyRegisteredException;
 import br.com.group18.energiai.application.exception.ForbiddenOperationException;
 import br.com.group18.energiai.application.exception.InvalidRequestException;
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.application.exception.ResourceNotFoundException;
-import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,11 @@ public class GlobalExceptionHandler {
                 exception.getMostSpecificCause().getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "Formato inválido para um ou mais campos. Verifique os valores enviados."));
+    }
+
+    @ExceptionHandler(EmailAlreadyRegisteredException.class)
+    public ResponseEntity<Map<String, String>> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {
+        return response(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidRequestException.class)
