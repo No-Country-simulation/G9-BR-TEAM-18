@@ -30,7 +30,6 @@ public class MlSchemaDiscovery implements ApplicationRunner {
         log.info("Schema Discovery: Buscando contrato e catálogo no ML Service...");
 
         try {
-            // Tenta buscar os dois endpoints em paralelo e bloqueia no startup por no máximo 10 segundos
             Tuple2<MlContractResponse, MlApplianceCatalogResponse> response = Mono.zip(
                             mlServiceClient.fetchContract(), mlServiceClient.fetchApplianceCatalog())
                     .block(Duration.ofSeconds(10));
@@ -39,11 +38,10 @@ public class MlSchemaDiscovery implements ApplicationRunner {
                 registry.register(response.getT1(), response.getT2());
                 log.info("Schema Discovery: Concluído com sucesso no startup.");
             }
-        } catch (Exception e) {
-            // Se o ML Service estiver fora, captura o erro e ativa o modo de sobrevivência
+        } catch (Exception exception) {
             log.warn(
                     "Schema Discovery: ML Service indisponível no startup ({}). Carregando fallback...",
-                    e.getMessage());
+                    exception.getMessage());
             registry.loadDefaultValues();
 
             log.info("Iniciando rotina de retentativa em background para o ML Service...");
@@ -52,7 +50,6 @@ public class MlSchemaDiscovery implements ApplicationRunner {
     }
 
     private void startBackgroundRetry() {
-        // Rotina 100% reativa e assíncrona. Não trava o servidor.
         Mono.zip(mlServiceClient.fetchContract(), mlServiceClient.fetchApplianceCatalog())
                 .retryWhen(Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(30))
                         .doBeforeRetry(retrySignal ->

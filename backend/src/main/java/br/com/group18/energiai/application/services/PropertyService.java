@@ -1,5 +1,6 @@
 package br.com.group18.energiai.application.services;
 
+import br.com.group18.energiai.application.dto.ApplianceQuantity;
 import br.com.group18.energiai.application.exception.ForbiddenOperationException;
 import br.com.group18.energiai.application.exception.ResourceNotFoundException;
 import br.com.group18.energiai.core.domain.model.Appliance;
@@ -8,13 +9,10 @@ import br.com.group18.energiai.core.domain.model.PropertyAppliance;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
 import br.com.group18.energiai.core.ports.out.PropertyApplianceRepositoryPort;
 import br.com.group18.energiai.core.ports.out.PropertyRepositoryPort;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 public class PropertyService {
 
     private final PropertyRepositoryPort propertyRepository;
@@ -133,6 +131,4 @@ public class PropertyService {
 
         return result;
     }
-
-    public record ApplianceQuantity(@JsonProperty("appliance_id") Long applianceId, Integer quantity) {}
 }

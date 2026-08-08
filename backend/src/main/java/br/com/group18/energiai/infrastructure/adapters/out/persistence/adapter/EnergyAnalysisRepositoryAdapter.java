@@ -98,11 +98,6 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
     }
 
     @Override
-    public List<EnergyAnalysis> listByPropertyId(Long propertyId) {
-        return mapWithDetails(analysisRepository.findByPropertyIdOrderByCreatedAtDesc(propertyId));
-    }
-
-    @Override
     public List<EnergyAnalysis> listByPropertyIds(List<Long> propertyIds) {
         if (propertyIds.isEmpty()) {
             return List.of();
@@ -126,14 +121,12 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
         List<Long> analysisIds =
                 entities.stream().map(EnergyAnalysisEntity::getId).toList();
 
-        // Agrupa as recomendações em lote
         Map<Long, List<String>> recommendationsByAnalysis =
                 recommendationRepository.findByAnalysisIdIn(analysisIds).stream()
                         .collect(Collectors.groupingBy(
                                 AnalysisRecommendationEntity::getAnalysisId,
                                 Collectors.mapping(AnalysisRecommendationEntity::getDescription, Collectors.toList())));
 
-        // Agrupa os snapshots em lote
         Map<Long, List<ApplianceSnapshot>> snapshotsByAnalysis =
                 snapshotRepository.findByAnalysisIdIn(analysisIds).stream()
                         .collect(Collectors.groupingBy(
@@ -148,7 +141,6 @@ public class EnergyAnalysisRepositoryAdapter implements AnalysisRepositoryPort {
                                                 snapEntity.getMonthlyConsumptionKwh()),
                                         Collectors.toList())));
 
-        // Associa tudo de volta para a entidade
         return entities.stream()
                 .map(entity -> {
                     EnergyAnalysis analysis = mapper.toDomain(entity);

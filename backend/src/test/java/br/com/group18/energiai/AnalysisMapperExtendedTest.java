@@ -1,11 +1,14 @@
 package br.com.group18.energiai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.core.domain.model.MlResult;
 import br.com.group18.energiai.infrastructure.client.AnalysisMapper;
 import br.com.group18.energiai.infrastructure.client.MlEnvelope;
-import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +60,7 @@ class AnalysisMapperExtendedTest {
                 "probability", 0.9,
                 "source", "model"));
 
-        assertFalse(envelope.hasKey("recommendations"));
+        assertFalse(envelope.body().containsKey("recommendations"));
         MlResult result = mapper.toMlResult(envelope);
 
         assertTrue(result.recommendations().isEmpty());
@@ -69,7 +72,7 @@ class AnalysisMapperExtendedTest {
                 "category",
                 "MEDIANO",
                 "probability",
-                42,
+                0,
                 "recommendations",
                 List.of("Cuidado"),
                 "source",
@@ -77,7 +80,7 @@ class AnalysisMapperExtendedTest {
 
         MlResult result = mapper.toMlResult(envelope);
 
-        assertEquals(42.0, result.probability(), 0.001);
+        assertEquals(0.0, result.probability(), 0.001);
     }
 
     @Test

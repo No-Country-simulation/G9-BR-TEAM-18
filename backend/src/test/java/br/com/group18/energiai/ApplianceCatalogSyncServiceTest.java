@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 
 import br.com.group18.energiai.application.services.ApplianceCatalogSyncService;
 import br.com.group18.energiai.core.domain.model.Appliance;
+import br.com.group18.energiai.core.domain.model.ApplianceCatalogItem;
 import br.com.group18.energiai.core.ports.out.ApplianceRepositoryPort;
-import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
-import br.com.group18.energiai.infrastructure.client.dto.MlApplianceDTO;
+import br.com.group18.energiai.core.ports.out.MlContractPort;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +31,7 @@ class ApplianceCatalogSyncServiceTest {
             Set.of("Iluminação", "Refrigeração", "Climatização", "Eletrodomésticos", "Tecnologia", "Serviços");
 
     @Mock
-    private MlSchemaRegistry mlSchemaRegistry;
+    private MlContractPort mlContract;
 
     @Mock
     private ApplianceRepositoryPort applianceRepository;
@@ -40,22 +40,22 @@ class ApplianceCatalogSyncServiceTest {
     private ApplianceCatalogSyncService syncService;
 
     @Test
-    void deveIgnorarSincronizacaoQuandoCatalogoDoMlEstaVazio() {
-        when(mlSchemaRegistry.getApplianceCatalog()).thenReturn(List.of());
+    void shouldSkipSyncWhenMlCatalogIsEmpty() {
+        when(mlContract.applianceCatalog()).thenReturn(List.of());
 
-        assertDoesNotThrow(syncService::syncCatalogOnStartup);
+        assertDoesNotThrow(syncService::syncCatalog);
 
         verify(applianceRepository, never()).findAll();
         verify(applianceRepository, never()).save(any());
     }
 
     @Test
-    void deveCriarAparelhoNovoComCategoriaConhecidaJaEmPortugues() {
-        when(mlSchemaRegistry.getApplianceCatalog())
-                .thenReturn(List.of(new MlApplianceDTO("Fritadeira Elétrica", "APPLIANCES", 1500, 0.5)));
+    void shouldCreateNewApplianceWithKnownPortugueseCategory() {
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(new ApplianceCatalogItem("Fritadeira Elétrica", "APPLIANCES", 1500, 0.5)));
         when(applianceRepository.findAll()).thenReturn(List.of());
 
-        syncService.syncCatalogOnStartup();
+        syncService.syncCatalog();
 
         ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
         verify(applianceRepository, times(1)).save(captor.capture());
@@ -67,15 +67,15 @@ class ApplianceCatalogSyncServiceTest {
     }
 
     @Test
-    void deveAtualizarAparelhoExistenteComCategoriaConhecida() {
+    void shouldUpdateExistingApplianceWithKnownCategory() {
         Appliance existente =
                 new Appliance(1L, "Geladeira", "Refrigeração", BigDecimal.valueOf(150), BigDecimal.valueOf(24));
 
-        when(mlSchemaRegistry.getApplianceCatalog())
-                .thenReturn(List.of(new MlApplianceDTO("Geladeira", "CLIMATE_CONTROL", 180, 20.0)));
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(new ApplianceCatalogItem("Geladeira", "CLIMATE_CONTROL", 180, 20.0)));
         when(applianceRepository.findAll()).thenReturn(List.of(existente));
 
-        syncService.syncCatalogOnStartup();
+        syncService.syncCatalog();
 
         ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
         verify(applianceRepository, times(1)).save(captor.capture());
@@ -86,30 +86,28 @@ class ApplianceCatalogSyncServiceTest {
     }
 
     @Test
-    void categoriaDesconhecidaEmAparelhoNovoDevePularSemQuebrarOStartup() {
-        when(mlSchemaRegistry.getApplianceCatalog())
-                .thenReturn(List.of(new MlApplianceDTO("Aparelho Alienígena", "SPACESHIP_PROPULSION", 300, 5.0)));
+    void shouldSkipUnknownCategoryOnNewApplianceWithoutBreakingStartup() {
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(new ApplianceCatalogItem("Aparelho Alienígena", "SPACESHIP_PROPULSION", 300, 5.0)));
         when(applianceRepository.findAll()).thenReturn(List.of());
 
         assertDoesNotThrow(
-                syncService::syncCatalogOnStartup,
-                "Categoria desconhecida em aparelho novo não pode derrubar o startup");
+                syncService::syncCatalog, "Categoria desconhecida em aparelho novo não pode derrubar o startup");
 
         verify(applianceRepository, never()).save(any());
     }
 
     @Test
-    void categoriaDesconhecidaEmAparelhoExistenteDeveManterCategoriaAnteriorSemQuebrarOStartup() {
+    void shouldKeepPreviousCategoryOnExistingApplianceWithUnknownCategory() {
         Appliance existente =
                 new Appliance(1L, "Geladeira", "Refrigeração", BigDecimal.valueOf(150), BigDecimal.valueOf(24));
 
-        when(mlSchemaRegistry.getApplianceCatalog())
-                .thenReturn(List.of(new MlApplianceDTO("Geladeira", "SPACESHIP_PROPULSION", 200, 22.0)));
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(new ApplianceCatalogItem("Geladeira", "SPACESHIP_PROPULSION", 200, 22.0)));
         when(applianceRepository.findAll()).thenReturn(List.of(existente));
 
         assertDoesNotThrow(
-                syncService::syncCatalogOnStartup,
-                "Categoria desconhecida em aparelho existente não pode derrubar o startup");
+                syncService::syncCatalog, "Categoria desconhecida em aparelho existente não pode derrubar o startup");
 
         ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
         verify(applianceRepository, times(1)).save(captor.capture());
@@ -121,18 +119,18 @@ class ApplianceCatalogSyncServiceTest {
     }
 
     @Test
-    void nenhumaCategoriaPersistidaDeveViolarChkApplianceCategory() {
+    void shouldNeverPersistCategoryViolatingCheckConstraint() {
         Appliance existente =
                 new Appliance(1L, "Geladeira", "Refrigeração", BigDecimal.valueOf(150), BigDecimal.valueOf(24));
 
-        when(mlSchemaRegistry.getApplianceCatalog())
+        when(mlContract.applianceCatalog())
                 .thenReturn(List.of(
-                        new MlApplianceDTO("Geladeira", "REFRIGERATION", 150, 24.0),
-                        new MlApplianceDTO("Ventilador de Teto", "CLIMATE_CONTROL", 70, 8.0),
-                        new MlApplianceDTO("Categoria Futura Do ML", "SMART_GRID_V2", 50, 1.0)));
+                        new ApplianceCatalogItem("Geladeira", "REFRIGERATION", 150, 24.0),
+                        new ApplianceCatalogItem("Ventilador de Teto", "CLIMATE_CONTROL", 70, 8.0),
+                        new ApplianceCatalogItem("Categoria Futura Do ML", "SMART_GRID_V2", 50, 1.0)));
         when(applianceRepository.findAll()).thenReturn(List.of(existente));
 
-        assertDoesNotThrow(syncService::syncCatalogOnStartup);
+        assertDoesNotThrow(syncService::syncCatalog);
 
         ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
         verify(applianceRepository, times(2)).save(captor.capture());

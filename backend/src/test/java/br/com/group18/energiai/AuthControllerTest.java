@@ -2,7 +2,7 @@ package br.com.group18.energiai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.group18.energiai.application.dto.UserPreferences;
+import br.com.group18.energiai.application.exception.EmailAlreadyRegisteredException;
+import br.com.group18.energiai.application.exception.ResourceNotFoundException;
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
@@ -19,7 +22,8 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.controllers.AuthCo
 import br.com.group18.energiai.infrastructure.config.JwtService;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,19 +33,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Teste de unidade do AuthController via @WebMvcTest.
- *
- * <p>Substitui o antigo AuthControllerIntegrationTest (@SpringBootTest), que subia o contexto
- * completo da aplicação e exigia conexão real com o Oracle e variáveis de ambiente
- * (SPRING_DATASOURCE_URL, JWT_SECRET, SESSION_MAX_AGE_SECONDS etc). Aqui apenas o AuthController
- * é carregado; AuthenticationService, JwtService e TokenBlacklistRepositoryPort são mockados com
- * @MockitoBean, então o teste roda sem banco e sem depender de nada do ambiente local, validando
- * apenas o contrato HTTP das rotas /auth/register, /auth/login, /auth/me e /auth/preferences.
- */
 @WebMvcTest(
         controllers = AuthController.class,
-        properties = {"SESSION_MAX_AGE_SECONDS=3600", "SESSION_SECURE=false"})
+        properties = {
+            "spring.jackson.property-naming-strategy=SNAKE_CASE",
+            "SESSION_MAX_AGE_SECONDS=3600",
+            "SESSION_SECURE=false"
+        })
 class AuthControllerTest {
 
     private static final String TOKEN = "fake.jwt.token";
@@ -59,13 +57,13 @@ class AuthControllerTest {
     @MockitoBean
     private TokenBlacklistRepositoryPort tokenBlacklistRepository;
 
-    private void mockUsuarioAutenticado(Long userId) {
+    private void mockAuthenticatedSession(Long userId) {
         when(jwtService.hashToken(TOKEN)).thenReturn(TOKEN_HASH);
         when(tokenBlacklistRepository.existsByTokenHash(TOKEN_HASH)).thenReturn(false);
         when(jwtService.validateAndGetUserId(TOKEN)).thenReturn(userId);
     }
 
-    private User usuarioComPreferencias(Long id) {
+    private User userWithPreferences(Long id) {
         User user = new User("Usuario Teste", "user" + id + "@example.com", "hash");
         user.setId(id);
         user.setConsumptionGoal(new BigDecimal("250.00"));
@@ -75,10 +73,8 @@ class AuthControllerTest {
         return user;
     }
 
-    // ---------- POST /auth/register ----------
-
     @Test
-    void deveRegistrarUsuarioComSucesso() throws Exception {
+    void shouldRegisterUserSuccessfully() throws Exception {
         User created = new User("Novo Usuario", "novo@example.com", "hashedPass");
         created.setId(1L);
         when(authenticationService.register("Novo Usuario", "novo@example.com", "senha123"))
@@ -104,9 +100,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveRetornar409QuandoEmailJaCadastrado() throws Exception {
+    void shouldReturn409WhenEmailAlreadyRegistered() throws Exception {
         when(authenticationService.register("Novo Usuario", "duplicado@example.com", "senha123"))
-                .thenThrow(new IllegalArgumentException("E-mail já cadastrado"));
+                .thenThrow(new EmailAlreadyRegisteredException("E-mail já cadastrado"));
 
         String body =
                 """
@@ -124,11 +120,9 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("E-mail já cadastrado"));
     }
 
-    // ---------- POST /auth/login ----------
-
     @Test
-    void deveLogarERetornarPeakHourUsageEHighConsumptionHours() throws Exception {
-        User user = usuarioComPreferencias(1L);
+    void shouldLoginAndReturnPeakHourUsageAndHighConsumptionHours() throws Exception {
+        User user = userWithPreferences(1L);
         when(authenticationService.login("user1@example.com", "senha123")).thenReturn(Optional.of(user));
         when(jwtService.createToken(1L)).thenReturn(TOKEN);
 
@@ -150,7 +144,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveRetornar401QuandoLoginFalha() throws Exception {
+    void shouldReturn401WhenLoginFails() throws Exception {
         when(authenticationService.login("user1@example.com", "senhaErrada")).thenReturn(Optional.empty());
 
         String body =
@@ -167,15 +161,13 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    // ---------- GET /auth/me ----------
-
     @Test
-    void deveRetornar401NoMeSemCookieDeSessao() throws Exception {
+    void shouldReturn401OnMeWithoutSessionCookie() throws Exception {
         mockMvc.perform(get("/auth/me")).andExpect(status().isUnauthorized());
     }
 
     @Test
-    void deveRetornar401NoMeComTokenInvalido() throws Exception {
+    void shouldReturn401OnMeWithInvalidToken() throws Exception {
         when(jwtService.hashToken("token.invalido")).thenReturn("hash-invalido");
         when(tokenBlacklistRepository.existsByTokenHash("hash-invalido")).thenReturn(false);
         when(jwtService.validateAndGetUserId("token.invalido")).thenReturn(null);
@@ -185,9 +177,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveRetornarPeakHourUsageEHighConsumptionHoursNoMe() throws Exception {
-        mockUsuarioAutenticado(1L);
-        when(authenticationService.findById(1L)).thenReturn(Optional.of(usuarioComPreferencias(1L)));
+    void shouldReturnPeakHourUsageAndHighConsumptionHoursOnMe() throws Exception {
+        mockAuthenticatedSession(1L);
+        when(authenticationService.findById(1L)).thenReturn(Optional.of(userWithPreferences(1L)));
 
         mockMvc.perform(get("/auth/me").cookie(new Cookie("SESSION_TOKEN", TOKEN)))
                 .andExpect(status().isOk())
@@ -198,8 +190,8 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveDistinguirPeakHourUsageFalseDeAusente() throws Exception {
-        mockUsuarioAutenticado(2L);
+    void shouldDistinguishFalsePeakHourUsageFromAbsent() throws Exception {
+        mockAuthenticatedSession(2L);
         User user = new User("Nome", "user2@example.com", "hash");
         user.setId(2L);
         user.setPeakHourUsage(false);
@@ -210,10 +202,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.peak_hour_usage").value(false));
     }
 
-    // ---------- PUT /auth/preferences ----------
-
     @Test
-    void deveRetornar401AoAtualizarPreferenciasSemSessao() throws Exception {
+    void shouldReturn401WhenUpdatingPreferencesWithoutSession() throws Exception {
         String body =
                 """
                 {
@@ -228,9 +218,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveAtualizarPeakHourUsageEHighConsumptionHours() throws Exception {
-        mockUsuarioAutenticado(1L);
-        when(authenticationService.updatePreferences(eq(1L), anyMap())).thenReturn(usuarioComPreferencias(1L));
+    void shouldUpdatePeakHourUsageAndHighConsumptionHours() throws Exception {
+        mockAuthenticatedSession(1L);
+        when(authenticationService.updatePreferences(eq(1L), any(UserPreferences.class)))
+                .thenReturn(userWithPreferences(1L));
 
         String body =
                 """
@@ -252,9 +243,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveEnviarPeakHourUsageComoBooleanEHighConsumptionHoursComoNumberParaOServico() throws Exception {
-        mockUsuarioAutenticado(1L);
-        when(authenticationService.updatePreferences(eq(1L), anyMap())).thenReturn(usuarioComPreferencias(1L));
+    void shouldSendPeakHourUsageAsBooleanAndHighConsumptionHoursAsNumberToService() throws Exception {
+        mockAuthenticatedSession(1L);
+        when(authenticationService.updatePreferences(eq(1L), any(UserPreferences.class)))
+                .thenReturn(userWithPreferences(1L));
 
         String body =
                 """
@@ -270,21 +262,93 @@ class AuthControllerTest {
                         .content(body))
                 .andExpect(status().isOk());
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<UserPreferences> captor = ArgumentCaptor.forClass(UserPreferences.class);
         verify(authenticationService).updatePreferences(eq(1L), captor.capture());
 
-        Map<String, Object> preferenciasEnviadas = captor.getValue();
-        assertInstanceOf(Boolean.class, preferenciasEnviadas.get("peak_hour_usage"));
-        assertEquals(Boolean.TRUE, preferenciasEnviadas.get("peak_hour_usage"));
-        assertInstanceOf(Number.class, preferenciasEnviadas.get("high_consumption_hours"));
+        UserPreferences sentPreferences = captor.getValue();
+        assertInstanceOf(Boolean.class, sentPreferences.peakHourUsage());
+        assertEquals(Boolean.TRUE, sentPreferences.peakHourUsage());
+        assertInstanceOf(Number.class, sentPreferences.highConsumptionHours());
     }
 
     @Test
-    void deveRetornar400QuandoAtualizarPreferenciasComUsuarioInexistente() throws Exception {
-        mockUsuarioAutenticado(1L);
-        when(authenticationService.updatePreferences(eq(1L), anyMap()))
-                .thenThrow(new IllegalArgumentException("Usuário não encontrado"));
+    void shouldLogoutWhenAuthenticated() throws Exception {
+        when(jwtService.getExpiration(TOKEN)).thenReturn(new Date());
+        when(jwtService.hashToken(TOKEN)).thenReturn(TOKEN_HASH);
+
+        mockMvc.perform(post("/auth/logout").cookie(new Cookie("SESSION_TOKEN", TOKEN)))
+                .andExpect(status().isOk());
+
+        verify(tokenBlacklistRepository).save(eq(TOKEN_HASH), any(LocalDateTime.class));
+    }
+
+    @Test
+    void shouldLogoutWithoutToken() throws Exception {
+        mockMvc.perform(post("/auth/logout")).andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldResetOwnPasswordWhenAuthenticated() throws Exception {
+        mockAuthenticatedSession(1L);
+        when(authenticationService.resetPassword(1L, "senhaAtual", "novaSenha")).thenReturn(userWithPreferences(1L));
+        when(jwtService.createToken(1L)).thenReturn(TOKEN);
+
+        String body =
+                """
+                {
+                    "current_password": "senhaAtual",
+                    "new_password": "novaSenha"
+                }
+                """;
+
+        mockMvc.perform(post("/auth/reset-password")
+                        .cookie(new Cookie("SESSION_TOKEN", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("user1@example.com"));
+    }
+
+    @Test
+    void shouldReturn401WhenResettingPasswordWithoutSession() throws Exception {
+        String body =
+                """
+                {
+                    "current_password": "senhaAtual",
+                    "new_password": "novaSenha"
+                }
+                """;
+
+        mockMvc.perform(post("/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldAdminResetPasswordWhenCalled() throws Exception {
+        when(authenticationService.adminResetPassword(1L, "novaSenha")).thenReturn(userWithPreferences(1L));
+        when(jwtService.createToken(1L)).thenReturn(TOKEN);
+
+        String body =
+                """
+                {
+                    "new_password": "novaSenha"
+                }
+                """;
+
+        mockMvc.perform(post("/auth/admin/reset-password/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("user1@example.com"));
+    }
+
+    @Test
+    void shouldReturn404WhenUpdatingPreferencesForNonExistentUser() throws Exception {
+        mockAuthenticatedSession(1L);
+        when(authenticationService.updatePreferences(eq(1L), any(UserPreferences.class)))
+                .thenThrow(new ResourceNotFoundException("Usuário não encontrado"));
 
         String body =
                 """
@@ -297,7 +361,7 @@ class AuthControllerTest {
                         .cookie(new Cookie("SESSION_TOKEN", TOKEN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
     }
 }

@@ -1,12 +1,18 @@
 package br.com.group18.energiai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import br.com.group18.energiai.application.dto.ApplianceQuantity;
 import br.com.group18.energiai.application.exception.ResourceNotFoundException;
 import br.com.group18.energiai.application.services.PropertyService;
-import br.com.group18.energiai.application.services.PropertyService.ApplianceQuantity;
 import br.com.group18.energiai.core.domain.model.Appliance;
 import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.domain.model.PropertyAppliance;
@@ -222,6 +228,8 @@ class PropertyServiceExtendedTest {
         List<PropertyAppliance> result = propertyService.batchUpdateAppliances(100L, 1L, items);
 
         assertEquals(2, result.size());
-        verify(propertyApplianceRepository).delete(oldPa);
+        verify(propertyApplianceRepository, never()).delete(oldPa);
+        assertEquals(1, result.get(0).getQuantity());
+        assertEquals(3, result.get(1).getQuantity());
     }
 }

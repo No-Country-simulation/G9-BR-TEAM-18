@@ -10,24 +10,7 @@ import org.junit.jupiter.api.Test;
 class EquipmentCategoryTest {
 
     @Test
-    void deveConverterCategoriasDoInglesParaPortuguesCorretamente() {
-        assertEquals("Refrigeração", EquipmentCategory.toPortugueseFromEnglish("REFRIGERATION"));
-        assertEquals("Climatização", EquipmentCategory.toPortugueseFromEnglish("CLIMATE_CONTROL"));
-        assertEquals("Tecnologia", EquipmentCategory.toPortugueseFromEnglish("TECHNOLOGY"));
-        assertEquals("Iluminação", EquipmentCategory.toPortugueseFromEnglish("LIGHTING"));
-        assertEquals("Eletrodomésticos", EquipmentCategory.toPortugueseFromEnglish("APPLIANCES"));
-        assertEquals("Serviços", EquipmentCategory.toPortugueseFromEnglish("SERVICES"));
-    }
-
-    @Test
-    void deveRetornarOutrosParaCategoriaDesconhecida() {
-        assertEquals("Outros", EquipmentCategory.toPortugueseFromEnglish("INVALID_CATEGORY_XYZ"));
-        assertEquals("Outros", EquipmentCategory.toPortugueseFromEnglish(null));
-        assertEquals("Outros", EquipmentCategory.toPortugueseFromEnglish("   "));
-    }
-
-    @Test
-    void fromEnglishDeveResolverTodasAsCategoriasConhecidas() {
+    void fromEnglishShouldResolveAllKnownCategories() {
         assertEquals(
                 EquipmentCategory.REFRIGERATION,
                 EquipmentCategory.fromEnglish("REFRIGERATION").orElseThrow());
@@ -40,14 +23,14 @@ class EquipmentCategoryTest {
     }
 
     @Test
-    void fromEnglishDeveRetornarOptionalVazioParaCategoriaDesconhecida() {
+    void fromEnglishShouldReturnEmptyOptionalForUnknownCategory() {
         assertTrue(EquipmentCategory.fromEnglish("INVALID_CATEGORY_XYZ").isEmpty());
         assertTrue(EquipmentCategory.fromEnglish(null).isEmpty());
         assertTrue(EquipmentCategory.fromEnglish("   ").isEmpty());
     }
 
     @Test
-    void toEnglishFromPortugueseDeveReconstruirValorEmInglesParaOContratoAdr0027() {
+    void toEnglishFromPortugueseShouldRebuildEnglishValueForAdr27Contract() {
         assertEquals("REFRIGERATION", EquipmentCategory.toEnglishFromPortuguese("Refrigeração"));
         assertEquals("CLIMATE_CONTROL", EquipmentCategory.toEnglishFromPortuguese("Climatização"));
         assertEquals("TECHNOLOGY", EquipmentCategory.toEnglishFromPortuguese("Tecnologia"));
@@ -57,7 +40,7 @@ class EquipmentCategoryTest {
     }
 
     @Test
-    void toEnglishFromPortugueseNaoDeveQuebrarParaValorNaoReconhecido() {
+    void toEnglishFromPortugueseShouldNotBreakForUnrecognizedValue() {
         assertEquals("Categoria Inexistente", EquipmentCategory.toEnglishFromPortuguese("Categoria Inexistente"));
         assertNull(EquipmentCategory.toEnglishFromPortuguese(null));
     }

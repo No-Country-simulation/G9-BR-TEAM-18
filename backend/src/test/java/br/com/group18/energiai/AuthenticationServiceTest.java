@@ -7,17 +7,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import br.com.group18.energiai.application.dto.UserPreferences;
+import br.com.group18.energiai.application.exception.EmailAlreadyRegisteredException;
+import br.com.group18.energiai.application.exception.ForbiddenOperationException;
+import br.com.group18.energiai.application.exception.ResourceNotFoundException;
 import br.com.group18.energiai.application.services.AuthenticationService;
 import br.com.group18.energiai.core.domain.model.User;
+import br.com.group18.energiai.core.ports.out.PasswordHasherPort;
 import br.com.group18.energiai.core.ports.out.UserRepositoryPort;
-import java.util.Map;
+import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -26,7 +30,7 @@ class AuthenticationServiceTest {
     private UserRepositoryPort userRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHasherPort passwordHasher;
 
     @InjectMocks
     private AuthenticationService authenticationService;
@@ -34,7 +38,7 @@ class AuthenticationServiceTest {
     @Test
     void shouldRegisterWithBCrypt() {
         when(userRepository.findByEmail("novo@email.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("senha123")).thenReturn("$2a$10$bcryptHash");
+        when(passwordHasher.encode("senha123")).thenReturn("$2a$10$bcryptHash");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User u = invocation.getArgument(0);
             u.setId(1L);
@@ -54,8 +58,8 @@ class AuthenticationServiceTest {
         when(userRepository.findByEmail("teste@email.com"))
                 .thenReturn(Optional.of(new User("Teste", "teste@email.com", "hash")));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EmailAlreadyRegisteredException exception = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> authenticationService.register("Teste 2", "teste@email.com", "senha123"));
 
         assertEquals("E-mail já cadastrado", exception.getMessage());
@@ -65,7 +69,7 @@ class AuthenticationServiceTest {
     void shouldLoginWithBCryptPassword() {
         User user = new User("Nome", "email@email.com", "$2a$10$bcryptHash");
         when(userRepository.findByEmail("email@email.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("senhaCorreta", "$2a$10$bcryptHash")).thenReturn(true);
+        when(passwordHasher.matches("senhaCorreta", "$2a$10$bcryptHash")).thenReturn(true);
 
         Optional<User> result = authenticationService.login("email@email.com", "senhaCorreta");
 
@@ -77,7 +81,7 @@ class AuthenticationServiceTest {
     void shouldReturnEmptyWhenBCryptPasswordDoesNotMatch() {
         User user = new User("Nome", "email@email.com", "$2a$10$bcryptHash");
         when(userRepository.findByEmail("email@email.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("senhaErrada", "$2a$10$bcryptHash")).thenReturn(false);
+        when(passwordHasher.matches("senhaErrada", "$2a$10$bcryptHash")).thenReturn(false);
 
         Optional<User> result = authenticationService.login("email@email.com", "senhaErrada");
 
@@ -86,17 +90,14 @@ class AuthenticationServiceTest {
 
     @Test
     void shouldLoginWithSha256LegacyPassword() {
-        // SHA-256 hash format: Base64(salt(16) + hash(32)) = 64 chars
         User user = new User("Legacy", "legacy@email.com", "c2FsdFNhbHRTYWx0U2FsdFNhbHQ=");
         when(userRepository.findByEmail("legacy@email.com")).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("qualquerSenha", "c2FsdFNhbHRTYWx0U2FsdFNhbHQ="))
+                .thenReturn(true);
 
-        // This password will fail BCrypt check but still work via SHA-256
         Optional<User> result = authenticationService.login("legacy@email.com", "qualquerSenha");
 
-        // With mocked PasswordEncoder, BCrypt won't match; SHA-256 also won't match
-        // because the Base64-decoded hash won't be valid SHA-256 format
-        // But we can test that the method doesn't throw and returns empty gracefully
-        assertTrue(result.isEmpty());
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -109,12 +110,46 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    void shouldReturnEmptyWhenStoredHashIsEmpty() {
+        User user = new User("Nome", "email@email.com", "");
+        when(userRepository.findByEmail("email@email.com")).thenReturn(Optional.of(user));
+
+        Optional<User> result = authenticationService.login("email@email.com", "qualquerSenha");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldAdminResetPasswordForAnyUser() {
+        User user = new User("Nome", "email@email.com", "hashAntigo");
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordHasher.encode("novaSenha")).thenReturn("$2a$10$novoHash");
+        when(userRepository.save(user)).thenReturn(user);
+
+        User result = authenticationService.adminResetPassword(1L, "novaSenha");
+
+        assertEquals("$2a$10$novoHash", result.getPasswordHash());
+        assertFalse(result.isPasswordResetRequired());
+    }
+
+    @Test
+    void shouldThrowWhenAdminResetPasswordForNonExistentUser() {
+        when(userRepository.findById(7L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class, () -> authenticationService.adminResetPassword(7L, "novaSenha"));
+
+        assertEquals("Usuário não encontrado", exception.getMessage());
+    }
+
+    @Test
     void shouldResetPasswordWithBCryptCurrentPassword() {
         User user = new User("Nome", "email@email.com", "$2a$10$oldHash");
         user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("currentPass", "$2a$10$oldHash")).thenReturn(true);
-        when(passwordEncoder.encode("newPass")).thenReturn("$2a$10$newHash");
+        when(passwordHasher.matches("currentPass", "$2a$10$oldHash")).thenReturn(true);
+        when(passwordHasher.encode("newPass")).thenReturn("$2a$10$newHash");
         when(userRepository.save(user)).thenReturn(user);
 
         User result = authenticationService.resetPassword(1L, "currentPass", "newPass");
@@ -128,10 +163,11 @@ class AuthenticationServiceTest {
         User user = new User("Nome", "email@email.com", "$2a$10$oldHash");
         user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("wrongPass", "$2a$10$oldHash")).thenReturn(false);
+        when(passwordHasher.matches("wrongPass", "$2a$10$oldHash")).thenReturn(false);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> authenticationService.resetPassword(1L, "wrongPass", "newPass"));
+        ForbiddenOperationException exception = assertThrows(
+                ForbiddenOperationException.class,
+                () -> authenticationService.resetPassword(1L, "wrongPass", "newPass"));
 
         assertEquals("Senha atual inválida", exception.getMessage());
     }
@@ -140,8 +176,8 @@ class AuthenticationServiceTest {
     void shouldThrowWhenResetPasswordForNonExistentUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> authenticationService.resetPassword(99L, "current", "new"));
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class, () -> authenticationService.resetPassword(99L, "current", "new"));
 
         assertEquals("Usuário não encontrado", exception.getMessage());
     }
@@ -174,21 +210,33 @@ class AuthenticationServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Map<String, Object> prefs = Map.of(
-                "consumption_goal",
-                300.5,
-                "regularity",
-                "mensal",
-                "peak_hour_usage",
-                true,
-                "high_consumption_hours",
-                5.5);
+        UserPreferences preferences =
+                new UserPreferences(new BigDecimal("300.5"), "mensal", true, new BigDecimal("5.5"));
 
-        User result = authenticationService.updatePreferences(1L, prefs);
+        User result = authenticationService.updatePreferences(1L, preferences);
 
-        assertEquals(new java.math.BigDecimal("300.5"), result.getConsumptionGoal());
+        assertEquals(new BigDecimal("300.5"), result.getConsumptionGoal());
         assertEquals("mensal", result.getRegularity());
         assertTrue(result.getPeakHourUsage());
-        assertEquals(new java.math.BigDecimal("5.5"), result.getHighConsumptionHours());
+        assertEquals(new BigDecimal("5.5"), result.getHighConsumptionHours());
+    }
+
+    @Test
+    void shouldKeepUnchangedPreferencesWhenNotInformed() {
+        User user = new User("Nome", "email@email.com", "hash");
+        user.setId(1L);
+        user.setConsumptionGoal(new BigDecimal("250.00"));
+        user.setRegularity("semanal");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserPreferences preferences = new UserPreferences(new BigDecimal("300.5"), null, null, null);
+
+        User result = authenticationService.updatePreferences(1L, preferences);
+
+        assertEquals(new BigDecimal("300.5"), result.getConsumptionGoal());
+        assertEquals("semanal", result.getRegularity());
+        assertEquals(null, result.getPeakHourUsage());
+        assertEquals(null, result.getHighConsumptionHours());
     }
 }

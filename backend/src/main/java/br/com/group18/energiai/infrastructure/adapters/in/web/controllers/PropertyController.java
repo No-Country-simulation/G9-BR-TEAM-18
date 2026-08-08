@@ -1,13 +1,15 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
+import br.com.group18.energiai.application.dto.ApplianceQuantity;
 import br.com.group18.energiai.application.services.PropertyService;
-import br.com.group18.energiai.application.services.PropertyService.ApplianceQuantity;
 import br.com.group18.energiai.core.domain.model.Property;
 import br.com.group18.energiai.core.domain.model.PropertyAppliance;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ApplianceQuantityRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyApplianceRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyApplianceResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.PropertyResponseDTO;
+import br.com.group18.energiai.infrastructure.adapters.in.web.security.SessionUserResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -49,7 +51,7 @@ public class PropertyController {
     @PostMapping
     public ResponseEntity<PropertyResponseDTO> create(
             @Valid @RequestBody PropertyRequestDTO request, HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -67,7 +69,7 @@ public class PropertyController {
     @ApiResponse(responseCode = "200", description = "Lista de propriedades retornada")
     @GetMapping
     public ResponseEntity<List<PropertyResponseDTO>> list(HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -88,7 +90,7 @@ public class PropertyController {
             @PathVariable Long propertyId,
             @Valid @RequestBody PropertyRequestDTO request,
             HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -113,7 +115,7 @@ public class PropertyController {
     })
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<Void> delete(@PathVariable Long propertyId, HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -128,7 +130,7 @@ public class PropertyController {
     @GetMapping("/{propertyId}/appliances")
     public ResponseEntity<List<PropertyApplianceResponseDTO>> listAppliances(
             @PathVariable Long propertyId, HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -150,7 +152,7 @@ public class PropertyController {
             @PathVariable Long propertyId,
             @Valid @RequestBody PropertyApplianceRequestDTO request,
             HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -175,7 +177,7 @@ public class PropertyController {
         if (!applianceId.equals(request.getApplianceId())) {
             return ResponseEntity.badRequest().build();
         }
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -190,12 +192,17 @@ public class PropertyController {
     @ApiResponse(responseCode = "200", description = "Lote atualizado com sucesso")
     @PutMapping("/{propertyId}/appliances/batch")
     public ResponseEntity<List<PropertyApplianceResponseDTO>> batchUpdateAppliances(
-            @PathVariable Long propertyId, @RequestBody List<ApplianceQuantity> items, HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+            @PathVariable Long propertyId,
+            @RequestBody List<ApplianceQuantityRequestDTO> items,
+            HttpServletRequest httpRequest) {
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(propertyService.batchUpdateAppliances(propertyId, userId, items).stream()
+        List<ApplianceQuantity> quantities = items.stream()
+                .map(item -> new ApplianceQuantity(item.applianceId(), item.quantity()))
+                .toList();
+        return ResponseEntity.ok(propertyService.batchUpdateAppliances(propertyId, userId, quantities).stream()
                 .map(this::toResponse)
                 .toList());
     }
@@ -210,16 +217,12 @@ public class PropertyController {
     @DeleteMapping("/{propertyId}/appliances/{applianceId}")
     public ResponseEntity<Void> removeAppliance(
             @PathVariable Long propertyId, @PathVariable Long applianceId, HttpServletRequest httpRequest) {
-        Long userId = authenticatedUser(httpRequest);
+        Long userId = SessionUserResolver.userId(httpRequest);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         propertyService.removeAppliance(propertyId, userId, applianceId);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long authenticatedUser(HttpServletRequest request) {
-        return AuthController.getUserId(request);
     }
 
     private PropertyResponseDTO toResponse(Property property) {

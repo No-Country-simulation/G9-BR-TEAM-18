@@ -63,10 +63,6 @@ public class EnergyAnalysis {
         return peakHourUsage;
     }
 
-    public void setPeakHourUsage(Boolean peakHourUsage) {
-        this.peakHourUsage = peakHourUsage;
-    }
-
     public BigDecimal getHighConsumptionHours() {
         return highConsumptionHours;
     }

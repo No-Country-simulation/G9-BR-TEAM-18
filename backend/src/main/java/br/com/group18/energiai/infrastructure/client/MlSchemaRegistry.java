@@ -1,5 +1,7 @@
 package br.com.group18.energiai.infrastructure.client;
 
+import br.com.group18.energiai.core.domain.model.ApplianceCatalogItem;
+import br.com.group18.energiai.core.ports.out.MlContractPort;
 import br.com.group18.energiai.infrastructure.client.dto.MlApplianceCatalogResponse;
 import br.com.group18.energiai.infrastructure.client.dto.MlApplianceDTO;
 import br.com.group18.energiai.infrastructure.client.dto.MlContractResponse;
@@ -10,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MlSchemaRegistry {
+public class MlSchemaRegistry implements MlContractPort {
 
     private static final Logger log = LoggerFactory.getLogger(MlSchemaRegistry.class);
 
@@ -66,19 +68,25 @@ public class MlSchemaRegistry {
                 new MlApplianceDTO("Televisão", "TECHNOLOGY", 150, 6.0));
     }
 
-    public List<String> getPropertyTypes() {
+    @Override
+    public List<String> propertyTypes() {
         return propertyTypes;
     }
 
-    public List<String> getEfficiencyCategories() {
+    @Override
+    public List<String> efficiencyCategories() {
         return efficiencyCategories;
     }
 
-    public List<String> getConsumptionCategories() {
+    @Override
+    public List<String> consumptionCategories() {
         return consumptionCategories;
     }
 
-    public List<MlApplianceDTO> getApplianceCatalog() {
-        return applianceCatalog;
+    @Override
+    public List<ApplianceCatalogItem> applianceCatalog() {
+        return applianceCatalog.stream()
+                .map(item -> new ApplianceCatalogItem(item.name(), item.mlCategory(), item.watts(), item.hours()))
+                .toList();
     }
 }

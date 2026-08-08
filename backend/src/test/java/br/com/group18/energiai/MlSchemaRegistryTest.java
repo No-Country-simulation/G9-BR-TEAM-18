@@ -23,32 +23,31 @@ class MlSchemaRegistryTest {
     }
 
     @Test
-    void deveIgnorarListasNulasNoRegistroEManterFallback() {
+    void shouldIgnoreNullListsAndKeepFallback() {
         MlContractResponse contratoComNulos = new MlContractResponse(null, null, null);
         MlApplianceCatalogResponse catalogoComNulos = new MlApplianceCatalogResponse(null);
 
-        int tamanhoFallbackPropriedades = registry.getPropertyTypes().size();
-        int tamanhoFallbackEficiencia = registry.getEfficiencyCategories().size();
-        int tamanhoFallbackConsumo = registry.getConsumptionCategories().size();
-        int tamanhoFallbackCatalogo = registry.getApplianceCatalog().size();
+        int tamanhoFallbackPropriedades = registry.propertyTypes().size();
+        int tamanhoFallbackEficiencia = registry.efficiencyCategories().size();
+        int tamanhoFallbackConsumo = registry.consumptionCategories().size();
+        int tamanhoFallbackCatalogo = registry.applianceCatalog().size();
 
         assertDoesNotThrow(() -> registry.register(contratoComNulos, catalogoComNulos));
 
-        assertNotNull(registry.getPropertyTypes());
-        assertFalse(registry.getPropertyTypes().isEmpty());
-        assertEquals(tamanhoFallbackPropriedades, registry.getPropertyTypes().size());
+        assertNotNull(registry.propertyTypes());
+        assertFalse(registry.propertyTypes().isEmpty());
+        assertEquals(tamanhoFallbackPropriedades, registry.propertyTypes().size());
 
-        assertNotNull(registry.getEfficiencyCategories());
-        assertFalse(registry.getEfficiencyCategories().isEmpty());
-        assertEquals(
-                tamanhoFallbackEficiencia, registry.getEfficiencyCategories().size());
+        assertNotNull(registry.efficiencyCategories());
+        assertFalse(registry.efficiencyCategories().isEmpty());
+        assertEquals(tamanhoFallbackEficiencia, registry.efficiencyCategories().size());
 
-        assertNotNull(registry.getConsumptionCategories());
-        assertFalse(registry.getConsumptionCategories().isEmpty());
-        assertEquals(tamanhoFallbackConsumo, registry.getConsumptionCategories().size());
+        assertNotNull(registry.consumptionCategories());
+        assertFalse(registry.consumptionCategories().isEmpty());
+        assertEquals(tamanhoFallbackConsumo, registry.consumptionCategories().size());
 
-        assertNotNull(registry.getApplianceCatalog());
-        assertFalse(registry.getApplianceCatalog().isEmpty());
-        assertEquals(tamanhoFallbackCatalogo, registry.getApplianceCatalog().size());
+        assertNotNull(registry.applianceCatalog());
+        assertFalse(registry.applianceCatalog().isEmpty());
+        assertEquals(tamanhoFallbackCatalogo, registry.applianceCatalog().size());
     }
 }
