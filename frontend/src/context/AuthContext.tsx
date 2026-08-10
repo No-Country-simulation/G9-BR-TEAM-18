@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import type { User } from "../types";
-import { AuthContext } from "./authContext";
+import { AuthContext } from "./authContextDef";
 
 function clearSession(): void {
   document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: data.name,
             email: data.email,
             passwordResetRequired: data.password_reset_required,
+            auth_provider: data.auth_provider,
           });
         } else {
           clearSession();
@@ -50,6 +51,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: data.name,
       email: data.email,
       passwordResetRequired: data.password_reset_required,
+      auth_provider: data.auth_provider,
+    });
+    return data.password_reset_required === true;
+  }, []);
+
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const url = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+    const response = await fetch(`${url}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ credential }),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message ?? "Erro ao autenticar com Google");
+    }
+    const data = await response.json();
+    setUser({
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      passwordResetRequired: data.password_reset_required,
+      auth_provider: data.auth_provider,
     });
     return data.password_reset_required === true;
   }, []);
@@ -97,11 +122,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: data.name,
       email: data.email,
       passwordResetRequired: false,
+      auth_provider: data.auth_provider,
     });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
