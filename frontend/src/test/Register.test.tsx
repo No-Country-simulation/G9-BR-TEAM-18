@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router";
+import { MemoryRouter } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
+import { ThemeProvider } from "../context/ThemeContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Register from "../pages/Register";
 
 const mockNavigate = vi.fn();

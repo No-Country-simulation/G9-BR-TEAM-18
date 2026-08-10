@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
+import { ThemeProvider } from "../context/ThemeContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Login from "../pages/Login";
 
 const mockNavigate = vi.fn();

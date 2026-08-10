@@ -263,7 +263,7 @@ class AuthenticationServiceTest {
         User existingUser = new User("Legacy User", "legacy@email.com", "hash");
         existingUser.setId(3L);
         existingUser.setAuthProvider("LOCAL");
-        
+
         when(userRepository.findByEmail("legacy@email.com")).thenReturn(Optional.of(existingUser));
 
         User result = authenticationService.loginWithGoogle("legacy@email.com", "Google User");
@@ -282,7 +282,9 @@ class AuthenticationServiceTest {
                 ForbiddenOperationException.class,
                 () -> authenticationService.login("google@email.com", "qualquerSenha"));
 
-        assertEquals("Usuários cadastrados via Google devem utilizar o botão 'Continuar com Google'.", exception.getMessage());
+        assertEquals(
+                "Usuários cadastrados via Google devem utilizar o botão 'Continuar com Google'.",
+                exception.getMessage());
     }
 
     @Test
@@ -293,8 +295,7 @@ class AuthenticationServiceTest {
         when(userRepository.findById(5L)).thenReturn(Optional.of(user));
 
         ForbiddenOperationException exception = assertThrows(
-                ForbiddenOperationException.class,
-                () -> authenticationService.resetPassword(5L, "senha", "nova"));
+                ForbiddenOperationException.class, () -> authenticationService.resetPassword(5L, "senha", "nova"));
 
         assertEquals("Usuários cadastrados via Google não podem alterar a senha.", exception.getMessage());
     }

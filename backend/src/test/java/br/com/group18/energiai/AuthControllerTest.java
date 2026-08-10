@@ -370,16 +370,18 @@ class AuthControllerTest {
 
     @Test
     void shouldLoginWithGoogle() throws Exception {
-        com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = new com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload();
+        com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload =
+                new com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload();
         payload.setEmail("google@example.com");
         payload.set("name", "Google User");
-        
+
         when(googleAuthService.verifyToken("valid-token")).thenReturn(payload);
-        
+
         User user = new User("Google User", "google@example.com", "hash");
         user.setId(5L);
         user.setAuthProvider("GOOGLE");
-        when(authenticationService.loginWithGoogle("google@example.com", "Google User")).thenReturn(user);
+        when(authenticationService.loginWithGoogle("google@example.com", "Google User"))
+                .thenReturn(user);
         when(jwtService.createToken(5L)).thenReturn(TOKEN);
 
         String body =
