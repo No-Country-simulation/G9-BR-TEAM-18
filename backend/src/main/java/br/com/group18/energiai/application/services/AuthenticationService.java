@@ -35,6 +35,10 @@ public class AuthenticationService {
         if (user.isEmpty()) {
             return Optional.empty();
         }
+        if ("GOOGLE".equals(user.get().getAuthProvider())) {
+            throw new ForbiddenOperationException(
+                    "Usuários cadastrados via Google devem utilizar o botão 'Continuar com Google'.");
+        }
         String storedHash = user.get().getPasswordHash();
         if (storedHash == null || storedHash.isEmpty()) {
             return Optional.empty();
@@ -45,12 +49,28 @@ public class AuthenticationService {
         return user;
     }
 
+    public User loginWithGoogle(String email, String name) {
+        return userRepository.findByEmail(email).orElseGet(() -> {
+            byte[] randomBytes = new byte[32];
+            new java.security.SecureRandom().nextBytes(randomBytes);
+            String secureRandomPassword = java.util.Base64.getEncoder().encodeToString(randomBytes);
+
+            User newUser = new User(name, email, passwordHasher.encode(secureRandomPassword));
+            newUser.setAuthProvider("GOOGLE");
+            return userRepository.save(newUser);
+        });
+    }
+
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 
     public User resetPassword(Long userId, String currentPassword, String newPassword) {
         User user = requireUser(userId);
+
+        if ("GOOGLE".equals(user.getAuthProvider())) {
+            throw new ForbiddenOperationException("Usuários cadastrados via Google não podem alterar a senha.");
+        }
 
         boolean currentValid = passwordHasher.matches(currentPassword, user.getPasswordHash());
         log.info("resetPassword userId={}: currentValid={}", userId, currentValid);

@@ -57,6 +57,9 @@ class AuthControllerTest {
     @MockitoBean
     private TokenBlacklistRepositoryPort tokenBlacklistRepository;
 
+    @MockitoBean
+    private br.com.group18.energiai.application.services.GoogleAuthService googleAuthService;
+
     private void mockAuthenticatedSession(Long userId) {
         when(jwtService.hashToken(TOKEN)).thenReturn(TOKEN_HASH);
         when(tokenBlacklistRepository.existsByTokenHash(TOKEN_HASH)).thenReturn(false);
@@ -363,5 +366,35 @@ class AuthControllerTest {
                         .content(body))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+    }
+
+    @Test
+    void shouldLoginWithGoogle() throws Exception {
+        com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = new com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload();
+        payload.setEmail("google@example.com");
+        payload.set("name", "Google User");
+        
+        when(googleAuthService.verifyToken("valid-token")).thenReturn(payload);
+        
+        User user = new User("Google User", "google@example.com", "hash");
+        user.setId(5L);
+        user.setAuthProvider("GOOGLE");
+        when(authenticationService.loginWithGoogle("google@example.com", "Google User")).thenReturn(user);
+        when(jwtService.createToken(5L)).thenReturn(TOKEN);
+
+        String body =
+                """
+                {
+                    "credential": "valid-token"
+                }
+                """;
+
+        mockMvc.perform(post("/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(TOKEN))
+                .andExpect(jsonPath("$.email").value("google@example.com"))
+                .andExpect(jsonPath("$.auth_provider").value("GOOGLE"));
     }
 }

@@ -13,6 +13,7 @@ public class User {
     private String regularity;
     private Boolean peakHourUsage;
     private BigDecimal highConsumptionHours;
+    private String authProvider = "LOCAL";
 
     public User() {}
 
@@ -92,5 +93,13 @@ public class User {
 
     public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
         this.highConsumptionHours = highConsumptionHours;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }

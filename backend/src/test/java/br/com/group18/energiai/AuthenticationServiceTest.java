@@ -239,4 +239,63 @@ class AuthenticationServiceTest {
         assertEquals(null, result.getPeakHourUsage());
         assertEquals(null, result.getHighConsumptionHours());
     }
+
+    @Test
+    void shouldLoginWithGoogleForNewUser() {
+        when(userRepository.findByEmail("novo.google@email.com")).thenReturn(Optional.empty());
+        when(passwordHasher.encode(any(String.class))).thenReturn("$2a$10$randomHash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            u.setId(2L);
+            return u;
+        });
+
+        User result = authenticationService.loginWithGoogle("novo.google@email.com", "Google User");
+
+        assertEquals("Google User", result.getName());
+        assertEquals("novo.google@email.com", result.getEmail());
+        assertEquals("GOOGLE", result.getAuthProvider());
+        assertEquals("$2a$10$randomHash", result.getPasswordHash());
+    }
+
+    @Test
+    void shouldLoginWithGoogleForExistingUser() {
+        User existingUser = new User("Legacy User", "legacy@email.com", "hash");
+        existingUser.setId(3L);
+        existingUser.setAuthProvider("LOCAL");
+        
+        when(userRepository.findByEmail("legacy@email.com")).thenReturn(Optional.of(existingUser));
+
+        User result = authenticationService.loginWithGoogle("legacy@email.com", "Google User");
+
+        assertEquals(3L, result.getId());
+        assertEquals("LOCAL", result.getAuthProvider()); // Mantém o provider original
+    }
+
+    @Test
+    void shouldBlockNormalLoginForGoogleAccounts() {
+        User user = new User("Google", "google@email.com", "hash");
+        user.setAuthProvider("GOOGLE");
+        when(userRepository.findByEmail("google@email.com")).thenReturn(Optional.of(user));
+
+        ForbiddenOperationException exception = assertThrows(
+                ForbiddenOperationException.class,
+                () -> authenticationService.login("google@email.com", "qualquerSenha"));
+
+        assertEquals("Usuários cadastrados via Google devem utilizar o botão 'Continuar com Google'.", exception.getMessage());
+    }
+
+    @Test
+    void shouldBlockResetPasswordForGoogleAccounts() {
+        User user = new User("Google", "google@email.com", "hash");
+        user.setId(5L);
+        user.setAuthProvider("GOOGLE");
+        when(userRepository.findById(5L)).thenReturn(Optional.of(user));
+
+        ForbiddenOperationException exception = assertThrows(
+                ForbiddenOperationException.class,
+                () -> authenticationService.resetPassword(5L, "senha", "nova"));
+
+        assertEquals("Usuários cadastrados via Google não podem alterar a senha.", exception.getMessage());
+    }
 }
