@@ -3,6 +3,7 @@ import os
 import re
 import time
 import traceback
+import unicodedata
 from datetime import UTC, date, datetime
 
 import joblib
@@ -175,31 +176,176 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
 
 CATEGORY_RECOMMENDATIONS = {
     "Refrigeracao": (
-        "Verifique a vedação da geladeira e evite deixá-la encostada em paredes "
-        "ou perto de fontes de calor, isso força o motor a trabalhar mais."
+        "Verifique a vedação dos equipamentos de refrigeração e evite deixá-los "
+        "encostados em paredes ou perto de fontes de calor, isso força o motor a "
+        "trabalhar mais."
     ),
     "Climatizacao": (
-        "Ajuste o ar-condicionado para 23°C e evite deixar portas ou janelas "
-        "abertas enquanto ele estiver ligado."
+        "Ajuste os equipamentos de climatização para uma temperatura moderada e "
+        "evite deixar portas ou janelas abertas enquanto estiverem ligados."
     ),
     "Tecnologia": (
-        "Desligue TVs, computadores e videogames da tomada quando ficarem "
-        "muito tempo sem uso, o consumo em standby soma ao longo do mês."
+        "Desligue equipamentos eletrônicos da tomada quando ficarem muito tempo "
+        "sem uso, o consumo em espera soma ao longo do mês."
     ),
     "Iluminacao": (
         "Troque lâmpadas antigas por modelos LED, que entregam a mesma "
         "iluminação consumindo bem menos energia."
     ),
     "Eletrodomesticos": (
-        "Prefira banhos mais curtos no chuveiro elétrico e use o micro-ondas "
-        "ou a air fryer no lugar do forno tradicional sempre que possível."
+        "Priorize o uso consciente dos eletrodomésticos de maior consumo, "
+        "evitando deixá-los ligados além do necessário."
     ),
     "Servicos": (
-        "Revise bombas d'água, portões elétricos e outros equipamentos de uso "
-        "ocasional, é comum ficarem ligados sem necessidade."
+        "Revise os equipamentos de serviços do imóvel e verifique se algum "
+        "fica ligado sem necessidade quando não está em uso."
     ),
 }
 
+APPLIANCE_RECOMMENDATIONS = {
+    "Geladeira": (
+        "Verifique a vedação da geladeira e evite deixá-la encostada em paredes "
+        "ou perto de fontes de calor, isso força o motor a trabalhar mais."
+    ),
+    "Freezer": (
+        "Não deixe o freezer com a porta mal fechada e evite abri-lo com "
+        "frequência, cada abertura obriga o motor a resfriar de novo."
+    ),
+    "Frigobar": (
+        "Evite manter o frigobar muito cheio ou muito vazio, os dois extremos "
+        "fazem o motor trabalhar mais para manter a temperatura."
+    ),
+    "Bebedouro": (
+        "Desligue o bebedouro em períodos longos sem uso, ele mantém a água "
+        "refrigerada o tempo todo mesmo sem ninguém consumindo."
+    ),
+    "Ar-condicionado": (
+        "Ajuste o ar-condicionado para 23°C e evite deixar portas ou janelas "
+        "abertas enquanto ele estiver ligado."
+    ),
+    "Split": (
+        "Limpe os filtros do ar-condicionado split regularmente, filtro sujo "
+        "faz o aparelho consumir bem mais para resfriar o ambiente."
+    ),
+    "Ventilador": (
+        "Prefira o ventilador ao ar-condicionado sempre que a temperatura "
+        "permitir, o consumo é uma fração do de um aparelho de climatização."
+    ),
+    "Aquecedor": (
+        "Use o aquecedor elétrico só no cômodo ocupado e desligue assim que "
+        "sair, ele tem um dos maiores consumos entre os eletrodomésticos."
+    ),
+    "Lampada": (
+        "Troque lâmpadas antigas por modelos LED, que entregam a mesma "
+        "iluminação consumindo bem menos energia."
+    ),
+    "Micro-ondas": (
+        "Prefira o micro-ondas ao forno tradicional para esquentar porções "
+        "pequenas, o tempo de uso é bem menor."
+    ),
+    "Air fryer": (
+        "Use a air fryer para porções que caibam bem no cesto, ciclos "
+        "incompletos gastam energia sem necessidade."
+    ),
+    "Maquina de lavar": (
+        "Espere acumular uma carga cheia antes de usar a máquina de lavar, "
+        "lavar pouca roupa por vez desperdiça água e energia."
+    ),
+    "Secadora": (
+        "Prefira secar roupas no varal sempre que possível, a secadora está "
+        "entre os equipamentos domésticos de maior consumo."
+    ),
+    "Chuveiro eletrico": (
+        "Prefira banhos mais curtos no chuveiro elétrico, ele é um dos maiores "
+        "consumidores de energia da casa."
+    ),
+    "Cafeteira": (
+        "Desligue a cafeteira elétrica da tomada após o uso, muitos modelos "
+        "continuam consumindo em espera."
+    ),
+    "Ferro de passar": (
+        "Junte as roupas para passar de uma vez, ligar e desligar o ferro "
+        "repetidas vezes gasta mais energia do que um uso contínuo."
+    ),
+    "Aspirador": (
+        "Esvazie o compartimento de pó do aspirador regularmente, ele perde "
+        "eficiência e consome mais com o filtro sujo."
+    ),
+    "Liquidificador": (
+        "Use o liquidificador só pelo tempo necessário, ciclos curtos e "
+        "frequentes consomem menos que deixá-lo ligado à toa."
+    ),
+    "Batedeira": (
+        "Desligue a batedeira da tomada quando não estiver em uso, mesmo "
+        "parada ela pode consumir em modo de espera."
+    ),
+    "Forno": (
+        "Aproveite o calor residual do forno elétrico desligando alguns "
+        "minutos antes de terminar o preparo."
+    ),
+    "Fogao": (
+        "Prefira panelas do tamanho certo para cada boca do fogão elétrico, "
+        "panela pequena numa boca grande desperdiça energia."
+    ),
+    "Televisao": (
+        "Desligue a televisão da tomada quando ficar muito tempo sem uso, o "
+        "consumo em espera soma ao longo do mês."
+    ),
+    "Computador": (
+        "Configure o computador para entrar em modo de economia de energia "
+        "após alguns minutos de inatividade."
+    ),
+    "Notebook": (
+        "Desligue o notebook da tomada quando a bateria estiver completa, "
+        "mantê-lo carregando o tempo todo desgasta a bateria e consome "
+        "energia à toa."
+    ),
+    "Roteador": (
+        "O roteador tem consumo baixo, mas vale desligá-lo em viagens longas "
+        "para eliminar até esse gasto residual."
+    ),
+    "Videogame": (
+        "Desligue o videogame da tomada quando não estiver jogando, o modo "
+        "de espera de consoles consome mais do que parece."
+    ),
+    "Bomba d'agua": (
+        "Programe horários fixos para a bomba d'água funcionar, em vez de "
+        "deixá-la ligada continuamente."
+    ),
+    "Portao eletrico": (
+        "Verifique se o motor do portão elétrico desliga sozinho após o "
+        "movimento, motores travados continuam consumindo energia."
+    ),
+    "Motor de piscina": (
+        "Ajuste o timer do motor da piscina para rodar só o tempo necessário "
+        "de filtragem diária, é um dos equipamentos de serviço que mais "
+        "consome."
+    ),
+}
+
+def _normalize_appliance_name(name: str) -> str:
+    stripped = "".join(c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn")
+    return stripped.strip().lower()
+
+
+APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME = {
+    _normalize_appliance_name(name): text for name, text in APPLIANCE_RECOMMENDATIONS.items()
+}
+
+
+def _select_appliance_recommendations(products: list[str] | None) -> list[str]:
+    """Retorna a dica de cada aparelho de highest_consumption_products que bater
+    com o catálogo reconhecido, até 3 (um por produto, na mesma ordem recebida).
+    Lista vazia se nenhum bater -- nesse caso o chamador cai no fallback
+    genérico por categoria."""
+    if not products:
+        return []
+    recs = []
+    for product in products[:3]:
+        key = _normalize_appliance_name(product)
+        if key in APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME:
+            recs.append(APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME[key])
+    return recs
 
 def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
@@ -210,10 +356,14 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
             "esse é o horário de pico e costuma pesar mais na conta."
         )
 
-    highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
-    category_rec = CATEGORY_RECOMMENDATIONS.get(highest_category_pt)
-    if category_rec:
-        recs.append(category_rec)
+    appliance_recs = _select_appliance_recommendations(data.highest_consumption_products)
+    if appliance_recs:
+        recs.extend(appliance_recs)
+    else:
+        highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
+        category_rec = CATEGORY_RECOMMENDATIONS.get(highest_category_pt)
+        if category_rec:
+            recs.append(category_rec)
 
     if category in ("RUIM", "CRITICO"):
         recs.append(
