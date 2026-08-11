@@ -86,6 +86,40 @@ class ApplianceCatalogSyncServiceTest {
     }
 
     @Test
+    void shouldLocalizeAccentedNamesWhenCreatingNewAppliance() {
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(
+                        new ApplianceCatalogItem("Fogao", "APPLIANCES", 1500, 1.0),
+                        new ApplianceCatalogItem("Chuveiro eletrico", "APPLIANCES", 5500, 0.5),
+                        new ApplianceCatalogItem("Bomba d'agua", "SERVICES", 750, 1.0)));
+        when(applianceRepository.findAll()).thenReturn(List.of());
+
+        syncService.syncCatalog();
+
+        ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
+        verify(applianceRepository, times(3)).save(captor.capture());
+
+        List<String> nomes =
+                captor.getAllValues().stream().map(Appliance::getName).toList();
+        assertTrue(nomes.contains("Fogão"));
+        assertTrue(nomes.contains("Chuveiro Elétrico"));
+        assertTrue(nomes.contains("Bomba d'Água"));
+    }
+
+    @Test
+    void shouldKeepOriginalNameWhenNotInLocalizationMap() {
+        when(mlContract.applianceCatalog())
+                .thenReturn(List.of(new ApplianceCatalogItem("Freezer", "REFRIGERATION", 200, 24.0)));
+        when(applianceRepository.findAll()).thenReturn(List.of());
+
+        syncService.syncCatalog();
+
+        ArgumentCaptor<Appliance> captor = ArgumentCaptor.forClass(Appliance.class);
+        verify(applianceRepository, times(1)).save(captor.capture());
+        assertEquals("Freezer", captor.getValue().getName());
+    }
+
+    @Test
     void shouldSkipUnknownCategoryOnNewApplianceWithoutBreakingStartup() {
         when(mlContract.applianceCatalog())
                 .thenReturn(List.of(new ApplianceCatalogItem("Aparelho Alienígena", "SPACESHIP_PROPULSION", 300, 5.0)));
