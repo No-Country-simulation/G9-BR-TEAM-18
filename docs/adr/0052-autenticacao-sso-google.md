@@ -2,49 +2,83 @@
 
 ## Status
 
-Pendente
+Aceito
 
 ## Contexto
 
-Atualmente, o projeto utiliza apenas autenticação local nativa (e-mail e senha) gerenciada através
-de tokens JWT próprios em cookies HttpOnly. Para reduzir a fricção de entrada de novos usuários e
-facilitar o login recorrente, surgiu a demanda de implementar autenticação via provedores de
-identidade externos (Single Sign-On), iniciando pelo Google.
+Atualmente, o projeto utiliza apenas autenticação local nativa (e-mail e senha) gerenciada
+através de tokens JWT próprios em cookies HttpOnly. Para reduzir a fricção de entrada de novos
+usuários e facilitar o login recorrente, surgiu a demanda de implementar autenticação via
+provedores de identidade externos (Single Sign-On), iniciando pelo Google.
 
 Forças e restrições:
 
 - **Usabilidade:** Usuários preferem "Login com 1 clique" em vez de preencher formulários ou digitar senha.
 - **Segurança:** O sistema existente baseia sua sessão em cookies HttpOnly. A integração com o Google precisa terminar devolvendo esse mesmo cookie para manter a compatibilidade com o resto do sistema.
-- **Base de dados:** Atualmente é exigido que o usuário defina preferências (peak hours, metas). Precisamos garantir que usuários cadastrados via Google recebam valores padrão.
+- **Base de dados:** É exigido que usuários cadastrados via Google recebam valores padrão para preferências (peak hours, metas).
 
 ## Decisão
 
-Implementar autenticação com o Google utilizando OAuth2/OpenID Connect.
+Implementar autenticação com o Google utilizando o fluxo de **ID Token (Google Identity
+Services / Sign In with Google)** em vez do fluxo OAuth2 Authorization Code com redirect.
 
-1. **Frontend:** Serão adicionados botões de "Entrar com Google" nas telas de Login e Cadastro. Ao clicar, o frontend redirecionará o usuário para o endpoint de autorização do backend.
-2. **Backend:** O backend será configurado como um cliente OAuth2 (usando `spring-boot-starter-oauth2-client`). Ele gerenciará o redirecionamento para o Google, o recebimento do código de autorização e a troca pelos dados do perfil (e-mail, nome).
-3. **Mapeamento de Usuário:** Se o e-mail recebido do Google já existir, o backend fará login na conta existente. Se não existir, o backend criará uma nova conta (sem senha ou com senha gerada aleatória), configurando preferências padrão.
-4. **Sessão:** Ao final do fluxo, o backend gerará o mesmo cookie `SESSION_TOKEN` (JWT nativo) usado no login normal e redirecionará o usuário de volta ao Dashboard do frontend.
+### Fluxo implementado (Task B057)
+
+1. **Frontend:** As telas de Login e Cadastro exibem o botão "Entrar com Google" do pacote
+   `@react-oauth/google` (`GoogleOAuthProvider` + `GoogleLogin`). O Google devolve um
+   `credential` (ID Token JWT) diretamente ao navegador.
+2. **Frontend → Backend:** O frontend envia o ID Token para `POST /auth/google`
+   (`GoogleAuthRequestDTO.credential`).
+3. **Backend:** O `GoogleAuthService` valida o ID Token com o `GoogleIdTokenVerifier`
+   (bibliotecas `google-api-client`), usando o Client ID configurado como audience.
+4. **Mapeamento de Usuário:** O e-mail e nome extraídos do payload são enviados ao
+   `AuthenticationService.loginWithGoogle(email, name)`. Se o e-mail já existir, faz login na
+   conta existente; caso contrário, cria uma nova conta com `auth_provider = GOOGLE`.
+5. **Sessão:** O backend gera o mesmo cookie `SESSION_TOKEN` (JWT nativo) usado no login
+   normal, mantendo a compatibilidade com o resto do sistema.
+
+### Variáveis de ambiente
+
+| Variável | Onde | Descrição |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` | Backend (`${google.client.id}` no `GoogleAuthService`) | Client ID usado como audience na validação do ID Token. Sem ela o backend **não inicia** (fail-fast). |
+| `VITE_GOOGLE_CLIENT_ID` | Frontend (`main.tsx`, build arg do Docker) | Client ID usado pelo `GoogleOAuthProvider`. Deve ser o **mesmo valor** de `GOOGLE_CLIENT_ID`. Se ausente, usa fallback `mock-client-id.apps.googleusercontent.com`. |
+
+> **Importante:** O ADR original descrevia o fluxo com `spring-boot-starter-oauth2-client` e
+> redirect para `/oauth2/authorization/google`. Essa abordagem **não foi implementada**. O
+> fluxo real é o de ID Token descrito acima, sem redirect server-side e sem
+> `GOOGLE_CLIENT_SECRET`.
+
+### Como obter um Client ID real
+
+1. Acessar <https://console.cloud.google.com/> e criar/selecionar um projeto.
+2. Configurar a tela de consentimento OAuth (APIs e serviços → Tela de consentimento OAuth).
+3. Em Credenciais → Criar credenciais → ID do cliente OAuth, escolher "Aplicativo da web".
+4. Adicionar as origens de JavaScript autorizadas (`http://localhost:5173` e a URL do frontend
+   em produção).
+5. Copiar o Client ID e configurar `GOOGLE_CLIENT_ID` (backend) e `VITE_GOOGLE_CLIENT_ID`
+   (frontend) com o mesmo valor.
+
+### Comportamento com Client ID mock (desenvolvimento local)
+
+Para desenvolvimento local é aceitável usar `GOOGLE_CLIENT_ID=mock-client-id.apps.googleusercontent.com`
+apenas para o backend iniciar e o restante da aplicação funcionar (login e-mail/senha,
+catálogo, análises). O botão "Entrar com Google" falhará se clicado até que um Client ID real
+seja configurado.
+
+## Alternativas consideradas
+
+| Alternativa | Prós | Contras |
+|---|---|---|
+| **ID Token via @react-oauth/google (escolhido)** | Sem redirect server-side; frontend recebe o token diretamente; integração simples com o fluxo de cookie existente | Botão depende do JS do Google carregar; fluxo menos flexível para outros provedores |
+| **OAuth2 Authorization Code com spring-boot-starter-oauth2-client** | Fluxo server-side tradicional; suporta refresh tokens | Redirect e estado de sessão adicionais; mais configuração no Spring Security; não foi o caminho adotado |
+| **Manter apenas login e-mail/senha** | Zero dependência externa | Não reduz fricção de cadastro |
 
 ## Consequências
 
-- **Positivo:** Aumento previsto na taxa de conversão de cadastros por reduzir a fricção (menos campos para preencher).
+- **Positivo:** Login com Google em 1 clique nas telas de Login e Cadastro.
 - **Positivo:** O fluxo mantém a segurança atual do sistema baseada em cookies HttpOnly, sem expor tokens ao JavaScript.
-- **Negativo:** Usuários criados via Google não terão uma senha nativa para usar caso a API do Google caia. (Para contornar isso, futuramente eles poderão usar a funcionalidade da ADR-0051).
-- **Neutro:** Necessidade de criar e configurar credenciais na Google Cloud Console e definir as URIs de redirecionamento para dev e prod.
-
-## O que precisa ser feito (Tasks)
-
-**Backend:**
-
-1. Adicionar dependência `spring-boot-starter-oauth2-client`.
-2. Adicionar variáveis de ambiente (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) no `application.properties`.
-3. Configurar o Spring Security para aceitar OAuth2 Login, implementando um `AuthenticationSuccessHandler` que crie/busque o usuário pelo e-mail e gere o cookie JWT de sessão, seguido de um HTTP 302 Redirect para o frontend (Dashboard).
-4. (Opcional) Ajustar o banco para permitir usuários sem senha nativa (`password_hash` anulável) se a política exigir, ou gerar senhas aleatórias grandes.
-
-**Frontend:**
-
-1. Adicionar botão "Continuar com Google" estilizado na tela de `Login.tsx` e `Register.tsx`.
-2. Configurar o redirecionamento do botão apontando diretamente para a rota do backend (ex: `http://localhost:8080/oauth2/authorization/google`).
-3. O fluxo de callback será tratado totalmente pelo backend, o frontend apenas precisa estar
-   preparado para carregar o estado do usuário ao cair no Dashboard.
+- **Positivo:** Usuários criados via Google recebem preferências padrão (via `loginWithGoogle`).
+- **Negativo:** Usuários criados via Google não têm senha nativa para usar caso a API do Google caia (endereçável futuramente via ADR-0051).
+- **Negativo:** O backend não inicia sem `GOOGLE_CLIENT_ID` configurado (fail-fast), exigindo documentação clara da variável (ver .env.example).
+- **Neutro:** Necessidade de criar credenciais na Google Cloud Console e manter o mesmo Client ID no backend e no frontend.
