@@ -59,7 +59,11 @@ export default function ResetPasswordPage() {
               Contas vinculadas ao Google não podem alterar a senha por aqui. O acesso é gerenciado
               diretamente pela sua conta Google.
             </p>
-            <button type="button" className="btn btn-secondary btn-full" onClick={() => navigate("/")}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-full"
+              onClick={() => navigate("/")}
+            >
               Voltar ao Início
             </button>
           </div>

@@ -34,8 +34,8 @@
   content: "";
   flex: 1;
   height: 4px;
-  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 /
-    16px 16px;
+  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 / 16px
+    16px;
   opacity: 0.35;
 }
 
