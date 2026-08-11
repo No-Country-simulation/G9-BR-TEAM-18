@@ -28,7 +28,7 @@ function renderPage() {
           <Register />
         </BrowserRouter>
       </AuthProvider>
-    </GoogleOAuthProvider>
+    </GoogleOAuthProvider>,
   );
 }
 

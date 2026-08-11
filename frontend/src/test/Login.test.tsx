@@ -28,7 +28,7 @@ function renderPage() {
           <Login />
         </BrowserRouter>
       </AuthProvider>
-    </GoogleOAuthProvider>
+    </GoogleOAuthProvider>,
   );
 }
 
