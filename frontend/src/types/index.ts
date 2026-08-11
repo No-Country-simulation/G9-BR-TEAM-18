@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   passwordResetRequired?: boolean;
+  auth_provider?: string;
 }
 
 export interface ApplianceType {

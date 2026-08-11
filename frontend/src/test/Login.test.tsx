@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Login from "../pages/Login";
 
 const mockNavigate = vi.fn();
@@ -21,11 +22,13 @@ globalThis.fetch = mockFetch;
 
 function renderPage() {
   return render(
-    <BrowserRouter>
+    <GoogleOAuthProvider clientId="test-client-id">
       <AuthProvider>
-        <Login />
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
       </AuthProvider>
-    </BrowserRouter>,
+    </GoogleOAuthProvider>,
   );
 }
 

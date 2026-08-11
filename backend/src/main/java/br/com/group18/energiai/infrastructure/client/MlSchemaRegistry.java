@@ -63,9 +63,34 @@ public class MlSchemaRegistry implements MlContractPort {
 
         this.applianceCatalog = List.of(
                 new MlApplianceDTO("Geladeira", "REFRIGERATION", 150, 24.0),
+                new MlApplianceDTO("Freezer", "REFRIGERATION", 200, 24.0),
+                new MlApplianceDTO("Frigobar", "REFRIGERATION", 100, 24.0),
+                new MlApplianceDTO("Bebedouro", "REFRIGERATION", 90, 24.0),
                 new MlApplianceDTO("Ar-condicionado", "CLIMATE_CONTROL", 1500, 8.0),
+                new MlApplianceDTO("Split", "CLIMATE_CONTROL", 1200, 8.0),
+                new MlApplianceDTO("Ventilador", "CLIMATE_CONTROL", 100, 8.0),
+                new MlApplianceDTO("Aquecedor", "CLIMATE_CONTROL", 1500, 3.0),
                 new MlApplianceDTO("Lâmpada", "LIGHTING", 12, 6.0),
-                new MlApplianceDTO("Televisão", "TECHNOLOGY", 150, 6.0));
+                new MlApplianceDTO("Micro-ondas", "APPLIANCES", 1200, 0.5),
+                new MlApplianceDTO("Air Fryer", "APPLIANCES", 1500, 0.75),
+                new MlApplianceDTO("Máquina de Lavar", "APPLIANCES", 500, 1.5),
+                new MlApplianceDTO("Secadora", "APPLIANCES", 2500, 1.0),
+                new MlApplianceDTO("Chuveiro Elétrico", "APPLIANCES", 5500, 0.5),
+                new MlApplianceDTO("Cafeteira", "APPLIANCES", 800, 0.25),
+                new MlApplianceDTO("Ferro de Passar", "APPLIANCES", 1200, 0.5),
+                new MlApplianceDTO("Aspirador", "APPLIANCES", 1400, 0.5),
+                new MlApplianceDTO("Liquidificador", "APPLIANCES", 500, 0.25),
+                new MlApplianceDTO("Batedeira", "APPLIANCES", 300, 0.25),
+                new MlApplianceDTO("Forno", "APPLIANCES", 1500, 0.75),
+                new MlApplianceDTO("Fogão", "APPLIANCES", 1500, 1.0),
+                new MlApplianceDTO("Televisão", "TECHNOLOGY", 150, 6.0),
+                new MlApplianceDTO("Computador", "TECHNOLOGY", 150, 8.0),
+                new MlApplianceDTO("Notebook", "TECHNOLOGY", 65, 6.0),
+                new MlApplianceDTO("Roteador", "TECHNOLOGY", 10, 24.0),
+                new MlApplianceDTO("Videogame", "TECHNOLOGY", 200, 4.0),
+                new MlApplianceDTO("Bomba d'Água", "SERVICES", 750, 1.0),
+                new MlApplianceDTO("Portão Elétrico", "SERVICES", 250, 0.25),
+                new MlApplianceDTO("Motor de Piscina", "SERVICES", 750, 4.0));
     }
 
     @Override

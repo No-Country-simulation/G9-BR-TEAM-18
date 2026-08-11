@@ -25,17 +25,17 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
 | Total de autores | 8 |
 | Total de PRs encontrados | 6 (todos mesclados) |
 
-## Cards por coluna e categoria (atualizado em 06/08/2026)
+## Cards por coluna e categoria (atualizado em 10/08/2026)
 
 | Coluna | Quantidade | | Categoria | Quantidade |
 |---|---|---|---|---|
 | Done | 130 | | Frontend (F) | 58 |
-| In review | 13 | | Backend (B) | 45 |
-| In progress | 2 | | Infraestrutura (I) | 20 |
+| In review | 14 | | Backend (B) | 45 |
+| In progress | 2 | | Infraestrutura (I) | 21 |
 | Ready | 0 | | ML Service / Queries (Q) | 10 |
 | Backlog | 1 | | Banco de Dados (M) | 9 |
-| **Total** | **146** | | Análise de dados (outros) | 2 |
-| | | | **Total** | **146** |
+| **Total** | **147** | | Análise de dados (outros) | 2 |
+| | | | **Total** | **147** |
 
 ## Movimentações (24/07/2026)
 
@@ -585,3 +585,27 @@ O board foi criado como um GitHub Project (v2) real na organização No-Country-
   exibindo a mais recente e o Dashboard refletindo tendência/progresso corretos.
 - Contagens do board atualizadas (In review 14→13, Done 129→130, Total 146,
   Frontend 58).
+
+## Movimentações (10/08/2026) - I024: Relatórios do ml-qa versionados
+
+### Novo card → In review
+
+| ID | Título | Issue | Commits associados | ADR |
+|---|---|---|---|---|
+| I024 | Infraestrutura/Base - Versionar relatórios do ml-qa no repositório (reports/) | #173 | commits desta rodada | ADR-0056 |
+
+### Notas
+
+- `reports/` removido do `.gitignore` do ml-qa; a rodada de testes de
+  10/08/2026 (124 cenários, 123 análises detalhadas) agora é versionada em
+  `ml-qa/reports/` (`ml-qa-report.md`, `ml-qa-report.json` e
+  `ml-qa/reports/analyses/*.md`).
+- A equipe de ML Service pode avaliar os últimos testes executados
+  localmente diretamente no repositório; quando o ML for atualizado, uma nova
+  rodada gera um novo relatório no próximo commit.
+- Gerador ajustado para produzir relatórios que passam nos lints de docs
+  (tabelas alinhadas, ênfase `_underscore_`, cspell atualizado com
+  `escritorio`/`Portao`).
+- Documentado na ADR-0056. Card em In review (assignee: DessimA).
+- Contagens do board atualizadas (In review 13→14, Infraestrutura 20→21,
+  Total 146→147).

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.com.group18.energiai.application.services.ApplianceCatalogSyncService;
 import br.com.group18.energiai.infrastructure.client.MlSchemaDiscovery;
 import br.com.group18.energiai.infrastructure.client.MlSchemaRegistry;
 import br.com.group18.energiai.infrastructure.client.MlServiceClient;
@@ -31,6 +32,9 @@ class MlSchemaDiscoveryTest {
 
     @Mock
     private MlServiceClient mlServiceClient;
+
+    @Mock
+    private ApplianceCatalogSyncService catalogSyncService;
 
     @Spy
     private MlSchemaRegistry registry = new MlSchemaRegistry(List.of("EXCELENTE", "BOM", "MEDIANO", "RUIM", "CRITICO"));
@@ -65,6 +69,7 @@ class MlSchemaDiscoveryTest {
         assertEquals("Sabre de Luz", registry.applianceCatalog().get(0).name());
 
         verify(registry, never()).loadDefaultValues();
+        verify(catalogSyncService, never()).syncCatalog();
     }
 
     @Test

@@ -204,7 +204,16 @@
     "glossario",
     "instantanea",
     "diaria",
-    "PREFS"
+    "PREFS",
+    "Fogao",
+    "googleusercontent",
+    "endereçável",
+    "monotonicidade",
+    "basica",
+    "appliance",
+    "mlqa",
+    "escritorio",
+    "Portao"
   ],
   "ignorePaths": [
     "node_modules",

@@ -42,6 +42,10 @@ public class LoginResponseDTO {
     @JsonProperty("high_consumption_hours")
     private BigDecimal highConsumptionHours;
 
+    @Schema(description = "Provedor de autenticação (LOCAL ou GOOGLE)", example = "LOCAL")
+    @JsonProperty("auth_provider")
+    private String authProvider;
+
     public LoginResponseDTO() {}
 
     public LoginResponseDTO(Long id, String name, String email) {
@@ -120,5 +124,13 @@ public class LoginResponseDTO {
 
     public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
         this.highConsumptionHours = highConsumptionHours;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }

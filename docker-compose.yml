@@ -37,6 +37,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-mock-client-id.apps.googleusercontent.com}
     container_name: energiaia-frontend
     ports:
       - "${FRONTEND_PORT:-5173}:5173"

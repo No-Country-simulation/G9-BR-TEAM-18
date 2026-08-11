@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ThemeContext } from "./themeContext";
+import { ThemeContext } from "./themeContextDef";
 
 const COOKIE_NAME = "energiai_theme";
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 ano

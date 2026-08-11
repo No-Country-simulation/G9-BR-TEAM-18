@@ -18,6 +18,23 @@ public class ApplianceCatalogSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(ApplianceCatalogSyncService.class);
 
+    /**
+     * Corrige nomes que o ML Service envia sem acentuação, preservando a grafia
+     * em português usada no banco e exibida ao usuário final.
+     */
+    private static final Map<String, String> PT_BR_NAMES = Map.ofEntries(
+            Map.entry("Lampada", "Lâmpada"),
+            Map.entry("Ar-condicionado", "Ar-condicionado"),
+            Map.entry("Air fryer", "Air Fryer"),
+            Map.entry("Maquina de lavar", "Máquina de Lavar"),
+            Map.entry("Chuveiro eletrico", "Chuveiro Elétrico"),
+            Map.entry("Ferro de passar", "Ferro de Passar"),
+            Map.entry("Fogao", "Fogão"),
+            Map.entry("Televisao", "Televisão"),
+            Map.entry("Bomba d'agua", "Bomba d'Água"),
+            Map.entry("Portao eletrico", "Portão Elétrico"),
+            Map.entry("Motor de piscina", "Motor de Piscina"));
+
     private final MlContractPort mlContract;
     private final ApplianceRepositoryPort applianceRepository;
 
@@ -85,10 +102,14 @@ public class ApplianceCatalogSyncService {
 
     private Appliance createAppliance(ApplianceCatalogItem mlAppliance, EquipmentCategory category) {
         Appliance appliance = new Appliance();
-        appliance.setName(mlAppliance.name());
+        appliance.setName(localizedName(mlAppliance.name()));
         appliance.setApplianceCategory(category.toPortuguese());
         appliance.setAveragePowerWatts(BigDecimal.valueOf(mlAppliance.watts()));
         appliance.setAverageDailyUseHours(BigDecimal.valueOf(mlAppliance.hours()));
         return appliance;
+    }
+
+    private String localizedName(String mlName) {
+        return PT_BR_NAMES.getOrDefault(mlName, mlName);
     }
 }

@@ -2,9 +2,11 @@ package br.com.group18.energiai.infrastructure.adapters.in.web.controllers;
 
 import br.com.group18.energiai.application.dto.UserPreferences;
 import br.com.group18.energiai.application.services.AuthenticationService;
+import br.com.group18.energiai.application.services.GoogleAuthService;
 import br.com.group18.energiai.core.domain.model.User;
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.AdminResetPasswordRequestDTO;
+import br.com.group18.energiai.infrastructure.adapters.in.web.dto.GoogleAuthRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.LoginResponseDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.RegisterRequestDTO;
@@ -12,6 +14,7 @@ import br.com.group18.energiai.infrastructure.adapters.in.web.dto.ResetPasswordR
 import br.com.group18.energiai.infrastructure.adapters.in.web.dto.UserPreferencesRequestDTO;
 import br.com.group18.energiai.infrastructure.adapters.in.web.security.SessionUserResolver;
 import br.com.group18.energiai.infrastructure.config.JwtService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -45,6 +48,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
     private final TokenBlacklistRepositoryPort blacklistRepository;
+    private final GoogleAuthService googleAuthService;
     private final int sessionMaxAge;
     private final boolean sessionSecure;
 
@@ -52,11 +56,13 @@ public class AuthController {
             AuthenticationService authenticationService,
             JwtService jwtService,
             TokenBlacklistRepositoryPort blacklistRepository,
+            GoogleAuthService googleAuthService,
             @Value("${SESSION_MAX_AGE_SECONDS}") int sessionMaxAge,
             @Value("${SESSION_SECURE}") boolean sessionSecure) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
         this.blacklistRepository = blacklistRepository;
+        this.googleAuthService = googleAuthService;
         this.sessionMaxAge = sessionMaxAge;
         this.sessionSecure = sessionSecure;
     }
@@ -91,6 +97,25 @@ public class AuthController {
         }
         String token = createSession(user.get(), response);
         return ResponseEntity.ok(toResponse(user.get(), token));
+    }
+
+    @Operation(
+            summary = "Autenticar com Google",
+            description = "Valida o ID Token do Google, cria ou autentica o usuário e define a sessão.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Login ou cadastro via Google realizado com sucesso"),
+        @ApiResponse(responseCode = "403", description = "Proibido: Token inválido ou expirado")
+    })
+    @PostMapping("/google")
+    public ResponseEntity<?> loginWithGoogle(
+            @Valid @RequestBody GoogleAuthRequestDTO request, HttpServletResponse response) {
+        GoogleIdToken.Payload payload = googleAuthService.verifyToken(request.credential());
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+
+        User user = authenticationService.loginWithGoogle(email, name);
+        String token = createSession(user, response);
+        return ResponseEntity.ok(toResponse(user, token));
     }
 
     @Operation(
@@ -228,6 +253,7 @@ public class AuthController {
         dto.setRegularity(user.getRegularity());
         dto.setPeakHourUsage(user.getPeakHourUsage());
         dto.setHighConsumptionHours(user.getHighConsumptionHours());
+        dto.setAuthProvider(user.getAuthProvider());
         return dto;
     }
 

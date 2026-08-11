@@ -463,10 +463,10 @@ pipeline_tune = Pipeline(
 
 param_dist = {
     "model__n_estimators": [200, 300, 400],
-    "model__max_depth": [None, 30],
+    "model__max_depth": [10, 20, 30],
     "model__min_samples_split": [2, 5],
     "model__min_samples_leaf": [1, 2],
-    "model__max_features": ["sqrt", None],
+    "model__max_features": ["sqrt", "log2"],
     "model__class_weight": [None, "balanced"],
 }
 

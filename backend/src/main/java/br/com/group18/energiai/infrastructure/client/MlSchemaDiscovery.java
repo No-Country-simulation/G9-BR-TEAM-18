@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.client;
 
+import br.com.group18.energiai.application.services.ApplianceCatalogSyncService;
 import br.com.group18.energiai.infrastructure.client.dto.MlApplianceCatalogResponse;
 import br.com.group18.energiai.infrastructure.client.dto.MlContractResponse;
 import java.time.Duration;
@@ -19,10 +20,15 @@ public class MlSchemaDiscovery implements ApplicationRunner {
 
     private final MlServiceClient mlServiceClient;
     private final MlSchemaRegistry registry;
+    private final ApplianceCatalogSyncService catalogSyncService;
 
-    public MlSchemaDiscovery(MlServiceClient mlServiceClient, MlSchemaRegistry registry) {
+    public MlSchemaDiscovery(
+            MlServiceClient mlServiceClient,
+            MlSchemaRegistry registry,
+            ApplianceCatalogSyncService catalogSyncService) {
         this.mlServiceClient = mlServiceClient;
         this.registry = registry;
+        this.catalogSyncService = catalogSyncService;
     }
 
     @Override
@@ -57,8 +63,10 @@ public class MlSchemaDiscovery implements ApplicationRunner {
                 .subscribe(
                         response -> {
                             log.info(
-                                    "Schema Discovery: Reconexão bem-sucedida em background! Atualizando o Registry em memória.");
+                                    "Schema Discovery: Reconexão bem-sucedida em background! Atualizando o Registry em memória"
+                                            + " e re-sincronizando o catálogo no banco.");
                             registry.register(response.getT1(), response.getT2());
+                            catalogSyncService.syncCatalog();
                         },
                         error -> log.error("Schema Discovery: Erro fatal no retry assíncrono.", error));
     }
