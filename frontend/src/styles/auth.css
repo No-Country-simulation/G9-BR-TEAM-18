@@ -1,5 +1,44 @@
 /* ─── Auth Pages ─── */
 
+.auth-google {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.auth-google > div {
+  width: 100%;
+}
+
+.auth-google iframe {
+  border: 2px solid var(--ink) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-hard-sm) !important;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: var(--font-display);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 4px;
+  background: repeating-conic-gradient(var(--accent-green) 0% 25%, var(--ink) 0% 50%) 0 0 /
+    16px 16px;
+  opacity: 0.35;
+}
+
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -117,6 +156,10 @@
   color: var(--text-primary);
   opacity: 0.8;
   line-height: 1.6;
+}
+
+.auth-coming-soon .btn {
+  margin-top: 1rem;
 }
 
 .auth-form {

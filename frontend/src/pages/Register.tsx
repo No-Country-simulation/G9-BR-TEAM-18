@@ -68,7 +68,7 @@ export default function Register() {
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <div className="auth-google">
           <GoogleLogin
             onSuccess={async (credentialResponse) => {
               if (credentialResponse.credential) {

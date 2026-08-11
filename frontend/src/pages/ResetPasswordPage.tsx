@@ -53,26 +53,13 @@ export default function ResetPasswordPage() {
         )}
 
         {user?.auth_provider === "GOOGLE" ? (
-          <div
-            className="result-error"
-            style={{
-              backgroundColor: "#fef3c7",
-              color: "#92400e",
-              border: "1px solid #fcd34d",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ fontWeight: 600 }}>Operação indisponível</p>
-            <p style={{ marginTop: "0.5rem" }}>
+          <div className="auth-coming-soon" role="alert">
+            <span className="coming-soon-badge">Operação indisponível</span>
+            <p>
               Contas vinculadas ao Google não podem alterar a senha por aqui. O acesso é gerenciado
               diretamente pela sua conta Google.
             </p>
-            <button
-              type="button"
-              className="btn btn-secondary btn-full"
-              style={{ marginTop: "1rem" }}
-              onClick={() => navigate("/")}
-            >
+            <button type="button" className="btn btn-secondary btn-full" onClick={() => navigate("/")}>
               Voltar ao Início
             </button>
           </div>
