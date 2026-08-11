@@ -204,7 +204,10 @@
     "glossario",
     "instantanea",
     "diaria",
-    "PREFS"
+    "PREFS",
+    "Fogao",
+    "googleusercontent",
+    "endereçável"
   ],
   "ignorePaths": [
     "node_modules",

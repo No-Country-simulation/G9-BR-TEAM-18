@@ -14,8 +14,8 @@ aparelhos nunca são gravados no banco, pois `GET /appliances` lê do banco (nã
 memória).
 
 Além disso, o retry em background do Schema Discovery (`MlSchemaDiscovery.startBackgroundRetry`)
-atualizava apenas o registry em memória — nunca o banco. No Render (plano gratuito), o ML
-Service hiberna fora do horário 14h–0h; se o backend subir nesse período, o fallback carregava
+atualizava apenas o registry em memória, nunca o banco. No Render (plano gratuito), o ML
+Service hiberna fora do horário 14h-0h; se o backend subir nesse período, o fallback carregava
 apenas **4 aparelhos** (Geladeira, Ar-condicionado, Lâmpada, Televisão), deixando o catálogo
 incompleto mesmo após a reconexão do ML.
 
