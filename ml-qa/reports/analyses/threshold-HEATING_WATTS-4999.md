@@ -1,0 +1,72 @@
+# Análise: `threshold/HEATING_WATTS=4999`
+
+- **Grupo:** combinatorial
+- **Conjunto:** comercio-loja
+- **Resultado:** ✅ aprovado
+- **HTTP:** 200
+- **Latência:** 143 ms
+- **Observação:** distribuição de watts ajustada para testar o limiar de recomendação; a tabela abaixo reflete o inventário do conjunto, não a distribuição alterada.
+
+## Detalhamento por Equipamento
+
+| Equipamento | Qtd | Potência (W) | Uso/dia (h) | kWh/mês |
+|---|---|---|---|---|
+| Ar-condicionado | 2 | 1500 | 8.0 | 720.0 |
+| Geladeira | 2 | 150 | 24.0 | 216.0 |
+| Computador | 2 | 150 | 8.0 | 72.0 |
+| Bebedouro | 1 | 90 | 24.0 | 64.8 |
+| Ventilador | 2 | 100 | 8.0 | 48.0 |
+| Televisao | 1 | 150 | 6.0 | 27.0 |
+| Lampada | 12 | 12 | 6.0 | 25.9 |
+| Cafeteira | 1 | 800 | 0.2 | 6.0 |
+| **Total** | | | | **1179.7** |
+
+## Payload enviado
+
+```json
+{
+  "consumption_kwh": 300.0,
+  "peak_hour_usage": false,
+  "equipment_quantity": 23,
+  "property_type": "COMERCIAL",
+  "high_consumption_hours": 4.0,
+  "daily_consumption_distribution": {
+    "REFRIGERATION_WATTS": 500.0,
+    "HEATING_WATTS": 4999.0,
+    "AIR_CONDITIONING_WATTS": 800.0,
+    "LIGHTING_WATTS": 200.0
+  },
+  "highest_consumption_category": "CLIMATE_CONTROL",
+  "highest_consumption_products": [
+    "Ar-condicionado",
+    "Geladeira",
+    "Computador"
+  ]
+}
+```
+
+## Resposta do ML
+
+| Campo | Valor |
+|---|---|
+| Categoria | BOM |
+| Probabilidade | 0.8082 |
+| Fonte | Modelo (confiança ≥ 80%) |
+
+### Recomendações
+
+- Ajuste o ar-condicionado para 23°C e evite deixar portas ou janelas abertas enquanto ele estiver ligado.
+- Com tantos equipamentos no imóvel, vale revisar quais realmente precisam ficar ligados ao mesmo tempo.
+
+## Verificações
+
+- ✅ http_status: 200 conforme esperado
+- ✅ response_schema: Campos obrigatórios presentes
+- ✅ category_valid: Categoria BOM válida
+- ✅ probability_range: Probabilidade 0.8082 válida
+- ✅ recommendations: 2 recomendações válidas
+- ✅ source_valid: Fonte model reconhecida
+- ✅ ordinal_consistency: Categoria BOM coerente
+
+---
+_Gerado automaticamente pelo módulo `ml-qa`._
