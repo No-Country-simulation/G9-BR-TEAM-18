@@ -223,6 +223,7 @@ public class AuthController {
         cookie.setPath("/");
         cookie.setMaxAge(sessionMaxAge);
         cookie.setSecure(sessionSecure);
+        cookie.setHttpOnly(true);
         cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         response.addCookie(cookie);
         return token;
@@ -233,6 +234,7 @@ public class AuthController {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         cookie.setSecure(sessionSecure);
+        cookie.setHttpOnly(true);
         cookie.setAttribute("SameSite", sessionSecure ? "None" : "Lax");
         return cookie;
     }
