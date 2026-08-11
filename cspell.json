@@ -207,7 +207,13 @@
     "PREFS",
     "Fogao",
     "googleusercontent",
-    "endereçável"
+    "endereçável",
+    "monotonicidade",
+    "basica",
+    "appliance",
+    "mlqa",
+    "escritorio",
+    "Portao"
   ],
   "ignorePaths": [
     "node_modules",
