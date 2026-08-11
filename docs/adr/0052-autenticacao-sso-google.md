@@ -82,3 +82,70 @@ seja configurado.
 - **Negativo:** Usuários criados via Google não têm senha nativa para usar caso a API do Google caia (endereçável futuramente via ADR-0051).
 - **Negativo:** O backend não inicia sem `GOOGLE_CLIENT_ID` configurado (fail-fast), exigindo documentação clara da variável (ver .env.example).
 - **Neutro:** Necessidade de criar credenciais na Google Cloud Console e manter o mesmo Client ID no backend e no frontend.
+
+## Configuração de Credenciais Google OAuth
+
+### Fluxo utilizado
+* A aplicação utiliza o fluxo **ID Token (implícito)** — o frontend obtém o token do Google e o backend o valida.
+
+### Variáveis de ambiente necessárias
+
+| Variável | Onde é usada | Tipo |
+|----------|-------------|------|
+| `GOOGLE_CLIENT_ID` | Backend (`application.properties` → `GoogleAuthService`) | Runtime |
+| `VITE_GOOGLE_CLIENT_ID` | Frontend (`main.tsx` → `GoogleOAuthProvider`) | Build-time |
+
+### Arquivos de configuração alterados
+* `backend/src/main/resources/application.properties` — Adicionada a propriedade `google.client.id=${GOOGLE_CLIENT_ID}`
+* `.env.example` — Documentadas ambas as variáveis na seção obrigatória
+* `docker-compose.yml` — Adicionados `GOOGLE_CLIENT_ID` (backend env) e `VITE_GOOGLE_CLIENT_ID` (frontend build arg)
+
+### Google Cloud Console
+* **Projeto:** Criado no Google Cloud Console
+* **Status:** Publicado (qualquer conta Google pode fazer login)
+* **Origens JavaScript autorizadas:**
+  * `https://energiai-frontend.onrender.com`
+  * `https://energiai-backend.onrender.com`
+  * `http://localhost:5173`
+* **URIs de redirecionamento autorizados:**
+  * `https://energiai-frontend.onrender.com`
+  * `https://energiai-backend.onrender.com`
+  * `http://localhost:5173`
+
+---
+
+## Deploy no Render
+
+Para que o Google SSO funcione no ambiente de produção, é necessário configurar as seguintes variáveis de ambiente **manualmente** no painel do Render:
+
+| Serviço | Variável | Tipo |
+|---------|----------|------|
+| **Backend** | `GOOGLE_CLIENT_ID` | Environment Variable |
+| **Frontend** | `VITE_GOOGLE_CLIENT_ID` | Build Arg / Env Var |
+
+>  Após adicionarmos `VITE_GOOGLE_CLIENT_ID` no Frontend do Render, é necessário fazer um **re-deploy manual**.
+
+---
+
+## ☁️ Migração para OCI (Oracle Cloud Infrastructure)
+
+Quando o projeto migrar do Render para a OCI, os seguintes passos devem ser seguidos:
+
+* **Variáveis de ambiente no OCI:**
+  * Configurar `GOOGLE_CLIENT_ID` e `VITE_GOOGLE_CLIENT_ID` no serviço de deploy utilizado (OCI Container Instances, OKE, ou VM)
+
+* **Google Cloud Console — Atualizar URLs autorizadas:**
+  * Editar o Client ID OAuth existente
+  * **Adicionar** os novos domínios OCI em *Origens JavaScript autorizadas* e *URIs de redirecionamento autorizados*
+
+* **CORS no backend:**
+  * Atualizar a variável `CORS_ALLOWED_ORIGINS` para incluir o novo domínio do frontend na OCI
+
+>  O Client ID **não muda** na migração. Apenas as URLs autorizadas no Google Cloud Console precisam ser atualizadas para refletir os novos domínios.
+
+---
+
+## Notas de Segurança
+* O `GOOGLE_CLIENT_ID` é considerado uma credencial pública (exposta no HTML do frontend), mas **deve ser protegido por domínios autorizados** no Google Cloud Console para evitar uso indevido.
+* Toda validação de integridade do token é feita no backend via `GoogleIdTokenVerifier`, que verifica a assinatura criptográfica e a audience do token contra o Client ID configurado.
+
