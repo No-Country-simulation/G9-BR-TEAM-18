@@ -28,6 +28,7 @@ services:
       - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8000}
       - KWH_TARIFF=${KWH_TARIFF:-0.75}
       - CO2_EMISSION_FACTOR=${CO2_EMISSION_FACTOR:-0.096}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     networks:
       - energiaia-net
 
@@ -37,6 +38,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     container_name: energiaia-frontend
     ports:
       - "${FRONTEND_PORT:-5173}:5173"

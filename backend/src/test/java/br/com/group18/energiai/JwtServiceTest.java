@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class JwtServiceTest {
 
     private static final String TEST_SECRET = "my-test-secret-key-that-is-at-least-32-chars!!";
-    private static final long EXPIRATION_MS = 3600000L; // 1 hour
+    private static final long EXPIRATION_MS = 3600000L;
 
     private JwtService jwtService;
 
@@ -55,7 +55,6 @@ class JwtServiceTest {
 
         assertNotNull(expiration);
         long now = System.currentTimeMillis();
-        // Should expire within the configured window (somewhere between now and now + expiration)
         assertTrue(expiration.getTime() > now);
         assertTrue(expiration.getTime() <= now + EXPIRATION_MS + 1000);
     }
@@ -74,9 +73,7 @@ class JwtServiceTest {
         String hash = jwtService.hashToken(token);
 
         assertNotNull(hash);
-        // SHA-256 produces 64 hex characters
         assertEquals(64, hash.length());
-        // Should be valid hex
         assertTrue(hash.matches("[0-9a-f]{64}"));
     }
 

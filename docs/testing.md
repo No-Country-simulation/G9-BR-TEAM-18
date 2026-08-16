@@ -8,7 +8,7 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 - [Backend - Testes Unitários](#backend---testes-unitários)
 - [Backend - Testes de Integração](#backend---testes-de-integração)
 - [Backend - Testes de Contrato](#backend---testes-de-contrato)
-- [Frontend - Testes](#frontend---testes)
+- [Frontend - Testes E2E (Playwright)](#frontend---testes-e2e-playwright)
 - [Como Executar](#como-executar)
 - [Cobertura](#cobertura)
 
@@ -20,7 +20,9 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 |---|---|---|
 | Backend | JUnit 5 + Spring Boot Test | Unitários, Integração, Contrato |
 | Frontend | Vitest + Testing Library | Unitários, Componentes |
-| ML Service | pytest | Unitários, Integração |
+| Frontend | Playwright | End-to-End (91 testes via Docker) |
+| ML Service | - | Sem suíte própria (cobertura via ml-qa) |
+| ml-qa | pytest | Suíte black-box contra o ML Service |
 
 ## Backend - Testes Unitários
 
@@ -37,22 +39,22 @@ Testa o serviço de análise energética:
 
 ### ApplianceAggregationServiceTest
 
-Testa a agregacao de aparelhos:
+Testa a agregação de aparelhos:
 
-- Calculo de distribuicao de potencia por categoria
-- Agregacao de multiplos aparelhos com diferentes quantidades e potencias
-- Mapeamento de categorias para distribuicao (refrigeration, heating, AC, lighting)
+- Calculo de distribuição de potencia por categoria
+- Agregação de múltiplos aparelhos com diferentes quantidades e potencias
+- Mapeamento de categorias para distribuição (refrigeration, heating, AC, lighting)
 
 ### AnalysisMapperExtendedTest (13 testes)
 
 Testa o mapper da Anti-Corruption Layer:
 
 - Mapeamento completo de resposta do ML
-- Recomendacoes vazias/nulas
-- Probabilidade como inteiro e string numerica
+- Recomendações vazias/nulas
+- Probabilidade como inteiro e string numérica
 - Valores de probabilidade fora do intervalo [0, 1]
 - Categoria ausente, em branco ou invalida
-- Recomendacao como string unica (nao lista)
+- Recomendação como string única (nao lista)
 - Source vazio
 - Chaves customizadas de campos
 
@@ -77,9 +79,9 @@ Testa o serviço de imóveis:
 Testa o serviço de imóveis de forma abrangente:
 
 - CRUD completo (create, list, getOwned, update, delete)
-- Criacao com/sem campos opcionais (address, residentCount, areaSqm)
+- Criação com/sem campos opcionais (address, residentCount, areaSqm)
 - Gerenciamento de aparelhos (addOrUpdate, remove, batch update)
-- Casos de erro (propriedade inexistente, aparelho nao encontrado, remocao de item nao vinculado)
+- Casos de erro (propriedade inexistente, aparelho nao encontrado, remoção de item nao vinculado)
 
 ### JwtServiceTest
 
@@ -118,6 +120,14 @@ Testa a comunicação completa entre todas as camadas:
 
 - Registro → Criação de imóvel → Adição de aparelhos → Análise → Dashboard
 
+## Backend - Testes recentes de integração e sincronização
+
+- `ApplianceCatalogSyncServiceTest`, `CatalogSyncSchedulerTest`, `CatalogSyncOnStartupTest`: sincronização do catálogo de aparelhos com o ML Service (ADR-0048/0055)
+- `MlSchemaDiscoveryTest`, `MlSchemaRegistryTest`: schema discovery do contrato do ML (ADR-0021)
+- `DashboardServiceTest`: métricas do dashboard
+- `AuthControllerTest`, `ContractInfoControllerTest`, `ApplianceControllerTest`, `AnalysisControllerTest`: integração dos controllers via MockMvc
+- `FlywayMigrationFilesTest`, `PersistenceEntitiesTest`: consistência de migrations e entidades
+
 ## Backend - Testes de Contrato
 
 ### MlContractTest (8 testes)
@@ -135,7 +145,69 @@ Testa a compatibilidade do contrato com o ML Service:
 
 Os testes de contrato validam a compatibilidade entre o ML Service e o backend sem exigir que o ML esteja rodando, testando diretamente o mapper e o value object.
 
-## Frontend - Testes
+## Frontend - Testes E2E (Playwright)
+
+### Estrutura
+
+```text
+frontend/e2e/
+├── playwright.config.ts        # Config do Playwright
+├── helpers/mocks.ts            # Mock data, pt() helper, setupAuthenticatedMocks
+├── auth.spec.ts                # 13 testes - autenticação
+├── navigation.spec.ts          # 6 testes - navegação
+├── dashboard.spec.ts           # 13 testes - dashboard
+├── history-list.spec.ts        # 13 testes - histórico (lista)
+├── history-detail.spec.ts      # 10 testes - histórico (detalhe)
+├── profile-form.spec.ts        # 22 testes - perfil (formulário/catálogo)
+├── profile-delete.spec.ts      # 7 testes - perfil (exclusão)
+├── error-handling.spec.ts      # 7 testes - erros
+└── Dockerfile.e2e              # Docker para execução isolada
+```
+
+### Mecanismo de Mock
+
+Todas as chamadas HTTP são interceptadas via `page.route()` com URLs exatas (`http://localhost:8080/...`):
+
+- **setupPublicMocks()**: Mocks para páginas públicas (appliances, categories).
+- **setupAuthenticatedMocks()**: Mocks para páginas autenticadas (auth/me, properties, analyses, dashboard).
+- **setLoggedIn()**: Usa `page.addInitScript()` para definir localStorage antes do carregamento, evitando `SecurityError`.
+
+### Helper pt()
+
+A função `pt()` converte texto em português para regex accent-insensitive:
+
+```text
+pt("análise")  ->  /an[aáàâã]l[iíì]s[eéèê]/i
+```
+
+### Cobertura
+
+| Categoria | Testes | Cenários Cobertos |
+|---|---|---|
+| Navegação e Páginas Públicas | 6 | Home, Navbar autenticado/não, tema, roteamento |
+| Autenticação | 13 | Login (sucesso, erro, loading, reset), Registro (validação, sucesso, erro), Rotas privadas |
+| Dashboard | 12 | Loading, vazio, dados reais, tendência, meta, simulação, gráfico, badges de status |
+| Histórico | 10 | Loading, vazio, lista, badges (3 variações), status desconhecido |
+| Profile Page | 17 | Loading, formulário, catálogo, busca, adicionar/remover, regularidade, botões |
+| Tratamento de Erros | 7 | Falha de API, Error Boundary, 404, tema resiliente |
+| Estados de Carregamento | 2 | Lazy loading, fallback |
+
+### Como Executar
+
+```bash
+# Via Docker (recomendado):
+docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
+docker run --rm energiaia-e2e
+
+# Via npm (local):
+cd frontend && npm run test:e2e
+```
+
+### Resultado
+
+91/91 testes passando. Duração média: ~2-3 minutos.
+
+## Frontend - Testes Unitários
 
 Localizados em `frontend/src/test/`.
 
@@ -186,6 +258,20 @@ Testa as constantes e utilitários:
 - Mapeamento CATEGORY_DISPLAY
 - Constantes PROPERTY_TYPES
 - Classe ApiError
+
+## Suíte ml-qa (qualidade do ML Service)
+
+O módulo `ml-qa` executa testes **black-box** contra o ML Service (cenários por conjunto de aparelhos,
+contrato, monotonicidade, distribuição de fontes) e versiona os relatórios em `ml-qa/reports/` (ADR-0056).
+
+```bash
+cd ml-qa
+pip install -r requirements.txt
+python -m ml_qa.cli          # rodada completa
+pytest                        # testes do próprio módulo (mocks HTTP)
+```
+
+Consulte o [README do ml-qa](../ml-qa/README.md) para as opções da CLI e o rate limiting.
 
 ## Como Executar
 

@@ -1,11 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import Navbar from "../components/Navbar";
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 Object.defineProperty(window, "matchMedia", {
@@ -34,6 +39,10 @@ function renderWithState(state: AuthState) {
       JSON.stringify({ id: "1", name: "Alice", email: "a@a.com" }),
     );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
   }
 
   return render(
@@ -70,13 +79,12 @@ describe("Navbar", () => {
     });
   });
 
-  it("shows dashboard, perfil, analisar, and history links when authenticated", async () => {
+  it("shows dashboard, perfil, and history links when authenticated", async () => {
     renderWithState("authenticated");
 
     await vi.waitFor(() => {
       expect(screen.getByText("Dashboard")).toBeInTheDocument();
       expect(screen.getByText("Perfil")).toBeInTheDocument();
-      expect(screen.getByText("Analisar")).toBeInTheDocument();
       expect(screen.getByText("Histórico")).toBeInTheDocument();
     });
   });

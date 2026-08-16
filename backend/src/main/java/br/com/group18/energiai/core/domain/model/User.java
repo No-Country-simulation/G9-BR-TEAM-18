@@ -1,5 +1,7 @@
 package br.com.group18.energiai.core.domain.model;
 
+import java.math.BigDecimal;
+
 public class User {
 
     private Long id;
@@ -7,6 +9,11 @@ public class User {
     private String email;
     private String passwordHash;
     private boolean passwordResetRequired;
+    private BigDecimal consumptionGoal;
+    private String regularity;
+    private Boolean peakHourUsage;
+    private BigDecimal highConsumptionHours;
+    private String authProvider = "LOCAL";
 
     public User() {}
 
@@ -54,5 +61,45 @@ public class User {
 
     public void setPasswordResetRequired(boolean passwordResetRequired) {
         this.passwordResetRequired = passwordResetRequired;
+    }
+
+    public BigDecimal getConsumptionGoal() {
+        return consumptionGoal;
+    }
+
+    public void setConsumptionGoal(BigDecimal consumptionGoal) {
+        this.consumptionGoal = consumptionGoal;
+    }
+
+    public String getRegularity() {
+        return regularity;
+    }
+
+    public void setRegularity(String regularity) {
+        this.regularity = regularity;
+    }
+
+    public Boolean getPeakHourUsage() {
+        return peakHourUsage;
+    }
+
+    public void setPeakHourUsage(Boolean peakHourUsage) {
+        this.peakHourUsage = peakHourUsage;
+    }
+
+    public BigDecimal getHighConsumptionHours() {
+        return highConsumptionHours;
+    }
+
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
+        this.highConsumptionHours = highConsumptionHours;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }

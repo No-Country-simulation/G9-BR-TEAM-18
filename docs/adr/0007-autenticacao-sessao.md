@@ -74,4 +74,66 @@ Foi criada a entidade `User` com os campos:
 - **Negativo:** Cookies de sessão HTTP requerem configuração de CORS e SameSite para funcionar com frontend em porta diferente
 - **Neutro:** A decisão de não usar JWT significa que o backend mantém estado de sessão, o que é aceitável para o escopo MVP
 
+---
+
+## Atualização (31/07/2026): Exposição do token JWT no corpo da resposta
+
+### Contexto
+
+Após a migração da autenticação para **JWT em cookie `SESSION_TOKEN`** (ver ADR-0010 e
+ADR-0025), o token JWT era devolvido apenas no header `Set-Cookie` da resposta. Isso
+dificultava a automação de testes fora do navegador (curl, Postman, scripts de
+integração), pois o consumidor precisava capturar o valor do cookie manualmente para
+reutilizá-lo nas requisições seguintes. Ao mesmo tempo, a equipe queria manter o cookie
+como mecanismo primário de autenticação no navegador (sem quebrar o frontend).
+
+Forças concorrentes na decisão:
+
+- **Testabilidade:** Facilitar o consumo da API fora do navegador, expondo o token de
+  forma acessível na resposta de login/registro
+- **Segurança:** Não ampliar desnecessariamente a superfície de exposição do token
+- **Compatibilidade:** Não quebrar o fluxo existente do frontend (que usa o cookie)
+
+### Decisão
+
+A equipe decidiu incluir o campo `token` no corpo da resposta de `POST /auth/register`
+e `POST /auth/login`, contendo o mesmo JWT enviado no cookie `SESSION_TOKEN`. O cookie
+permanece como mecanismo primário de autenticação; o campo no corpo é uma conveniência
+para testes e integrações externas.
+
+**Detalhamento técnico:**
+
+- `LoginResponseDTO` ganhou o campo `token` (String), com anotação `@Schema` para o
+  Swagger e `@JsonInclude(Include.NON_NULL)` para omiti-lo quando não houver sessão nova
+- `AuthController.createSession()` passou a **retornar** o token JWT (além de definir o
+  cookie), e `toResponse(user, token)` o inclui no corpo
+- Os endpoints `GET /auth/me` e `PUT /auth/preferences` (que **não** criam sessão nova)
+  usam um overload `toResponse(user)` que delega para `toResponse(user, null)`. Com o
+  `NON_NULL`, o campo `token` é omitido nessas respostas
+- A autenticação continua exclusivamente via cookie: o `JwtAuthFilter` lê apenas o
+  header `Cookie: SESSION_TOKEN` (o header `Authorization: Bearer` não é suportado)
+- O teste de integração `AuthControllerIntegrationTest` passou a validar a presença do
+  campo `token` na resposta de registro
+
+### Alternativas consideradas
+
+| Alternativa | Prós | Contras |
+|---|---|---|
+| **Manter token somente no cookie** | Menor exposição do token; sem mudanças no contrato | Dificulta testes fora do navegador; automação depende de capturar o header `Set-Cookie` |
+| **Expor token no corpo (escolhido)** | Testes e integrações externas simples (curl/Postman); contrato autodescritivo | Token trafega também no JSON; superfície de exposição ligeiramente maior |
+| **Suportar header `Authorization: Bearer`** | Padrão comum em APIs REST | Exigiria alterar o `JwtAuthFilter`; duplicaria o mecanismo de autenticação sem ganho claro para o MVP |
+
+### Consequências
+
+- **Positivo:** Testes fora do navegador (curl, Postman, scripts) agora obtêm o token
+  diretamente no corpo da resposta, sem depender do cookie
+- **Positivo:** O frontend continua inalterado e usa exclusivamente o cookie
+  `SESSION_TOKEN` via `credentials: "include"`
+- **Positivo:** O campo é omitido (`NON_NULL`) nas respostas que não criam sessão,
+  mantendo o contrato limpo
+- **Negativo:** O token JWT agora também aparece no corpo JSON de login/registro, o que
+  amplia ligeiramente a superfície de exposição (ex: logs de proxy/plataforma)
+- **Neutro:** A autenticação permanece 100% via cookie; o campo no corpo é redundante
+  por design, para fins de testabilidade
+
 > **Nota:** Consulte o [contrato de API](../contrato-api.md) para os endpoints de autenticação e o [guia de execução](../guia-execucao.md) para instruções de configuração do ambiente.

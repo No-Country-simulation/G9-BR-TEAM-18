@@ -1,22 +1,33 @@
 package br.com.group18.energiai.infrastructure.adapters.in.web.dto;
 
 import br.com.group18.energiai.core.domain.model.PropertyType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
+@Schema(description = "Dados para criação ou atualização de uma propriedade")
 public class PropertyRequestDTO {
 
     @NotNull
+    @Schema(description = "Apelido ou nome da propriedade", example = "Casa do João")
     private String alias;
 
     @NotNull
+    @Schema(
+            description = "Tipo da propriedade",
+            example = "RESIDENCIAL",
+            allowableValues = {"RESIDENCIAL", "APARTAMENTO", "COMERCIAL"})
     private PropertyType propertyType;
 
+    @Schema(description = "Indica se a propriedade está ativa", example = "true", defaultValue = "true")
     private boolean active = true;
 
+    @Schema(description = "Endereço da propriedade", example = "Rua das Flores, 123, Centro")
     private String address;
 
+    @Schema(description = "Número de moradores da propriedade", example = "4")
     private Integer residentCount;
 
+    @Schema(description = "Área total da propriedade em metros quadrados", example = "120.5")
     private Double areaSqm;
 
     public String getAlias() {

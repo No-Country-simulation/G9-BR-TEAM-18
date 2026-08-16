@@ -21,6 +21,8 @@ public class EnergyAnalysis {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> recommendations = new ArrayList<>();
+    private String propertyType;
+    private List<ApplianceSnapshot> appliancesSnapshot = new ArrayList<>();
 
     public EnergyAnalysis() {}
 
@@ -59,10 +61,6 @@ public class EnergyAnalysis {
 
     public Boolean getPeakHourUsage() {
         return peakHourUsage;
-    }
-
-    public void setPeakHourUsage(Boolean peakHourUsage) {
-        this.peakHourUsage = peakHourUsage;
     }
 
     public BigDecimal getHighConsumptionHours() {
@@ -135,5 +133,21 @@ public class EnergyAnalysis {
 
     public void setRecommendations(List<String> recommendations) {
         this.recommendations = recommendations == null ? new ArrayList<>() : new ArrayList<>(recommendations);
+    }
+
+    public String getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
+    }
+
+    public List<ApplianceSnapshot> getAppliancesSnapshot() {
+        return appliancesSnapshot != null ? List.copyOf(appliancesSnapshot) : new ArrayList<>();
+    }
+
+    public void setAppliancesSnapshot(List<ApplianceSnapshot> appliancesSnapshot) {
+        this.appliancesSnapshot = appliancesSnapshot == null ? new ArrayList<>() : new ArrayList<>(appliancesSnapshot);
     }
 }

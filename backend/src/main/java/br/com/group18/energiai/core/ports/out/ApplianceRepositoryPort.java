@@ -9,4 +9,6 @@ public interface ApplianceRepositoryPort {
     List<Appliance> findAll();
 
     Optional<Appliance> findById(Long id);
+
+    Appliance save(Appliance appliance);
 }

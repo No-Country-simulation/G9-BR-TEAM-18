@@ -23,25 +23,33 @@ br.com.group18.energiai
     ├── adapters
     │   ├── in                      # Adaptadores de entrada (controllers REST, DTOs)
     │   │   └── web
-    │   │       ├── controllers     # Endpoints REST (ex: AnalysisController)
+    │   │       ├── controllers     # Endpoints REST (Auth, Analysis, Property, Appliance, ContractInfo)
     │   │       ├── dto             # Objetos de transferência (RequestDTO, ResponseDTO)
-    │   │       └── mapper          # Converte DTO para domínio
+    │   │       └── security        # SessionUserResolver (usuário da sessão por request)
     │   │
-    │   └── out                     # Adaptadores de saída (persistência, clientes HTTP)
+    │   └── out                     # Adaptadores de saída (persistência)
     │       ├── persistence
     │       │   ├── entity          # Entidades JPA (@Entity, @Table)
     │       │   ├── repository      # Interfaces Spring Data JPA
     │       │   ├── adapter         # Implementa as portas "out"
     │       │   └── mapper          # Converte entidade JPA para domínio
-    │       │
-    │       └── client
-    │           ├── python          # Integração HTTP (WebClient ou RestTemplate)
-    │           └── adapter         # Implementa o cliente HTTP para a API Python
     │
-    └── config                      # Configurações
-        ├── exception               # GlobalExceptionHandler (@ControllerAdvice)
-        ├── security                # CORS, BCrypt, filtros
-        └── BeanConfiguration.java  # Instancia as classes do core no Spring
+    ├── client                       # Anti-Corruption Layer do ML Service
+    │   ├── MlServiceClient          # Cliente HTTP dos endpoints do ML
+    │   ├── MlEnvelope               # Container genérico (Map<String, Object>)
+    │   ├── MlPredictionAdapter      # Implementa a porta out de predição
+    │   ├── AnalysisMapper           # Traduz o envelope em MlResult
+    │   ├── MlSchemaDiscovery        # Descoberta do schema/contrato no startup
+    │   ├── MlSchemaRegistry         # Registro das categorias/schema descobertos
+    │   └── dto                      # DTOs de resposta do ML (contrato, catálogo)
+    │
+    └── config                       # Configurações
+        ├── GlobalExceptionHandler   # @ControllerAdvice
+        ├── JwtService/JwtAuthFilter # Geração e validação de tokens JWT
+        ├── WebConfig                # CORS
+        ├── OpenApiConfig            # Configuração do Swagger/OpenAPI
+        ├── ApplicationBeansConfig   # Instancia as classes do core no Spring
+        └── CatalogSyncScheduler     # Sincronização periódica do catálogo (ADR-0055)
 ```
 
 ## Descrição das camadas
@@ -78,15 +86,18 @@ Os modelos de domínio estão no pacote `core/domain/model/` e representam os co
 
 | Modelo | Função |
 |---|---|
-| `Property` | Imóvel do usuário: alias, tipo (residencial/comercial), endereço, número de moradores, área em m² |
+| `Property` | Imóvel do usuário: alias, tipo (RESIDENCIAL/APARTAMENTO/COMERCIAL), endereço, número de moradores, área em m² |
 | `PropertyAppliance` | Relacionamento N:N entre imóvel e aparelho, com quantidade |
 | `Appliance` | Catálogo de aparelhos com potência média (W) e horas de uso diário |
+| `ApplianceCatalogItem` | Item do catálogo sincronizado do ML Service (ml_category, watts, hours) |
+| `ApplianceSnapshot` | Snapshot de equipamentos capturado no momento de uma análise |
 | `EnergyAnalysis` | Resultado de uma análise energética: consumo, categoria, probabilidade, recomendações, origem (source), custo estimado |
-| `ApplianceType` | Enum de tipos de aparelho (LAMPS, REFRIGERATOR, FAN, AIR_CONDITIONER, etc.) com vínculo à `EquipmentCategory` |
-| `EquipmentCategory` | Enum de categorias de equipamento (LIGHTING, REFRIGERATION, CLIMATE_CONTROL, APPLIANCES, TECHNOLOGY) |
-| `PropertyType` | Enum de tipos de imóvel válidos (RESIDENCIAL, COMERCIAL) |
+| `EquipmentCategory` | Enum de categorias de equipamento (LIGHTING, REFRIGERATION, CLIMATE_CONTROL, APPLIANCES, TECHNOLOGY, SERVICES) |
+| `PropertyType` | Enum de tipos de imóvel válidos (RESIDENCIAL, APARTAMENTO, COMERCIAL) |
+| `User` | Usuário da aplicação, com preferências (consumption_goal, regularity, peak_hour_usage, high_consumption_hours) e provider de autenticação (LOCAL/GOOGLE) |
 | `MlResult` | Objeto de valor que encapsula o resultado do ML Service (category, probability, recommendations, source) |
 | `EfficiencyCategory` | Value object que valida categorias de eficiência (EXCELENTE, BOM, MEDIANO, RUIM, CRITICO) |
+| `ApplianceNameNormalizer` | Utilitário de normalização de nomes de aparelhos (acentos/maiúsculas) |
 
 ## Serviços da aplicação
 
@@ -96,8 +107,11 @@ Os serviços no pacote `application/services/` orquestram as operações de neg�
 |---|---|
 | `EnergyAnalysisService` | Orquestra a análise energética: coleta dados do imóvel/aparelhos, envia ao ML Service, persiste resultado, expõe simulação |
 | `AuthenticationService` | Gerencia registro, login (SHA-256 legado + BCrypt), redefinição de senha e blacklist de tokens |
+| `GoogleAuthService` | Valida o ID Token do Google e cria/autentica o usuário (SSO, ADR-0052) |
 | `PropertyService` | CRUD de imóveis, vincula/desvincula aparelhos ao imóvel, operação batch de aparelhos |
 | `ApplianceAggregationService` | Agrega aparelhos do imóvel em distribuição de potência (refrigeration, heating, AC, lighting watts) para o ML Service |
+| `ApplianceCatalogSyncService` | Sincroniza o catálogo de aparelhos com o ML Service (startup e agendado, ADR-0048/0055) |
+| `DashboardService` | Calcula as métricas agregadas do dashboard (totais, médias, consumo mensal, CO2) |
 
 ## Anti-Corruption Layer (ACL)
 
@@ -105,10 +119,11 @@ A integração com o ML Service é isolada por uma camada anti-corrupção compo
 
 | Componente | Função |
 |---|---|
-| `MlServiceClient` | Cliente HTTP que chama os endpoints `/predict` e `/predict/simulate` do ML Service |
+| `MlServiceClient` | Cliente HTTP que chama os endpoints `/predict`, `/predict/simulate`, `/contract` e `/appliance-catalog` do ML Service |
 | `MlEnvelope` | Container genérico (Map<String, Object>) que desacopla o formato do ML Service |
-| `AnalysisMapper` | Traduz o envelope genérico em `MlResult` de domínio, com chaves configuráveis via properties |
-| `MlSchemaDiscovery` | Descobre dinamicamente o schema e categorias válidas no startup do backend |
+| `MlPredictionAdapter` | Implementa a porta de saída `EnergyPredictionPort` usando o cliente HTTP |
+| `AnalysisMapper` | Traduz o envelope genérico em `MlResult` de domínio, com chaves configuráveis via properties (`ML_OUTPUT_FIELD_*`) |
+| `MlSchemaDiscovery` | Descobre dinamicamente o schema, categorias e catálogo no startup do backend |
 | `MlSchemaRegistry` | Registra e disponibiliza as categorias e schema descobertos |
 
 > **Nota:** Consulte o [glossário do projeto](./glossario.md) para definição dos termos técnicos e o [registro de ADRs](./adr/) para decisões arquiteturais.

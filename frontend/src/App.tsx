@@ -1,75 +1,83 @@
-import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Routes, Route } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
+import ChunkErrorBoundary from "./components/ChunkErrorBoundary";
 import Navbar from "./components/Navbar";
 import ScrollToTop from "./components/ScrollToTop";
 import PrivateRoute from "./components/PrivateRoute";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import History from "./pages/History";
-
-import ProfilePage from "./pages/ProfilePage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const History = lazy(() => import("./pages/History"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+
+function PageLoader() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "60vh",
+        color: "var(--text-secondary)",
+        fontSize: "0.95rem",
+      }}
+    >
+      Carregando...
+    </div>
+  );
+}
 
 export default function App() {
-  useEffect(() => {
-    fetch(`${API_URL}/auth/me`, { mode: "no-cors" }).catch(() => {});
-  }, []);
-
   return (
     <AuthProvider>
       <Navbar />
       <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/reset-password"
-          element={
-            <PrivateRoute>
-              <ResetPasswordPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/analysis"
-          element={
-            <PrivateRoute>
-              <ProfilePage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <PrivateRoute>
-              <History />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <ProfilePage />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
+      <ChunkErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/reset-password"
+              element={
+                <PrivateRoute>
+                  <ResetPasswordPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <PrivateRoute>
+                  <History />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </ChunkErrorBoundary>
     </AuthProvider>
   );
 }

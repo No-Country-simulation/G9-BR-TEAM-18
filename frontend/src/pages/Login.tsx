@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { LogIn } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { ApiError } from "../types";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
@@ -56,6 +57,36 @@ export default function Login() {
             )}
           </div>
         )}
+
+        <div className="auth-google">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              if (credentialResponse.credential) {
+                setLoading(true);
+                setError(null);
+                try {
+                  const needsReset = await loginWithGoogle(credentialResponse.credential);
+                  navigate(needsReset ? "/reset-password" : "/");
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Erro ao autenticar com Google");
+                } finally {
+                  setLoading(false);
+                }
+              }
+            }}
+            onError={() => {
+              setError("Falha na comunicação com o Google");
+            }}
+            text="continue_with"
+            theme="outline"
+            size="large"
+            width="100%"
+          />
+        </div>
+
+        <div className="auth-divider">
+          <span>ou</span>
+        </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">

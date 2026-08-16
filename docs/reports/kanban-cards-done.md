@@ -50,7 +50,7 @@
 | B026 | Backend (Endpoints/Services) - Validar propertyType com enum TipoImovel | #59 | ADR-0018 |
 | M004 | Banco de Dados (Migration) - Migration V6 normalize property type | #60 | ADR-0018 |
 | B027 | Backend (Endpoints/Services) - Integration tests for property type validation | #61 | ADR-0018 |
-| I011 | Infraestrutura/Base - ADR-0018 (normalizacao tipos imovel) | #62 | ADR-0018 |
+| I011 | Infraestrutura/Base - ADR-0018 (normalização tipos imóvel) | #62 | ADR-0018 |
 | B024 | Backend (Endpoints/Services) - Admin reset password endpoint | #63 | ADR-0019 |
 | B025 | Backend (Endpoints/Services) - Integration tests for password reset and admin reset | #64 | ADR-0019 |
 | I012 | Infraestrutura/Base - ADR-0019 (admin password reset) | #65 | ADR-0019 |
@@ -63,11 +63,57 @@
 | B030 | Backend (Endpoints/Services) - EfficiencyCategory Value Object | - | ADR-0022 |
 | B031 | Backend (Endpoints/Services) - Contract Tests para integração ML | - | ADR-0023 |
 | B032 | Backend (Endpoints/Services) - Refactor: remover hardcoded, config via env vars | - | ADR-0020 |
-| F028 | Frontend (Telas/Componentes) - Alinhar catalogo de aparelhos com cobertura ML (PPH) | #83 | ADR-0024 |
+| F028 | Frontend (Telas/Componentes) - Alinhar catálogo de aparelhos com cobertura ML (PPH) | #83 | ADR-0024 |
 | F029 | Frontend (Telas/Componentes) - Corrigir property_type e highestConsumptionCategory | #84 | ADR-0024 |
 | B033 | Backend (Endpoints/Services) - V9 migration: remover aparelhos sem cobertura PPH | - | ADR-0024 |
 | F030 | Frontend (Telas/Componentes) - Remover dead code (updateApplianceQuantity, demo.test.ts) | - | - |
 | F031 | Frontend (Telas/Componentes) - Adicionar testes: Login, Register, Navbar (19 testes) | - | - |
 | B034 | Backend (Endpoints/Services) - Adicionar testes: PropertyServiceExtended (13), AnalysisMapperExtended (13) | - | - |
 | F032 | Frontend (Telas/Componentes) - Corrigir createProperty test e remover demo.test.ts | - | - |
-| I018 | Infraestrutura/Base - Atualizar documentacao (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
+| I018 | Infraestrutura/Base - Atualizar documentação (kanban, ADR-0024, frontend.md, testing.md) | - | ADR-0024 |
+| I020 | Infraestrutura/Base - Configuração de usuários DEV e TEST no Oracle DB com ORDS | #89 | - |
+| F008 | Frontend - Unificar páginas de análise e remover dados avançados | #76 | - |
+| F009 | Frontend - Reformular Dashboard com propósito (meta, simulação, progresso) | #77 | - |
+| F024 | Frontend - Acessibilidade: foco visível (:focus-visible) | #79 | - |
+| F025 | Frontend - Acessibilidade: touch targets mínimos de 36px | #82 | - |
+| F026 | Frontend - Responsividade: breakpoints mobile | #81 | - |
+| F027 | Frontend - Acessibilidade e tema: ARIA labels, variáveis CSS | #80 | - |
+| F033 | Frontend - Validação de sessão na montagem (auth/me) | #92 | ADR-0030 |
+| F034 | Frontend - Remoção de mock data APPLIANCE_FALLBACK | #96 | ADR-0030 |
+| F035 | Frontend - Alinhar categorias de aparelhos para inglês (ADR-0027) | #93 | ADR-0027 |
+| F036 | Frontend - Consumir endpoint /energy-analysis/categories | #95 | ADR-0027 |
+| F037 | Frontend - Adicionar campo status nas análises | #94 | ADR-0027 |
+| F038 | Frontend - Corrigir crash no Histórico com valores nulos (null safety) | #97 | - |
+| F039 | Frontend - Corrigir crash no Histórico com status desconhecido | #98 | - |
+| F040 | Frontend - Corrigir null safety no Dashboard e ProfilePage | #99 | - |
+| F041 | Frontend - Corrigir interpretTrend no Dashboard (NaN% com PENDENTE/FALHA) | #100 | - |
+| F042 | Frontend - Code splitting com React.lazy() (bundle 1.15MB -> 242kB) | #101 | - |
+| F043 | Frontend - ChunkErrorBoundary para falhas de carregamento lazy | #102 | - |
+| F044 | Frontend - Testes E2E com Playwright (67 testes) | #103 | ADR-0031 |
+| F045 | Frontend - Corrigir 400 ao analisar com mais de 2 casas decimais | #104 | - |
+| F046 | Frontend - Adicionar campos peakHourUsage e highConsumptionHours no ProfilePage | #106 | ADR-0046 |
+| F047 | Frontend - Adicionar Apartamento como tipo de imóvel | #109 | ADR-0035 |
+| F048 | Frontend - Exibir highest_consumption_products no resultado da análise | #110 | - |
+| F049 | Frontend - Remover localStorage, preferências via backend | #111 | ADR-0033 |
+| F050 | Frontend - Ícones específicos por aparelho + contraste tema escuro | #112 | - |
+| F055 | Frontend - Gráficos Dashboard com granularidade temporal | #118 | ADR-0039 |
+| F056 | Frontend - Relatório completo no Histórico com gráfico por equipamento | #119 | ADR-0040 |
+| F057 | Frontend - Excluir análise no Histórico com confirmação | #120 | ADR-0041 |
+| F058 | Frontend/Backend - Alinhamento FE/BE (remover AnalysisForm, Dashboard usar /simulate) | #122 | ADR-0042 |
+| F059 | Frontend - Seletor de múltiplos imóveis no ProfilePage | - | ADR-0043 |
+| F060 | Frontend - Atualizar dependências vulneráveis (js-yaml, esbuild, npm audit) | - | ADR-0043 |
+| F061 | Frontend - Seletor de imóveis no Dashboard | #123 | ADR-0043 |
+| F062 | Frontend - Consumir GET /contract-info e GET /appliances do backend | #132 | ADR-0047 |
+| F063 | Frontend - Remover PROPERTY_TYPES, CATEGORIES, CATEGORY_ORDER hardcoded | #133 | ADR-0047 |
+| F064 | Frontend - Substituir APPLIANCE_FALLBACK pelo catálogo do backend | #134 | ADR-0047 |
+| F065 | Frontend - Ajustar UI: nomes em português com mlCategory em inglês | #135 | ADR-0047 |
+| F066 | Frontend - Catálogo de ícones por palavra-chave + remover METADATA_BY_NAME | #138 | - |
+| F067 | Frontend - CATEGORIES e CATEGORY_ORDER dinâmicos no ProfilePage | #139 | - |
+| F068 | Frontend - Ajustes CSS: Recharts cursor tema escuro + contraste de ícones | #137 | - |
+| F070 | Frontend - Consumir id real do GET /appliances (B052) e validar salvar de aparelhos | #151 | ADR-0047, ADR-0048 |
+| F069 | Frontend - Persistir peak_hour_usage no perfil do usuário | #143 | ADR-0046 |
+| F071 | Frontend - Atualizar para Node 24 e dependências @latest (TS 6.0.3 pinado, engines Node 24) | - | - |
+| F072 | Frontend - Otimizar LucideIcon (registry estático 529kB -> 22kB) + dead code (knip, F030) | - | - |
+| I022 | Infraestrutura/Base - CI: rodar linters frontend/docs/infra em push direto para dev | - | - |
+| F073 | Frontend - Excluir imóvel + polimentos (badge fonte, updatedAt, top produtos no histórico) | #158 | ADR-0050 |
+| F074 | Frontend - Corrigir badge de fonte da análise (normalizar source do contrato real) | #159 | ADR-0047 |

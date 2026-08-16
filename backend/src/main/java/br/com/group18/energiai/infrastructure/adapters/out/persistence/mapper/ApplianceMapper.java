@@ -15,4 +15,14 @@ public class ApplianceMapper {
                 entity.getAveragePowerWatts(),
                 entity.getAverageDailyUseHours());
     }
+
+    public ApplianceEntity toEntity(Appliance domain) {
+        ApplianceEntity entity = new ApplianceEntity();
+        entity.setId(domain.getId());
+        entity.setName(domain.getName());
+        entity.setApplianceCategory(domain.getApplianceCategory());
+        entity.setAveragePowerWatts(domain.getAveragePowerWatts());
+        entity.setAverageDailyUseHours(domain.getAverageDailyUseHours());
+        return entity;
+    }
 }
