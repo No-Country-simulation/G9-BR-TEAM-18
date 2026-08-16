@@ -74,7 +74,7 @@ npm run build
 
 - **SELinux:** os arquivos copiados para `/var/www/energiai` podem ficar com
   contexto errado (`var_t`) e a pasta `assets/` pode chegar com modo `700` (do
-  `scp`) — sintomas: 403 no site e 502 no proxy. Correção:
+  `scp`) - sintomas: 403 no site e 502 no proxy. Correção:
 
   ```bash
   sudo chmod -R a+rX /var/www/energiai
