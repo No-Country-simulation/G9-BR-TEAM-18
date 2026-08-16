@@ -11,10 +11,10 @@ perfil do imóvel com catálogo de aparelhos.
 
 ## Variáveis de ambiente
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `VITE_API_URL` | `http://localhost:8080` | URL base da API backend |
-| `VITE_GOOGLE_CLIENT_ID` | - | Client ID do Google Identity Services (botão "Entrar com Google"); mesmo valor do `GOOGLE_CLIENT_ID` do backend |
+| Variável                | Padrão                  | Descrição                                                                                                       |
+| ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`          | `http://localhost:8080` | URL base da API backend                                                                                         |
+| `VITE_GOOGLE_CLIENT_ID` | -                       | Client ID do Google Identity Services (botão "Entrar com Google"); mesmo valor do `GOOGLE_CLIENT_ID` do backend |
 
 ## Executar
 
