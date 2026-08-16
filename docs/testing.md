@@ -20,8 +20,9 @@ Documentação da estratégia de testes do projeto, incluindo tipos de teste, fr
 |---|---|---|
 | Backend | JUnit 5 + Spring Boot Test | Unitários, Integração, Contrato |
 | Frontend | Vitest + Testing Library | Unitários, Componentes |
-| Frontend | Playwright | End-to-End (68 testes via Docker) |
-| ML Service | pytest | Unitários, Integração |
+| Frontend | Playwright | End-to-End (91 testes via Docker) |
+| ML Service | - | Sem suíte própria (cobertura via ml-qa) |
+| ml-qa | pytest | Suíte black-box contra o ML Service |
 
 ## Backend - Testes Unitários
 
@@ -119,6 +120,14 @@ Testa a comunicação completa entre todas as camadas:
 
 - Registro → Criação de imóvel → Adição de aparelhos → Análise → Dashboard
 
+## Backend - Testes recentes de integração e sincronização
+
+- `ApplianceCatalogSyncServiceTest`, `CatalogSyncSchedulerTest`, `CatalogSyncOnStartupTest`: sincronização do catálogo de aparelhos com o ML Service (ADR-0048/0055)
+- `MlSchemaDiscoveryTest`, `MlSchemaRegistryTest`: schema discovery do contrato do ML (ADR-0021)
+- `DashboardServiceTest`: métricas do dashboard
+- `AuthControllerTest`, `ContractInfoControllerTest`, `ApplianceControllerTest`, `AnalysisControllerTest`: integração dos controllers via MockMvc
+- `FlywayMigrationFilesTest`, `PersistenceEntitiesTest`: consistência de migrations e entidades
+
 ## Backend - Testes de Contrato
 
 ### MlContractTest (8 testes)
@@ -143,15 +152,15 @@ Os testes de contrato validam a compatibilidade entre o ML Service e o backend s
 ```text
 frontend/e2e/
 ├── playwright.config.ts        # Config do Playwright
-├── helpers/
-│   └── mocks.ts                # Mock data, pt() helper, setupAuthenticatedMocks
+├── helpers/mocks.ts            # Mock data, pt() helper, setupAuthenticatedMocks
 ├── auth.spec.ts                # 13 testes - autenticação
 ├── navigation.spec.ts          # 6 testes - navegação
-├── dashboard.spec.ts           # 12 testes - dashboard
-├── history.spec.ts             # 10 testes - histórico
-├── profile.spec.ts             # 17 testes - perfil
+├── dashboard.spec.ts           # 13 testes - dashboard
+├── history-list.spec.ts        # 13 testes - histórico (lista)
+├── history-detail.spec.ts      # 10 testes - histórico (detalhe)
+├── profile-form.spec.ts        # 22 testes - perfil (formulário/catálogo)
+├── profile-delete.spec.ts      # 7 testes - perfil (exclusão)
 ├── error-handling.spec.ts      # 7 testes - erros
-├── loading.spec.ts             # 2 testes - carregamento
 └── Dockerfile.e2e              # Docker para execução isolada
 ```
 
@@ -196,7 +205,7 @@ cd frontend && npm run test:e2e
 
 ### Resultado
 
-68/68 testes passando. Duração média: ~2-3 minutos.
+91/91 testes passando. Duração média: ~2-3 minutos.
 
 ## Frontend - Testes Unitários
 
@@ -249,6 +258,20 @@ Testa as constantes e utilitários:
 - Mapeamento CATEGORY_DISPLAY
 - Constantes PROPERTY_TYPES
 - Classe ApiError
+
+## Suíte ml-qa (qualidade do ML Service)
+
+O módulo `ml-qa` executa testes **black-box** contra o ML Service (cenários por conjunto de aparelhos,
+contrato, monotonicidade, distribuição de fontes) e versiona os relatórios em `ml-qa/reports/` (ADR-0056).
+
+```bash
+cd ml-qa
+pip install -r requirements.txt
+python -m ml_qa.cli          # rodada completa
+pytest                        # testes do próprio módulo (mocks HTTP)
+```
+
+Consulte o [README do ml-qa](../ml-qa/README.md) para as opções da CLI e o rate limiting.
 
 ## Como Executar
 

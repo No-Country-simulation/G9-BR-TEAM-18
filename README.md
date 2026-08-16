@@ -2,9 +2,9 @@
 
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-2.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 Inteligência artificial para análise de consumo energético, classificação de perfis e geração de recomendações personalizadas.
@@ -42,21 +42,26 @@ Falta de visibilidade sobre o impacto real de hábitos e equipamentos no consumo
 ## Funcionalidades
 
 - Classificação do perfil energético em 5 categorias: Excelente, Bom, Mediano, Ruim, Crítico
-- Estimativa do custo mensal de energia
+- Estimativa do custo mensal de energia e emissão de CO₂
 - Geração de recomendações personalizadas (via regras ou LLM Groq)
-- API REST para análise energética
+- API REST para análise energética, histórico e dashboard
+- Autenticação por sessão JWT em cookie httpOnly + login com Google (SSO)
 - Fallback inteligente: modelo ML, Groq ou regras
-- Auto-aprimoramento: logs de baixa confiança salvos para retreino
+- Auto-aprimoramento: logs de predições salvos para retreino (`treino_feedback.jsonl`)
+- Catálogo de aparelhos sincronizado automaticamente com o ML Service (ADR-0048/0055)
+- Suíte de qualidade black-box do ML Service (`ml-qa`) com relatórios versionados
 
 ## Stack
 
 | Camada | Tecnologia | Versão |
 |---|---|---|
 | Backend | Java + Spring Boot | 21 / 4.1 |
-| Frontend | React + Vite + TypeScript | 18 / 5.4 |
-| ML Service | Python + FastAPI + scikit-learn | 3.12 / 2.1 |
-| Banco | H2 (dev) / Oracle (OCI) | - |
+| Frontend | React + Vite + TypeScript | 19.2 / 8.2 |
+| ML Service | Python + FastAPI + scikit-learn | 3.12 / 0.139 |
+| Banco | Oracle ATP (Flyway) | - |
 | Infraestrutura | Docker Compose | - |
+
+> Requer Node.js 24+, Java 21 (Eclipse Temurin) e Python 3.12+ para execução via script local.
 
 ## Como executar
 
@@ -74,7 +79,6 @@ Serviços disponíveis em:
 | Backend | <http://localhost:8080> |
 | ML Service | <http://localhost:8000> |
 | Swagger UI | <http://localhost:8080/swagger-ui.html> |
-| H2 Console | <http://localhost:8080/h2-console> |
 
 > **Atenção:** Em hardware com menos de 12 GB de RAM, prefira a execução via script local.
 
@@ -113,21 +117,26 @@ cd backend && ./mvnw test
 
 # Frontend (Vitest + Testing Library)
 cd frontend && npm test
+
+# Suíte black-box do ML Service (ml-qa)
+cd ml-qa && pip install -r requirements.txt && python -m ml_qa.cli
 ```
+
+> `./run.sh test` executa os testes unitários do backend e do frontend. Os testes E2E (Playwright) e a suíte ml-qa são executados separadamente (ver [guia de execução](./docs/guia-execucao.md)).
 
 ## API REST
 
 ### `POST /energy-analysis`
 
-**Request:**
+**Request** (as respostas usam snake_case):
 
 ```json
 {
-  "consumption_kwh": 250,
+  "property_id": 1,
+  "consumption_kwh": 350.75,
   "peak_hour_usage": true,
-  "equipment_quantity": 12,
-  "property_type": "Casa",
-  "high_consumption_hours": 6
+  "high_consumption_hours": 5.5,
+  "highest_consumption_category": "REFRIGERATION"
 }
 ```
 
@@ -136,11 +145,16 @@ cd frontend && npm test
 ```json
 {
   "id": 1,
+  "property_id": 1,
+  "consumption_kwh": 350.75,
+  "peak_hour_usage": true,
+  "high_consumption_hours": 5.5,
+  "estimated_monthly_cost": 263.06,
   "category": "MEDIANO",
   "probability": 0.78,
-  "recommendations": ["Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."],
-  "estimated_monthly_cost": 187.5,
-  "created_at": "2026-07-15T12:00:00"
+  "status": "CONCLUIDA",
+  "source": "model",
+  "recommendations": ["Evite usar equipamentos de maior potência entre 18h e 21h, esse é o horário de pico e costuma pesar mais na conta."]
 }
 ```
 
@@ -166,8 +180,17 @@ Consulte o [contrato de API](./docs/contrato-api.md) para a documentação compl
 - [Arquitetura do projeto](./docs/arquitetura.md) - estrutura de diretórios e responsabilidades
 - [Contrato de API](./docs/contrato-api.md) - definição dos endpoints
 - [Guia de execução](./docs/guia-execucao.md) - instruções detalhadas para Docker e script local
-- [Dependências](./docs/dependency-doc.md) - documentação das bibliotecas do backend
+- [Variáveis de ambiente](./docs/environment.md) - referência completa das env vars
+- [Banco de dados](./docs/database.md) - esquema e migrações Flyway
+- [ML Service](./docs/ml-service.md) - arquitetura, modelo e endpoints do microsserviço Python
+- [Frontend](./docs/frontend.md) - arquitetura, componentes e testes da interface
+- [Segurança](./docs/security.md) - autenticação, JWT, cookies e SSO
+- [CI/CD](./docs/ci-cd.md) - pipelines do GitHub Actions
+- [Testes](./docs/testing.md) - estratégia e cobertura
+- [Swagger UI](./docs/teste-openapi.md) - guia prático para testar a API no navegador
+- [Dependências](./docs/dependency-doc.md) - documentação das bibliotecas
 - [Design system](./docs/modulos/design-system.md) - guia de estilo visual do frontend
+- [ml-qa](./ml-qa/README.md) - suíte de qualidade do ML Service
 - [Licença](./docs/license.md) - termos de uso do projeto
 - [ADR](./docs/adr/) - registro de decisões arquiteturais
 - [Glossário](./docs/glossario.md) - dicionário de domínio do projeto

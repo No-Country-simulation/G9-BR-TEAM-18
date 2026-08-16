@@ -72,13 +72,16 @@ Realizada pelo `JwtService.java` na classe `infrastructure/config/`.
 
 ### Validação
 
-O filtro `JwtAuthFilter.java` intercepta todas as requisições (exceto `/auth/**`, `/energy-analysis/categories`, `/appliances`, `/actuator/health`) e:
+O filtro `JwtAuthFilter.java` processa todas as requisições e:
 
 1. Extrai o token do cookie `SESSION_TOKEN`
 2. Valida a assinatura HMAC-SHA384
 3. Verifica se o token não está na blacklist
 4. Extrai o `userId` do `subject`
-5. Adiciona o `userId` ao atributo da requisição
+5. Adiciona o `userId` ao atributo da requisição (`SessionUserResolver`)
+
+O filtro não bloqueia requisições sem token: a proteção de endpoints é feita nos controllers, que resolvem
+o usuário da sessão via `SessionUserResolver` e retornam `401` quando o recurso exige autenticação.
 
 ## Sessão via Cookie
 
@@ -99,11 +102,11 @@ Quando o usuário faz logout, o token JWT atual é adicionado à tabela `TB_TOKE
 
 ## Redefinição de Senha pelo Admin
 
-O endpoint `POST /auth/admin/reset-password` permite que um administrador force a redefinição de senha de qualquer usuário:
+O endpoint `POST /auth/admin/reset-password/{userId}` permite que um administrador force a redefinição de senha de qualquer usuário (o `userId` vai na URL):
 
 ```json
 // Request
-{ "userId": 5, "newPassword": "NovaSenha123!" }
+{ "newPassword": "NovaSenha123!" }
 
 // Response 200
 { "message": "Senha redefinida com sucesso." }
@@ -111,13 +114,25 @@ O endpoint `POST /auth/admin/reset-password` permite que um administrador force 
 
 Após a redefinição, o flag `password_reset_required` é marcado como `true`. O usuário, ao fazer login, é redirecionado para `/reset-password` para definir uma nova senha.
 
+## Login com Google (SSO)
+
+O projeto oferece login com Google (ADR-0052), implementado com o fluxo **ID Token (implícito)**:
+
+1. O frontend usa o Google Identity Services (`@react-oauth/google`) e envia o `credential` (ID Token) para `POST /auth/google`
+2. O backend valida a assinatura, o emissor e a audiência do token usando o `GOOGLE_CLIENT_ID` (cliente `google-api-client`)
+3. Se o e-mail não existir, o usuário é criado automaticamente com `auth_provider = GOOGLE` (coluna adicionada na migration V16)
+4. A sessão segue o mesmo fluxo de cookie `SESSION_TOKEN` do login local
+
+O `GOOGLE_CLIENT_ID` é obrigatório para o SSO funcionar (use um valor mock em dev local). O valor do
+frontend (`VITE_GOOGLE_CLIENT_ID`) deve ser idêntico ao do backend.
+
 ## Proteção de Endpoints
 
 | Critério | Endpoints afetados |
 |---|---|
-| Autenticado (qualquer usuário) | `/properties/**`, `/energy-analysis/**`, `/dashboard`, `/analyses/**` |
+| Autenticado (qualquer usuário) | `/properties/**`, `/energy-analysis`, `/energy-analysis/simulate`, `/dashboard`, `/analyses/**`, `/auth/me`, `/auth/preferences`, `/auth/reset-password`, `/auth/logout` |
 | Admin | `/auth/admin/**` |
-| Público | `/auth/**`, `/energy-analysis/categories`, `/appliances`, `/actuator/health` |
+| Público | `/auth/register`, `/auth/login`, `/auth/google`, `/energy-analysis/categories`, `/appliances`, `/contract-info`, `/actuator/health`, Swagger UI (`/swagger-ui.html`, `/api-docs`) |
 
 ## CORS
 

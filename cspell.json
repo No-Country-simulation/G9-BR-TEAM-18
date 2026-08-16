@@ -215,7 +215,8 @@
     "appliance",
     "mlqa",
     "escritorio",
-    "Portao"
+    "Portao",
+    "descricao"
   ],
   "ignorePaths": [
     "node_modules",

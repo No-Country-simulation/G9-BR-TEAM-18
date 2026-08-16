@@ -32,7 +32,6 @@ Definição dos termos de domínio utilizados na documentação do EnergiIA. Est
 | Schema Discovery | Processo de descobrimento automático dos schemas do ML Service (/predict-schema, /categories) para evitar hardcoded |
 | Simulação | Endpoint /energy-analysis/simulate que executa a análise sem persistir, usado para testes de cenários |
 | Source | Campo que indica a origem da classificação: model (modelo treinado), model+groq (com LLM), rule-based (regras de negócio) |
-| Domínio | Camada central do sistema que contém as entidades de negócio e regras, sem dependência de frameworks ou infraestrutura |
 | DTO | Data Transfer Object: objeto utilizado para transferir dados entre camadas, especialmente na comunicação HTTP |
 | Fallback | Mecanismo de degradação gradual que define uma alternativa quando o método principal falha (ML > Groq > regras) |
 | Inversão de Dependência | Princípio onde as camadas externas dependem de abstrações definidas pelas camadas internas, e não o contrário |
@@ -47,7 +46,10 @@ Definição dos termos de domínio utilizados na documentação do EnergiIA. Est
 | FastAPI | Framework Python utilizado pelo ML Service para expor endpoints de predição |
 | Frontend | Interface web React com Vite para interação do usuário (porta 5173) |
 | Groq | Provedor de API de LLM utilizado como fallback para geração de recomendações quando a confiança do modelo ML é baixa |
-| H2 | Banco de dados relacional em memória utilizado no ambiente de desenvolvimento |
+| ID Token | Token JWT emitido pelo Google no fluxo de login com SSO; validado no backend com o `GOOGLE_CLIENT_ID` (ADR-0052) |
+| SSO (Single Sign-On) | Login com Google: o frontend envia o ID Token a `POST /auth/google` e recebe o cookie de sessão |
+| ml-qa | Módulo de testes black-box do ML Service com cenários por conjunto de aparelhos e relatórios versionados (ADR-0056) |
+| Oracle ATP | Banco de dados Oracle Autonomous Transaction Processing utilizado em desenvolvimento e produção, migrado via Flyway |
 | ML Service | Microsserviço Python responsável pela classificação energética via modelo de machine learning e fallback para LLM |
 | scikit-learn | Biblioteca Python de machine learning utilizada para treinar o modelo de classificação energética |
 | Spring Boot | Framework Java utilizado no backend para criar a API REST e gerenciar a camada de persistência |

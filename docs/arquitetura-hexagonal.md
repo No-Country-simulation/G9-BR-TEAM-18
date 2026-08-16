@@ -50,13 +50,16 @@ Camada mais externa, responsável por integrar o núcleo com tecnologias, framew
 |---|---|
 | `adapters/in/web/controllers` | Endpoints REST que interceptam requisições HTTP e delegam à camada de serviços |
 | `adapters/in/web/dto` | Data Transfer Objects para padronizar contratos de entrada e saída (JSON) |
-| `adapters/in/web/mapper` | Conversão bidirecional entre DTOs e entidades de domínio |
+| `adapters/in/web/security` | Resolução do usuário autenticado por request (`SessionUserResolver`) |
 | `adapters/out/persistence/entity` | Classes de persistência mapeadas com anotações JPA |
 | `adapters/out/persistence/repository` | Interfaces Spring Data JPA |
 | `adapters/out/persistence/adapter` | Implementação das portas de saída de persistência |
 | `adapters/out/persistence/mapper` | Conversão entre entidades JPA e domínio |
-| `adapters/out/client/python` | Comunicação HTTP com o modelo preditivo de IA |
-| `config` | Parametrizações: handlers globais de exceção, beans do core, CORS |
+| `client` | Anti-Corruption Layer do ML Service (MlServiceClient, MlEnvelope, MlPredictionAdapter, AnalysisMapper, MlSchemaDiscovery/Registry) |
+| `config` | Parametrizações: handlers globais de exceção, beans do core, CORS, JWT, OpenAPI, sync do catálogo |
+
+> A estrutura de diretórios atualizada e detalhada está no documento [Arquitetura do projeto](./arquitetura.md);
+> este documento foca nos princípios do padrão.
 
 ## Diretrizes práticas
 

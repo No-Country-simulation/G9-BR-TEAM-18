@@ -47,7 +47,6 @@ A primeira execução pode demorar alguns minutos enquanto as imagens são baixa
 | Backend | <http://localhost:8080> |
 | ML Service | <http://localhost:8000> |
 | Swagger UI | <http://localhost:8080/swagger-ui.html> |
-| H2 Console | <http://localhost:8080/h2-console> |
 
 ### Parando os serviços
 
@@ -79,7 +78,7 @@ dependência do backend real, utilizando mocks de API em todas as chamadas HTTP.
 # Construir a imagem de testes
 docker build -t energiaia-e2e -f frontend/e2e/Dockerfile.e2e .
 
-# Executar os 71 testes
+# Executar a suíte E2E (atualmente 91 cenários)
 docker run --rm energiaia-e2e
 ```
 
@@ -186,19 +185,18 @@ Na primeira execução, as dependências serão baixadas. Swagger UI disponível
 
 O script cria automaticamente um ambiente virtual Python (`venv`), instala as dependências e inicia o servidor uvicorn.
 
-Dependências do ML Service:
+Dependências do ML Service (`ml-service/requirements.txt`, sem versões fixadas):
 
 | Biblioteca | Versão | Finalidade |
 |---|---|---|
-| `fastapi` | 0.139.0 | Framework web para criação da API |
-| `uvicorn` | 0.51.0 | Servidor ASGI para execução do FastAPI |
-| `pydantic` | 2.13.4 | Validação e serialização de dados |
-| `scikit-learn` | 1.9.0 | Algoritmos de machine learning |
-| `pandas` | 3.0.3 | Manipulação e análise de dados |
-| `numpy` | 2.5.1 | Operações numéricas e matriciais |
-| `joblib` | 1.5.3 | Serialização do modelo treinado |
-| `groq` | 1.5.0 | Cliente para API Groq (fallback LLM) |
-| `python-dotenv` | 1.1.0 | Carregamento de variáveis de ambiente |
+| `fastapi` | - | Framework web para criação da API |
+| `uvicorn` | - | Servidor ASGI para execução do FastAPI |
+| `pydantic` | - | Validação e serialização de dados |
+| `scikit-learn` | - | Algoritmos de machine learning |
+| `pandas` | - | Manipulação e análise de dados |
+| `joblib` | - | Serialização do modelo treinado |
+| `groq` | >=1.5.0 | Cliente para API Groq (fallback LLM) |
+| `python-dotenv` | >=1.1.0 | Carregamento de variáveis de ambiente |
 
 #### Iniciar o frontend (React + Vite, porta 5173)
 
@@ -272,46 +270,11 @@ docker info | grep -i memory
 
 Se o hardware for limitado, prefira a execução via script local.
 
-### H2 Console retorna erro de conexão remota
-
-**Erro:** `Sorry, remote connections ('webAllowOthers') are disabled on this server`
-
-**Solução:** Verifique se o `application.properties` contém a seguinte linha:
-
-```properties
-spring.h2.console.settings.web-allow-others=true
-```
-
-Após alterar, reconstrua e reinicie o backend:
-
-```bash
-docker compose build backend && docker compose up -d backend
-```
-
 ### Swagger UI retorna erro 500 em /v3/api-docs
 
-**Causa:** Versão incompatível do `springdoc-openapi` com o Spring Boot 4.x.
+**Causa:** O caminho do JSON do contrato foi alterado para `/api-docs` (configurado via `springdoc.api-docs.path`).
 
-**Solução:** Verifique no `backend/pom.xml` se a versão do `springdoc-openapi-starter-webmvc-ui` é igual ou superior a `3.0.3`.
-
-### H2 Console retorna 404
-
-**Causa:** O módulo `spring-boot-h2console` não está presente no classpath.
-
-**Solução:** Verifique no `backend/pom.xml` se a dependência está declarada. Ela é obrigatória a partir do Spring Boot 4.x.
-
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-h2console</artifactId>
-</dependency>
-```
-
-### Backend não compila com erro de sintaxe
-
-**Causa:** Geralmente ocorre ao importar classes do H2 (`WebServlet`, `JakartaWebServlet`) que não são compatíveis com a versão em uso.
-
-**Solução:** Remova qualquer configuração manual de servlet do H2 (`H2Configuration.java`) e use apenas a auto-configuração do Spring Boot.
+**Solução:** Use <http://localhost:8080/api-docs> para o JSON e <http://localhost:8080/swagger-ui.html> para a UI.
 
 ### ML Service não encontra o modelo
 
@@ -349,13 +312,13 @@ Sem a chave, o serviço funciona apenas com o modelo de machine learning.
 
 **Solução:** Verifique se o backend está rodando na porta 8080 e se o `WebConfig.java` permite a origem do frontend (porta 5173).
 
-### Banco H2: tabelas não encontradas
+### Banco Oracle: tabelas não encontradas
 
-**Erro:** `Table "ANALISE" not found` ou `Table "ANALISE_ENERGETICA" not found`
+**Erro:** `ORA-00942: table or view does not exist` no startup ou ao executar uma análise.
 
-**Causa:** O H2 é um banco em memória. Dados e esquemas são perdidos ao reiniciar o backend.
+**Causa:** O schema apontado por `SPRING_DATASOURCE_URL` não foi migrado ou o `SPRING_FLYWAY_DEFAULT_SCHEMA` está incorreto.
 
-**Solução:** Verifique se a propriedade `spring.jpa.hibernate.ddl-auto=update` está presente no `application.properties`.
+**Solução:** Verifique se o Flyway rodou todas as migrations (`backend/src/main/resources/db/migration/oracle/`) e se as variáveis `SPRING_DATASOURCE_*` e `SPRING_FLYWAY_*` estão consistentes no `.env`.
 
 ### Testes E2E falham com erro de conexão
 
@@ -441,8 +404,9 @@ Problemas comuns:
 
 ## Considerações finais
 
-- A chave de API do Groq é opcional e deve ser configurada no arquivo `.env` do diretório `ml-service/`. Sem ela, o serviço funciona apenas com o modelo de machine learning e as regras de negócio.
-- O banco de dados utilizado é o H2 em memória. Para um ambiente de produção, recomenda-se configurar um banco persistente.
-- O modelo de machine learning (`categorization-model.joblib`) e os datasets sintéticos estão incluídos no repositório para facilitar a reprodução do ambiente de desenvolvimento.
+- A chave de API do Groq é opcional e deve ser configurada no arquivo `.env` do diretório `ml-service/` (ou no `.env` da raiz, carregado pelo Docker Compose). Sem ela, o serviço funciona apenas com o modelo de machine learning e as regras de negócio.
+- O banco de dados utilizado é o Oracle ATP (também em desenvolvimento), configurado via variáveis `SPRING_DATASOURCE_*` e migrado pelo Flyway. Consulte [environment.md](./environment.md) para a lista completa.
+- O modelo de machine learning (`categorization-model.joblib`) e os datasets estão incluídos no repositório para facilitar a reprodução do ambiente de desenvolvimento.
+- A suíte de qualidade do ML Service (`ml-qa`) tem [README próprio](../ml-qa/README.md) com instruções de execução e rate limiting.
 - Consulte o [README](../README.md) para instruções resumidas de execução.
 - Consulte o [glossário do projeto](../docs/glossario.md) para definição dos termos técnicos utilizados neste documento.

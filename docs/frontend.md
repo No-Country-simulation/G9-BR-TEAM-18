@@ -37,55 +37,46 @@ Documentação da interface web React com TypeScript, Vite, React Router, Rechar
 frontend/src/
 ├── components/        # Componentes reutilizáveis
 │   ├── AnalysisSourceBadge.tsx  # Badge de fonte da análise (ML/Fallback)
-│   ├── LucideIcon.tsx    # Ícone com registry estático
-│   ├── Navbar.tsx          # Barra de navegação superior
-│   ├── Footer.tsx          # Rodapé
-│   ├── Hero.tsx            # Seção hero da landing page
-│   ├── FeatureCards.tsx    # Cards de funcionalidades
-│   ├── HowItWorks.tsx      # Passo a passo do funcionamento
-│   ├── TechStack.tsx       # Exibição da stack tecnológica
-│   ├── Logo.tsx            # Componente do logotipo
-│   ├── PrivateRoute.tsx    # Guard de autenticação
-│   └── ScrollToTop.tsx     # Botão flutuante de scroll ao topo
+│   ├── ChunkErrorBoundary.tsx   # Error boundary (fallback de chunk)
+│   ├── LucideIcon.tsx + iconRegistry.ts  # Ícones com registry estático
+│   ├── Navbar.tsx, Footer.tsx, Hero.tsx, FeatureCards.tsx
+│   ├── HowItWorks.tsx, TechStack.tsx, Logo.tsx
+│   ├── PrivateRoute.tsx        # Guard de autenticação
+│   └── ScrollToTop.tsx         # Botão flutuante de scroll ao topo
 ├── context/           # Contextos React
-│   ├── AuthContext.tsx      # Provedor de autenticação
-│   ├── authContext.ts       # Definição do contexto de auth
-│   ├── useAuth.ts          # Hook de acesso ao contexto de auth
-│   ├── ThemeContext.tsx     # Provedor de tema (dark/light)
-│   ├── themeContext.ts      # Definição do contexto de tema
-│   └── useTheme.ts         # Hook de acesso ao contexto de tema
-├── data/              # Dados estáticos
-│   └── appliances.ts       # Catálogo fallback de aparelhos
+│   ├── AuthContext.tsx         # Provedor de autenticação
+│   ├── authContextDef.ts       # Definição do contexto de auth
+│   ├── useAuth.ts              # Hook de acesso ao contexto de auth
+│   ├── ThemeContext.tsx, themeContextDef.ts, useTheme.ts
 ├── pages/             # Componentes de página (roteadas)
-│   ├── Home.tsx            # Landing page
-│   ├── Login.tsx           # Login
-│   ├── Register.tsx        # Cadastro
-│   ├── Dashboard.tsx       # Dashboard com métricas e gráficos
-│   ├── ProfilePage.tsx     # Perfil do usuário + análise
-│   ├── History.tsx         # Histórico de análises
-│   └── ResetPasswordPage.tsx  # Redefinição de senha
+│   ├── Home.tsx                # Landing page
+│   ├── Login.tsx               # Login (inclui botão "Entrar com Google")
+│   ├── Register.tsx            # Cadastro
+│   ├── Dashboard.tsx + dashboard/   # Métricas, gráficos, simulação
+│   ├── ProfilePage.tsx + profile/   # Perfil, imóveis, catálogo de aparelhos
+│   ├── History.tsx + history/       # Histórico e detalhe da análise
+│   └── ResetPasswordPage.tsx   # Redefinição de senha
 ├── services/          # Comunicação com o backend
-│   └── api.ts              # Todas as chamadas HTTP
+│   └── api/                    # Chamadas HTTP (auth, properties, analyses, dashboard)
 ├── types/             # Tipos e constantes
-│   └── index.ts            # Interfaces, tipos, constantes de UI
+│   └── index.ts                # Interfaces, tipos, constantes de UI
+├── utils/             # Utilitários
+│   └── analyses.ts             # Cálculos de consumo/custo
 ├── e2e/               # Testes end-to-end (Playwright)
 │   ├── playwright.config.ts
-│   ├── helpers/
-│   │   └── mocks.ts
-│   ├── auth.spec.ts
-│   ├── navigation.spec.ts
-│   ├── dashboard.spec.ts
-│   ├── history.spec.ts
-│   ├── profile.spec.ts
+│   ├── helpers/mocks.ts
+│   ├── auth.spec.ts, navigation.spec.ts, dashboard.spec.ts
+│   ├── history-detail.spec.ts, history-list.spec.ts
+│   ├── profile-delete.spec.ts, profile-form.spec.ts
 │   ├── error-handling.spec.ts
 │   └── Dockerfile.e2e
-├── test/              # Testes unitários
-│   ├── setup.ts
-│   ├── api.test.ts
-│   ├── AuthContext.test.tsx
-│   ├── PrivateRoute.test.tsx
-│   ├── ResetPasswordPage.test.tsx
-│   └── types.test.ts
+├── test/              # Testes unitários (Vitest)
+│   ├── setup.ts, types.test.ts, AuthContext.test.tsx
+│   ├── Login.test.tsx, Register.test.tsx, Navbar.test.tsx
+│   ├── PrivateRoute.test.tsx, ResetPasswordPage.test.tsx
+│   ├── api/ (auth, properties, analyses, catalog, preferences)
+│   ├── appliance-icons/ (categories, enrich, resolve)
+│   └── analyses-utils, analysis-source, appliance-calc, contrast, dashboard-helpers, icon-registry
 ├── App.tsx            # Componente raiz com roteamento
 ├── App.css            # Estilos globais
 └── main.tsx           # Entry point
@@ -169,16 +160,21 @@ Página para redefinição de senha (após login com `passwordResetRequired: tru
 
 1. **Registro**: `POST /auth/register` → cria usuário, inicia sessão (cookie `SESSION_TOKEN`)
 2. **Login**: `POST /auth/login` → valida credenciais, retorna cookie de sessão
-3. **Sessão**: O cookie `SESSION_TOKEN` (httpOnly) é enviado automaticamente pelo navegador
-4. **Restauração**: Ao recarregar a página, `AuthContext` verifica se o cookie existe e restaura o usuário do `localStorage`
-5. **Logout**: `POST /auth/logout` → invalida token, limpa cookie e `localStorage`
-6. **Redefinição de senha**: Se o backend retornar `passwordResetRequired: true`, o usuário é redirecionado para `/reset-password`
+3. **Login com Google (SSO)**: o botão "Entrar com Google" usa o Google Identity Services
+   (`@react-oauth/google`); o `credential` (ID Token) é enviado a `POST /auth/google` e o backend
+   retorna o mesmo cookie de sessão (ADR-0052). Usuários novos são criados automaticamente
+4. **Sessão**: O cookie `SESSION_TOKEN` (httpOnly) é enviado automaticamente pelo navegador
+5. **Restauração**: Ao recarregar a página, `AuthContext` chama `GET /auth/me` para restaurar o usuário
+   (não há `localStorage` de sessão; ver ADR-0030/0033)
+6. **Logout**: `POST /auth/logout` → invalida token e limpa o cookie
+7. **Redefinição de senha**: Se o backend retornar `passwordResetRequired: true`, o usuário é redirecionado para `/reset-password`
 
 O `AuthContext` expõe o hook `useAuth()` com:
 
 - `user: User | null` - dados do usuário logado
 - `loading: boolean` - estado de carregamento inicial
 - `login(email, password): Promise<boolean>` - retorna `true` se reset de senha for necessário
+- `loginWithGoogle(credential): Promise<void>` - autentica via ID Token do Google
 - `register(name, email, password): Promise<void>`
 - `logout(): void`
 - `resetPassword(currentPassword, newPassword): Promise<void>`
@@ -240,28 +236,31 @@ Localizados em `frontend/src/test/` e executados com Vitest + Testing Library:
 
 | Arquivo | O que testa |
 |---|---|
-| `api.test.ts` | Chamadas HTTP (analyzeEnergy, login, register, listProperties, CRUD de aparelhos) |
-| `AuthContext.test.tsx` | Fluxo de autenticação (login, registro, logout, reset de senha) |
+| `api/` | Chamadas HTTP por domínio (auth, properties, analyses, catalog, preferences) |
+| `AuthContext.test.tsx` | Fluxo de autenticação (login, registro, logout, reset de senha, Google) |
 | `PrivateRoute.test.tsx` | Proteção de rotas (autenticado/não autenticado/reset pendente) |
 | `ResetPasswordPage.test.tsx` | Validação de formulário de redefinição de senha |
-| `Login.test.tsx` | Testes da pagina de login (6 testes: render, erros, navegação) |
-| `Register.test.tsx` | Testes da pagina de cadastro (7 testes: validação, erros, navegação) |
-| `Navbar.test.tsx` | Testes da barra de navegação (6 testes: estados autenticado/anonimo) |
+| `Login.test.tsx` | Testes da página de login (render, erros, navegação) |
+| `Register.test.tsx` | Testes da página de cadastro (validação, erros, navegação) |
+| `Navbar.test.tsx` | Testes da barra de navegação (estados autenticado/anônimo) |
 | `types.test.ts` | Constantes de UI e classe ApiError |
+| `analysis-source.test.ts`, `appliance-calc.test.ts`, `dashboard-helpers.test.ts` | Lógica de fonte da análise, cálculo de aparelhos e helpers do dashboard |
+| `appliance-icons/`, `icon-registry.test.ts`, `contrast.test.ts`, `analyses-utils.test.ts` | Registry de ícones, contraste e utilitários de análise |
 
 ### Testes E2E (Playwright)
 
-Localizados em `frontend/e2e/` e executados com Playwright via Docker. Total: **68 testes**.
+Localizados em `frontend/e2e/` e executados com Playwright via Docker. Total: **91 testes**.
 
-| Categoria | Testes | Cenários Cobertos |
+| Arquivo | Testes | Cenários Cobertos |
 |---|---|---|
-| Navegação e Páginas Públicas | 6 | Home, Navbar autenticado/não, alternador de tema, roteamento |
-| Autenticação | 13 | Login (sucesso, erro, loading, reset de senha), Registro (validação, sucesso, erro, duplicidade), Rotas privadas |
-| Dashboard | 12 | Loading, vazio, dados reais (cards, gráfico), tendência, meta, simulação, badges de status |
-| Histórico | 10 | Loading, vazio, lista com dados, badges (CONCLUIDA/PENDENTE/FALHA/DESCONHECIDO), navegação |
-| Profile Page | 17 | Loading, formulário de imóvel, catálogo, busca, adicionar/remover, regularidade, botões |
-| Tratamento de Erros | 7 | Falha de API, Error Boundary (chunk fallback), 404, tema resiliente |
-| Estados de Carregamento | 2 | Lazy loading de páginas, fallback de carregamento |
+| `auth.spec.ts` | 13 | Login (sucesso, erro, loading, reset de senha), Registro (validação, sucesso, erro, duplicidade), Rotas privadas |
+| `dashboard.spec.ts` | 13 | Loading, vazio, dados reais (cards, gráfico), tendência, meta, simulação, badges de status |
+| `history-list.spec.ts` | 13 | Loading, vazio, lista com dados, badges (CONCLUIDA/PENDENTE/FALHA/DESCONHECIDO), navegação |
+| `history-detail.spec.ts` | 10 | Detalhe da análise, snapshot de equipamentos, produtos de maior consumo |
+| `profile-form.spec.ts` | 22 | Formulário de imóvel, catálogo, busca, adicionar/remover, regularidade, botões |
+| `profile-delete.spec.ts` | 7 | Exclusão de imóvel e confirmações |
+| `error-handling.spec.ts` | 7 | Falha de API, Error Boundary (chunk fallback), 404, tema resiliente |
+| `navigation.spec.ts` | 6 | Home, Navbar autenticado/não, alternador de tema, roteamento |
 
 Para executar os testes E2E:
 
