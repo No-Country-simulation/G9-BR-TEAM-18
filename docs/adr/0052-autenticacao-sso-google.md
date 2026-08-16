@@ -107,12 +107,14 @@ seja configurado.
 - **Projeto:** Criado no Google Cloud Console
 - **Status:** Publicado (qualquer conta Google pode fazer login)
 - **Origens JavaScript autorizadas:**
-  - `https://energiai-frontend.onrender.com`
-  - `https://energiai-backend.onrender.com`
+  - `https://energiaia.duckdns.org` (produção atual)
+  - `https://energiai-frontend.onrender.com` (legado)
+  - `https://energiai-backend.onrender.com` (legado)
   - `http://localhost:5173`
 - **URIs de redirecionamento autorizados:**
-  - `https://energiai-frontend.onrender.com`
-  - `https://energiai-backend.onrender.com`
+  - `https://energiaia.duckdns.org` (produção atual)
+  - `https://energiai-frontend.onrender.com` (legado)
+  - `https://energiai-backend.onrender.com` (legado)
   - `http://localhost:5173`
 
 ---

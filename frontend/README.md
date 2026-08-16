@@ -30,6 +30,13 @@ npm run dev
 
 Acessar em <http://localhost:5173>.
 
+## Produção
+
+O frontend em produção está publicado em **<https://energiaia.duckdns.org>**,
+servido pelo Nginx da VM do backend (Oracle Cloud), consumindo a API
+<https://apienergiaia.duckdns.org>. O build usa `VITE_API_URL` apontando para o
+subdomínio da API (ver [ADR-0058](../docs/adr/0058-frontend-hospedado-nginx-vm.md)).
+
 ## Testes
 
 ```bash

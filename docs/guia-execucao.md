@@ -20,6 +20,19 @@ O projeto é composto por três serviços independentes que se comunicam entre s
 | Frontend | `frontend/` | 5173 | Interface web React com Vite para interação do usuário |
 | ML Service | `ml-service/` | 8000 | Microsserviço FastAPI para predição via modelo de machine learning e fallback para LLM (Groq) |
 
+## Acesso em produção
+
+A aplicação está disponível publicamente na Oracle Cloud:
+
+| Recurso | URL |
+|---|---|
+| Aplicação (frontend) | <https://energiaia.duckdns.org> |
+| API / Swagger UI | <https://apienergiaia.duckdns.org/swagger-ui.html> |
+| Contrato da API (JSON) | <https://apienergiaia.duckdns.org/api-docs> |
+
+A infraestrutura de produção (VMs, Nginx, DuckDNS, SELinux) está descrita em
+[deploy OCI](./deploy-oci.md) e [ADR-0058](./adr/0058-frontend-hospedado-nginx-vm.md).
+
 ## Execução via Docker
 
 ### Requisitos mínimos
