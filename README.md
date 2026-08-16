@@ -12,6 +12,7 @@ Inteligência artificial para análise de consumo energético, classificação d
 ## Sumário
 
 - [Sobre](#sobre)
+- [Produção](#produção)
 - [Funcionalidades](#funcionalidades)
 - [Stack](#stack)
 - [Como executar](#como-executar)
@@ -38,6 +39,14 @@ Falta de visibilidade sobre o impacto real de hábitos e equipamentos no consumo
 - Estimar o custo mensal com base em uma tarifa de referência
 - Disponibilizar os resultados por meio de uma API REST
 - Integrar a aplicação com serviços da Oracle Cloud Infrastructure (OCI)
+
+## Produção
+
+A aplicação está no ar na Oracle Cloud (VMs + Nginx + Let's Encrypt):
+
+- **Aplicação**: [https://energiaia.duckdns.org](https://energiaia.duckdns.org)
+- **API / Swagger**: [https://apienergiaia.duckdns.org](https://apienergiaia.duckdns.org) (UI em `/swagger-ui.html`, contrato em `/api-docs`)
+- **Infra**: backend e ML em Docker nas VMs `163.176.54.241` e `137.131.219.48`; frontend estático servido pelo Nginx da VM do backend (ver [deploy OCI](./docs/deploy-oci.md) e [ADR-0058](./docs/adr/0058-frontend-hospedado-nginx-vm.md))
 
 ## Funcionalidades
 
@@ -193,6 +202,8 @@ Consulte o [contrato de API](./docs/contrato-api.md) para a documentação compl
 - [Dependências](./docs/dependency-doc.md) - documentação das bibliotecas
 - [Design system](./docs/modulos/design-system.md) - guia de estilo visual do frontend
 - [ml-qa](./ml-qa/README.md) - suíte de qualidade do ML Service
+- [Deploy na Oracle Cloud](./docs/deploy-oci.md) - infraestrutura de produção (VMs, Nginx, DuckDNS, SELinux)
+- [Documentação do projeto](./docs/hackathon-documentacao.md) - visão completa para o Hackathon ONE
 - [Licença](./docs/license.md) - termos de uso do projeto
 - [ADR](./docs/adr/) - registro de decisões arquiteturais
 - [Glossário](./docs/glossario.md) - dicionário de domínio do projeto

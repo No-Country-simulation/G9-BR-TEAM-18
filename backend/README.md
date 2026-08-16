@@ -36,6 +36,18 @@ docker compose up -d backend
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - JSON do contrato: <http://localhost:8080/api-docs>
 
+## Produção
+
+Em produção o backend roda em Docker na VM `163.176.54.241` (Oracle Cloud),
+exposto pelo Nginx em HTTPS:
+
+- **API**: <https://apienergiaia.duckdns.org>
+- **Swagger UI**: <https://apienergiaia.duckdns.org/swagger-ui.html>
+- **JSON do contrato**: <https://apienergiaia.duckdns.org/api-docs>
+
+O frontend consome essa API em <https://energiaia.duckdns.org> (ver
+[ADR-0058](../docs/adr/0058-frontend-hospedado-nginx-vm.md)).
+
 ## Testes
 
 ```bash

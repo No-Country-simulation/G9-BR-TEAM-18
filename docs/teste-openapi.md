@@ -27,7 +27,7 @@ dashboard, com exemplos de corpo de requisição e instruções para testes fora
 |---|---|
 | Local (Docker) | <http://localhost:8080/swagger-ui.html> |
 | Local (JSON do contrato) | <http://localhost:8080/api-docs> |
-| Render (deploy) | `https://<seu-backend>.onrender.com/swagger-ui.html` |
+| Produção (OCI) | <https://apienergiaia.duckdns.org/swagger-ui.html> |
 
 > O endereço base exibido nos servidores do contrato é o valor da variável
 > `OPENAPI_SERVER_URL`. Se a variável não estiver definida, o backend não inicia

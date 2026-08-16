@@ -42,6 +42,12 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 API em <http://localhost:8000> (docs interativas em <http://localhost:8000/docs>).
 
+## Produção
+
+Em produção o ML Service roda em Docker na VM `137.131.219.48` (porta `8000`),
+consumido **apenas** pelo backend via rede privada da VCN (o backend o chama em
+`http://10.0.0.179:8000`). Ele não é exposto publicamente.
+
 ## Endpoints principais
 
 | Método | Caminho | Descrição |
