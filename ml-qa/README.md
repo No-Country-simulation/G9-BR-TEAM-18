@@ -84,8 +84,8 @@ Exemplos:
 # Somente anomalias, relatório só JSON
 python -m ml_qa.cli --scenarios anomalies --report json
 
-# Contra o deploy Render
-python -m ml_qa.cli --base-url https://energiai-ml-service.onrender.com
+# Contra o ML Service em produção (VM da Oracle Cloud)
+python -m ml_qa.cli --base-url http://137.131.219.48:8000
 ```
 
 ## Relatórios

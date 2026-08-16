@@ -6,6 +6,10 @@ artificial (Python).
 > **Formato:** a serialização das respostas do backend é feita em **snake_case** (Jackson
 > `property-naming-strategy=SNAKE_CASE`), inclusive campos compostos: `property_id`, `consumption_kwh`,
 > `estimated_monthly_cost`, `created_at`. Requisições do frontend também usam snake_case.
+>
+> **Produção:** API em <https://apienergiaia.duckdns.org> (Swagger UI em
+> `/swagger-ui.html`, JSON do contrato em `/api-docs`); frontend em
+> <https://energiaia.duckdns.org> (ver [deploy OCI](./deploy-oci.md)).
 
 ## Parte 1: Contratos do frontend (comunicação com o Spring Boot)
 
