@@ -15,7 +15,6 @@ Usage:
 import argparse
 import json
 import os
-import re
 from collections import Counter
 
 
@@ -79,7 +78,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--path",
-        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "treino_feedback.jsonl"),
+        default=os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "treino_feedback.jsonl"
+        ),
         help="Path to treino_feedback.jsonl (default: ml-service/treino_feedback.jsonl)",
     )
     args = parser.parse_args()

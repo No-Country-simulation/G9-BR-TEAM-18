@@ -29,7 +29,13 @@ from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 
-from features import APPLIANCE_COLUMNS, REDUNDANT_APPLIANCE_COLUMNS, HIGHEST_CONSUMPTION_CATEGORIES, feature_engineering, normalize_category
+from features import (
+    APPLIANCE_COLUMNS,
+    HIGHEST_CONSUMPTION_CATEGORIES,
+    REDUNDANT_APPLIANCE_COLUMNS,
+    feature_engineering,
+    normalize_category,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -104,6 +110,7 @@ TOTAL_NUMERIC_COLUMNS = BASE_NUMERIC_COLUMNS + BOOLEAN_COLUMNS + ENGINEERED_COLU
 FEATURE_COLUMNS = BASE_NUMERIC_COLUMNS + CATEGORICAL_COLUMNS + BOOLEAN_COLUMNS
 
 PPH_APPLIANCE_QTY_COLUMNS = list(APPLIANCE_COLUMNS.keys())
+
 
 def _assign_region_property(region: str, counter: int) -> str:
     """Assign property type based on region with proportional distribution."""
@@ -316,6 +323,7 @@ def load_pph_data(path: str) -> pd.DataFrame:
     result = df[result_columns].copy()
     result["peak_hour_usage"] = result["peak_hour_usage"].astype(int)
     return result
+
 
 def load_feedback(path: str) -> pd.DataFrame:
     if not os.path.exists(path):
@@ -559,11 +567,18 @@ print("=" * 60)
 
 feature_names = preprocessor.get_feature_names_out()
 importances = np.mean(
-    [clf.estimator.feature_importances_ for clf in calibrated_pipeline.named_steps["model"].calibrated_classifiers_],
+    [
+        clf.estimator.feature_importances_
+        for clf in calibrated_pipeline.named_steps["model"].calibrated_classifiers_
+    ],
     axis=0,
 )
 
-importance_pairs = sorted(zip(feature_names, importances), key=lambda x: x[1], reverse=True)
+importance_pairs = sorted(
+    zip(feature_names, importances, strict=False),
+    key=lambda x: x[1],
+    reverse=True,
+)
 for name, importance in importance_pairs:
     print(f"  {name:40s} {importance:.4f}")
 
@@ -643,4 +658,7 @@ for scenario_name, scenario in TEST_SCENARIOS.items():
         )
         pred = calibrated_pipeline.predict(teste)[0]
         proba = calibrated_pipeline.predict_proba(teste).max()
-        print(f"  [{scenario_name:6s}] {categoria_consumo:18s} -> {pred:10s} (confidence: {proba:.1%})")
+        print(
+            f"  [{scenario_name:6s}] {categoria_consumo:18s} -> {pred:10s} "
+            f"(confidence: {proba:.1%})"
+        )

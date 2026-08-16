@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from groq import Groq
 from pydantic import BaseModel
-from features import normalize_property_type, translate_category, APPLIANCE_COLUMNS
+
+from features import APPLIANCE_COLUMNS, normalize_property_type, translate_category
 
 load_dotenv()
 
@@ -174,6 +175,7 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
         return "RUIM", 0.82
     return "CRITICO", 0.90
 
+
 CATEGORY_RECOMMENDATIONS = {
     "Refrigeracao": (
         "Verifique a vedação dos equipamentos de refrigeração e evite deixá-los "
@@ -323,8 +325,11 @@ APPLIANCE_RECOMMENDATIONS = {
     ),
 }
 
+
 def _normalize_appliance_name(name: str) -> str:
-    stripped = "".join(c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn")
+    stripped = "".join(
+        c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn"
+    )
     return stripped.strip().lower()
 
 
@@ -346,6 +351,7 @@ def _select_appliance_recommendations(products: list[str] | None) -> list[str]:
         if key in APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME:
             recs.append(APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME[key])
     return recs
+
 
 def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
@@ -433,7 +439,7 @@ REGRAS OBRIGATÓRIAS:
 - Baseie-se APENAS nos dados fornecidos. Não invente equipamentos ou hábitos não informados.
 - Se o tipo de imóvel for "Apartamento", não sugira painéis solares ou soluções que dependam
   de telhado/espaço externo próprio.
-{category_rule}- Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
+{category_rule}- Cada recomendação deve abordar um aspecto diferente, sem repetir o tipo de dica.
 - Não cite marcas, modelos ou preços. Não use termos técnicos sem explicação simples.
 - Máximo 20 palavras por recomendação. Sem emojis, markdown ou numeração.
 - Tom: {category} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
@@ -467,7 +473,7 @@ sem introdução e sem comentários adicionais."""
             {"role": "user", "content": prompt},
         ],
         max_tokens=150,
-        temperature=0.3
+        temperature=0.3,
     )
 
     text = (response.choices[0].message.content or "").strip()
@@ -478,8 +484,10 @@ sem introdução e sem comentários adicionais."""
     ]
     return [r for r in recommendations[:3] if r]
 
+
 def _run_prediction(data: "PredictRequest") -> dict:
-    """Executa a lógica de predição e retorna um dicionário com category, probability, recommendations, source."""
+    """Executa a lógica de predição e retorna um dicionário com category,
+    probability, recommendations, source."""
     category = ""
     probability = 0.0
     source = ""
@@ -539,7 +547,12 @@ def _run_prediction(data: "PredictRequest") -> dict:
     else:
         recommendations = _generate_recommendations(data, category)
 
-    return {"category": category, "probability": probability, "recommendations": recommendations, "source": source}
+    return {
+        "category": category,
+        "probability": probability,
+        "recommendations": recommendations,
+        "source": source,
+    }
 
 
 # -------------------------------------------------------------
@@ -593,7 +606,9 @@ def _store_for_training(
 @app.post("/predict", response_model=PredictResponse)
 def predict_consumption(data: PredictRequest) -> PredictResponse:
     result = _run_prediction(data)
-    _store_for_training(data, result["category"], result["probability"], result["recommendations"], result["source"])
+    _store_for_training(
+        data, result["category"], result["probability"], result["recommendations"], result["source"]
+    )
     return PredictResponse(
         category=result["category"],
         probability=result["probability"],
@@ -619,6 +634,7 @@ def predict_schema() -> dict:
     """Retorna o schema JSON do PredictRequest para descoberta dinâmica pelo backend."""
     return PredictRequest.model_json_schema()
 
+
 @app.get("/contract")
 def contract() -> dict:
     """Retorna o contrato completo do ML Service para descoberta dinâmica."""
@@ -627,8 +643,13 @@ def contract() -> dict:
         "property_types": ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
         "efficiency_categories": VALID_CATEGORIES,
         "consumption_categories": [
-            "REFRIGERATION", "CLIMATE_CONTROL", "TECHNOLOGY",
-            "LIGHTING", "APPLIANCES", "SERVICES", "OTHERS",
+            "REFRIGERATION",
+            "CLIMATE_CONTROL",
+            "TECHNOLOGY",
+            "LIGHTING",
+            "APPLIANCES",
+            "SERVICES",
+            "OTHERS",
         ],
         "request_schema": PredictRequest.model_json_schema(),
         "response_schema": PredictResponse.model_json_schema(),
@@ -644,6 +665,7 @@ def appliance_catalog() -> dict:
         if col in df.columns:
             catalog.append(info)
     return {"appliances": catalog}
+
 
 @app.get("/categories")
 def categories() -> dict:

@@ -87,7 +87,7 @@ seja configurado.
 
 ### Fluxo utilizado
 
-- A aplicação utiliza o fluxo **ID Token (implícito)** — o frontend obtém o token do Google e o backend o valida.
+- A aplicação utiliza o fluxo **ID Token (implícito)**: o frontend obtém o token do Google e o backend o valida.
 
 ### Variáveis de ambiente necessárias
 
@@ -98,9 +98,9 @@ seja configurado.
 
 ### Arquivos de configuração alterados
 
-- `backend/src/main/resources/application.properties` — Adicionada a propriedade `google.client.id=${GOOGLE_CLIENT_ID}`
-- `.env.example` — Documentadas ambas as variáveis na seção obrigatória
-- `docker-compose.yml` — Adicionados `GOOGLE_CLIENT_ID` (backend env) e `VITE_GOOGLE_CLIENT_ID` (frontend build arg)
+- `backend/src/main/resources/application.properties`: Adicionada a propriedade `google.client.id=${GOOGLE_CLIENT_ID}`
+- `.env.example`: Documentadas ambas as variáveis na seção obrigatória
+- `docker-compose.yml`: Adicionados `GOOGLE_CLIENT_ID` (backend env) e `VITE_GOOGLE_CLIENT_ID` (frontend build arg)
 
 ### Google Cloud Console
 
@@ -137,7 +137,7 @@ Quando o projeto migrar do Render para a OCI, os seguintes passos devem ser segu
 - **Variáveis de ambiente no OCI:**
   - Configurar `GOOGLE_CLIENT_ID` e `VITE_GOOGLE_CLIENT_ID` no serviço de deploy utilizado (OCI Container Instances, OKE, ou VM)
 
-- **Google Cloud Console — Atualizar URLs autorizadas:**
+- **Google Cloud Console: Atualizar URLs autorizadas**:
   - Editar o Client ID OAuth existente
   - **Adicionar** os novos domínios OCI em *Origens JavaScript autorizadas* e *URIs de redirecionamento autorizados*
 
