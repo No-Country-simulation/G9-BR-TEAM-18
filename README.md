@@ -53,13 +53,13 @@ Falta de visibilidade sobre o impacto real de hábitos e equipamentos no consumo
 
 ## Stack
 
-| Camada | Tecnologia | Versão |
-|---|---|---|
-| Backend | Java + Spring Boot | 21 / 4.1 |
-| Frontend | React + Vite + TypeScript | 19.2 / 8.2 |
-| ML Service | Python + FastAPI + scikit-learn | 3.12 / 0.139 |
-| Banco | Oracle ATP (Flyway) | - |
-| Infraestrutura | Docker Compose | - |
+| Camada         | Tecnologia                      | Versão       |
+| -------------- | ------------------------------- | ------------ |
+| Backend        | Java + Spring Boot              | 21 / 4.1     |
+| Frontend       | React + Vite + TypeScript       | 19.2 / 8.2   |
+| ML Service     | Python + FastAPI + scikit-learn | 3.12 / 0.139 |
+| Banco          | Oracle ATP (Flyway)             | -            |
+| Infraestrutura | Docker Compose                  | -            |
 
 > Requer Node.js 24+, Java 21 (Eclipse Temurin) e Python 3.12+ para execução via script local.
 
@@ -73,11 +73,11 @@ docker compose up -d
 
 Serviços disponíveis em:
 
-| Serviço | URL |
-|---|---|
-| Frontend | <http://localhost:5173> |
-| Backend | <http://localhost:8080> |
-| ML Service | <http://localhost:8000> |
+| Serviço    | URL                                     |
+| ---------- | --------------------------------------- |
+| Frontend   | <http://localhost:5173>                 |
+| Backend    | <http://localhost:8080>                 |
+| ML Service | <http://localhost:8000>                 |
 | Swagger UI | <http://localhost:8080/swagger-ui.html> |
 
 > **Atenção:** Em hardware com menos de 12 GB de RAM, prefira a execução via script local.
@@ -154,7 +154,9 @@ cd ml-qa && pip install -r requirements.txt && python -m ml_qa.cli
   "probability": 0.78,
   "status": "CONCLUIDA",
   "source": "model",
-  "recommendations": ["Evite usar equipamentos de maior potência entre 18h e 21h, esse é o horário de pico e costuma pesar mais na conta."]
+  "recommendations": [
+    "Evite usar equipamentos de maior potência entre 18h e 21h, esse é o horário de pico e costuma pesar mais na conta."
+  ]
 }
 ```
 
@@ -162,17 +164,17 @@ Consulte o [contrato de API](./docs/contrato-api.md) para a documentação compl
 
 ## Membros
 
-| Nome | Função | LinkedIn | GitHub |
-|---|---|---|---|
-| Eduardo Gonçalves | Backend Developer | [LinkedIn](https://www.linkedin.com/in/eduardogoncalvesmesquita/) | [GitHub](https://github.com/eduuardo1st) |
-| Guilherme Hermano | Data Engineer | [LinkedIn](https://www.linkedin.com/in/guilherme-ferreira17/) | [GitHub](https://github.com/guilherme-hermano) |
-| Gustavo Mendes | Data Scientist | [LinkedIn](https://www.linkedin.com/in/gustavo-silveira-mendes/) | [GitHub](https://github.com/mendesgustavo) |
-| Ihago Lamarcks | Data Scientist | [LinkedIn](https://www.linkedin.com/in/ihago-lamarcks1/) | [GitHub](https://github.com/Lamarcks) |
-| João Vitor | Software Engineer | [LinkedIn](https://www.linkedin.com/in/joaovitordevv/) | [GitHub](https://github.com/uuhjuao) |
-| José Anderson | Backend Developer | [LinkedIn](https://www.linkedin.com/in/dessima/) | [GitHub](https://github.com/DessimA) |
-| Juscileia Noleto | Frontend Developer | [LinkedIn](https://www.linkedin.com/in/juscileia-noleto-15j/) | [GitHub](https://github.com/juscileianoleto1) |
-| Matheus Carvalho | Backend Developer | [LinkedIn](https://www.linkedin.com/in/matheuscarvalho-/) | [GitHub](https://github.com/matheus-carvalh0) |
-| Melissa Mel | Data Engineer | [LinkedIn](https://www.linkedin.com/in/melissa-mel-freitas-vanni) | [GitHub](https://github.com/Mel-Vanni) |
+| Nome              | Função             | LinkedIn                                                          | GitHub                                         |
+| ----------------- | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------- |
+| Eduardo Gonçalves | Backend Developer  | [LinkedIn](https://www.linkedin.com/in/eduardogoncalvesmesquita/) | [GitHub](https://github.com/eduuardo1st)       |
+| Guilherme Hermano | Data Engineer      | [LinkedIn](https://www.linkedin.com/in/guilherme-ferreira17/)     | [GitHub](https://github.com/guilherme-hermano) |
+| Gustavo Mendes    | Data Scientist     | [LinkedIn](https://www.linkedin.com/in/gustavo-silveira-mendes/)  | [GitHub](https://github.com/mendesgustavo)     |
+| Ihago Lamarcks    | Data Scientist     | [LinkedIn](https://www.linkedin.com/in/ihago-lamarcks1/)          | [GitHub](https://github.com/Lamarcks)          |
+| João Vitor        | Software Engineer  | [LinkedIn](https://www.linkedin.com/in/joaovitordevv/)            | [GitHub](https://github.com/uuhjuao)           |
+| José Anderson     | Backend Developer  | [LinkedIn](https://www.linkedin.com/in/dessima/)                  | [GitHub](https://github.com/DessimA)           |
+| Juscileia Noleto  | Frontend Developer | [LinkedIn](https://www.linkedin.com/in/juscileia-noleto-15j/)     | [GitHub](https://github.com/juscileianoleto1)  |
+| Matheus Carvalho  | Backend Developer  | [LinkedIn](https://www.linkedin.com/in/matheuscarvalho-/)         | [GitHub](https://github.com/matheus-carvalh0)  |
+| Melissa Mel       | Data Engineer      | [LinkedIn](https://www.linkedin.com/in/melissa-mel-freitas-vanni) | [GitHub](https://github.com/Mel-Vanni)         |
 
 ## Documentação complementar
 
