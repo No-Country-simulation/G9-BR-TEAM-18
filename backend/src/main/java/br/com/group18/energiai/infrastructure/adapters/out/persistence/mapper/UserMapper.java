@@ -18,6 +18,14 @@ public class UserMapper {
         entity.setEmail(domain.getEmail());
         entity.setPasswordHash(domain.getPasswordHash());
         entity.setPasswordResetRequired(domain.isPasswordResetRequired() ? 1 : 0);
+        entity.setConsumptionGoal(domain.getConsumptionGoal());
+        entity.setRegularity(domain.getRegularity());
+
+        if (domain.getPeakHourUsage() != null) {
+            entity.setPeakHourUsage(domain.getPeakHourUsage() ? 1 : 0);
+        }
+        entity.setHighConsumptionHours(domain.getHighConsumptionHours());
+
         return entity;
     }
 
@@ -29,6 +37,14 @@ public class UserMapper {
         User domain = new User(entity.getName(), entity.getEmail(), entity.getPasswordHash());
         domain.setId(entity.getId());
         domain.setPasswordResetRequired(Integer.valueOf(1).equals(entity.getPasswordResetRequired()));
+        domain.setConsumptionGoal(entity.getConsumptionGoal());
+        domain.setRegularity(entity.getRegularity());
+
+        if (entity.getPeakHourUsage() != null) {
+            domain.setPeakHourUsage(Integer.valueOf(1).equals(entity.getPeakHourUsage()));
+        }
+        domain.setHighConsumptionHours(entity.getHighConsumptionHours());
+
         return domain;
     }
 }

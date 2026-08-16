@@ -1,11 +1,14 @@
 package br.com.group18.energiai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.core.domain.model.MlResult;
 import br.com.group18.energiai.infrastructure.client.AnalysisMapper;
 import br.com.group18.energiai.infrastructure.client.MlEnvelope;
-import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,10 +26,14 @@ class AnalysisMapperExtendedTest {
     @Test
     void shouldMapCompleteResponse() {
         MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "BOM",
-                "probability", 0.85,
-                "recommendations", List.of("Reduza o consumo", "Troque equipamentos"),
-                "source", "model"));
+                "category",
+                "BOM",
+                "probability",
+                0.85,
+                "recommendations",
+                List.of("Reduza o consumo", "Troque equipamentos"),
+                "source",
+                "model"));
 
         MlResult result = mapper.toMlResult(envelope);
 
@@ -38,11 +45,8 @@ class AnalysisMapperExtendedTest {
 
     @Test
     void shouldHandleEmptyRecommendations() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "EXCELENTE",
-                "probability", 0.9,
-                "recommendations", List.of(),
-                "source", "model"));
+        MlEnvelope envelope = new MlEnvelope(
+                Map.of("category", "EXCELENTE", "probability", 0.9, "recommendations", List.of(), "source", "model"));
 
         MlResult result = mapper.toMlResult(envelope);
 
@@ -56,7 +60,7 @@ class AnalysisMapperExtendedTest {
                 "probability", 0.9,
                 "source", "model"));
 
-        assertFalse(envelope.hasKey("recommendations"));
+        assertFalse(envelope.body().containsKey("recommendations"));
         MlResult result = mapper.toMlResult(envelope);
 
         assertTrue(result.recommendations().isEmpty());
@@ -65,51 +69,47 @@ class AnalysisMapperExtendedTest {
     @Test
     void shouldAcceptNumericProbabilityAsInteger() {
         MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "MEDIANO",
-                "probability", 42,
-                "recommendations", List.of("Cuidado"),
-                "source", "rule-based"));
+                "category",
+                "MEDIANO",
+                "probability",
+                0,
+                "recommendations",
+                List.of("Cuidado"),
+                "source",
+                "rule-based"));
 
         MlResult result = mapper.toMlResult(envelope);
 
-        assertEquals(42.0, result.probability(), 0.001);
+        assertEquals(0.0, result.probability(), 0.001);
     }
 
     @Test
     void shouldRejectProbabilityOutOfRange() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "BOM",
-                "probability", -0.1,
-                "recommendations", List.of("Teste")));
+        MlEnvelope envelope =
+                new MlEnvelope(Map.of("category", "BOM", "probability", -0.1, "recommendations", List.of("Teste")));
 
         assertThrows(MlServiceUnavailableException.class, () -> mapper.toMlResult(envelope));
     }
 
     @Test
     void shouldRejectProbabilityOverOne() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "BOM",
-                "probability", 1.1,
-                "recommendations", List.of("Teste")));
+        MlEnvelope envelope =
+                new MlEnvelope(Map.of("category", "BOM", "probability", 1.1, "recommendations", List.of("Teste")));
 
         assertThrows(MlServiceUnavailableException.class, () -> mapper.toMlResult(envelope));
     }
 
     @Test
     void shouldHandleBlankCategory() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "   ",
-                "probability", 0.5,
-                "recommendations", List.of("Teste")));
+        MlEnvelope envelope =
+                new MlEnvelope(Map.of("category", "   ", "probability", 0.5, "recommendations", List.of("Teste")));
 
         assertThrows(MlServiceUnavailableException.class, () -> mapper.toMlResult(envelope));
     }
 
     @Test
     void shouldHandleMissingCategory() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "probability", 0.5,
-                "recommendations", List.of("Teste")));
+        MlEnvelope envelope = new MlEnvelope(Map.of("probability", 0.5, "recommendations", List.of("Teste")));
 
         assertThrows(MlServiceUnavailableException.class, () -> mapper.toMlResult(envelope));
     }
@@ -130,10 +130,8 @@ class AnalysisMapperExtendedTest {
 
     @Test
     void shouldHandleEmptySource() {
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "category", "BOM",
-                "probability", 0.75,
-                "recommendations", List.of("Ok")));
+        MlEnvelope envelope =
+                new MlEnvelope(Map.of("category", "BOM", "probability", 0.75, "recommendations", List.of("Ok")));
 
         MlResult result = mapper.toMlResult(envelope);
 
@@ -167,11 +165,8 @@ class AnalysisMapperExtendedTest {
     void shouldMapWithCustomKeys() {
         AnalysisMapper customMapper = new AnalysisMapper("cat", "prob", "recs", "src");
 
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "cat", "RUIM",
-                "prob", 0.4,
-                "recs", List.of("Melhore!"),
-                "src", "groq"));
+        MlEnvelope envelope =
+                new MlEnvelope(Map.of("cat", "RUIM", "prob", 0.4, "recs", List.of("Melhore!"), "src", "groq"));
 
         MlResult result = customMapper.toMlResult(envelope);
 
@@ -184,10 +179,7 @@ class AnalysisMapperExtendedTest {
     void shouldRejectInvalidCategoryWithCustomMapper() {
         AnalysisMapper customMapper = new AnalysisMapper("cat", "prob", "recs", "src");
 
-        MlEnvelope envelope = new MlEnvelope(Map.of(
-                "cat", "INVALIDO",
-                "prob", 0.5,
-                "recs", List.of("Teste")));
+        MlEnvelope envelope = new MlEnvelope(Map.of("cat", "INVALIDO", "prob", 0.5, "recs", List.of("Teste")));
 
         assertThrows(MlServiceUnavailableException.class, () -> customMapper.toMlResult(envelope));
     }

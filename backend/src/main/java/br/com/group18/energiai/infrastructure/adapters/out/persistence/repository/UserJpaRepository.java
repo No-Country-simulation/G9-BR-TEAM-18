@@ -8,6 +8,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
-
-    boolean existsByEmail(String email);
 }

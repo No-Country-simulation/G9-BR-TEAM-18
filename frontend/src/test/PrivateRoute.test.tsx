@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router";
 import { AuthProvider } from "../context/AuthContext";
 import PrivateRoute from "../components/PrivateRoute";
+
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
+globalThis.fetch = mockFetch;
 
 function TestChild() {
   return <div>protected content</div>;
@@ -15,21 +23,26 @@ function TestResetPage() {
 type AuthState = "authenticated-no-reset" | "authenticated-needs-reset" | "unauthenticated";
 
 function renderWithState(state: AuthState) {
-  localStorage.clear();
   document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
 
   if (state === "authenticated-no-reset") {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: false }),
-    );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
+    } as unknown as Response);
   } else if (state === "authenticated-needs-reset") {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: true }),
-    );
     document.cookie = "SESSION_TOKEN=validtoken; Path=/";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: "1",
+          name: "Alice",
+          email: "a@a.com",
+          password_reset_required: true,
+        }),
+    } as unknown as Response);
   }
 
   return render(

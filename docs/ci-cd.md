@@ -14,7 +14,7 @@ Documentação dos pipelines de CI/CD configurados no GitHub Actions.
 
 ## Visão Geral
 
-O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos os workflows são acionados em pull requests para a branch `dev` e, quando aplicável, em pushes para `main` e `dev`.
+O projeto possui 12 workflows de CI/CD no diretório `.github/workflows/`. Os pipelines de teste e lint são acionados em pull requests (por caminhos alterados) e em pushes para `dev`; os deploys são acionados por push para `dev`; `revert-direct-push` protege `main` e `homolog`.
 
 ## Workflows de Teste
 
@@ -22,28 +22,28 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
+| Gatilho | PR para `dev` (paths: backend/**) |
 | Jobs | `test` (ubuntu-latest) |
-| Passos | Checkout → Setup Java 21 (Temurin) → `./mvnw test -pl backend` |
-| Cobertura | Testes JUnit 5 (unitários e integração) |
+| Passos | Checkout → Setup Java 21 (Temurin) → `cd backend && mvn -B test` (exclui os testes de integração Oracle via `-Dtest`) |
+| Cobertura | Testes JUnit 5 (unitários e integração com MockMvc) |
 
 ### `test-frontend.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
+| Gatilho | PR para `dev` (paths: frontend/**) |
 | Jobs | `test` (ubuntu-latest) |
-| Passos | Checkout → Setup Node 22 → `npm ci` → `npm test` |
+| Passos | Checkout → Setup Node 24 → `npm ci` → `npm run test` |
 | Cobertura | Testes Vitest + Testing Library |
 
 ### `test-ml-service.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
+| Gatilho | PR para `dev` (paths: ml-service/**) |
 | Jobs | `test` (ubuntu-latest) |
-| Passos | Checkout → Setup Python 3.12 → `pip install -r ml-service/requirements.txt` → `python -m pytest` |
-| Cobertura | Testes Python |
+| Passos | Checkout → Setup Python 3.12 → `pip install -r ml-service/requirements.txt` → `cd ml-service && pytest tests/ -v` (tolera ausência de testes) |
+| Cobertura | Validação de instalação/importação do ML Service (a suíte de qualidade fica no `ml-qa`) |
 
 ## Workflows de Lint
 
@@ -51,47 +51,47 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev`, push para `dev` |
-| Jobs | `lint` (ubuntu-latest) |
-| Ferramentas | Spotless (`./mvnw spotless:check -pl backend`), Checkstyle (`./mvnw checkstyle:check -pl backend`) |
+| Gatilho | PR para `dev`, push para `dev` (paths: backend/**) |
+| Jobs | `static-analysis` (ubuntu-latest) |
+| Ferramentas | `mvn -B validate process-classes` + `mvn -B spotless:check` |
 | Observação | O Spotless verifica formatação Palantir Java Format |
 
 ### `lint-frontend.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
+| Gatilho | PR para `dev` (paths: frontend/**) |
 | Jobs | `lint` (ubuntu-latest) |
-| Passos | Setup Node 22 → `npm ci` → `npx eslint src/` → `npx prettier --check .` |
-| Abrange | ESLint (regras recomendadas + react-hooks + react-refresh) + Prettier |
+| Passos | Setup Node 24 → `npm ci` → `npm run lint` + `npm run typecheck` + `npm run format:check` |
+| Abrange | ESLint + TypeScript (`tsc`) + Prettier |
 
 ### `lint-ml-service.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
-| Jobs | `lint` (ubuntu-latest) |
-| Passos | Setup Python 3.12 → `pip install ruff mypy` → `ruff check ml-service/` → `mypy ml-service/` |
-| Abrange | Ruff (E, F, I, UP, B) + MyPy (tipagem estrita) |
+| Gatilho | PR para `dev` (paths: ml-service/**) |
+| Jobs | `ruff-mypy` (ubuntu-latest) |
+| Passos | Setup Python 3.12 → `pip install ruff mypy` → `cd ml-service && ruff check . && ruff format --check .` → `cd ml-service && mypy .` |
+| Abrange | Ruff (E, F, I, UP, B) + formatação + MyPy (tipagem estrita) |
 
 ### `lint-docs.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
-| Jobs | `lint` (ubuntu-latest) |
-| Ferramentas | Markdownlint |
-| Abrange | Todos os arquivos `.md` |
-| Regras | line_length: 334, HTML permitido, headings sem frontmatter title permitidos |
+| Gatilho | PR para `dev`, push para `dev` (paths: **/*.md) |
+| Jobs | `docs` (ubuntu-latest) |
+| Ferramentas | Markdownlint (`markdownlint-cli2`), CSpell (`@cspell/dict-pt-br`) e `check-forbidden-chars` |
+| Abrange | Todos os arquivos `.md` versionados |
+| Regras | line_length: 334, HTML permitido, sem em dash/aspas curvas, ortografia com dicionário pt-BR |
 
 ### `lint-infra.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR para `dev` |
-| Jobs | `lint` (ubuntu-latest) |
-| Ferramentas | Hadolint (Dockerfiles), YAMLlint (arquivos YML) |
-| Abrange | Dockerfile, docker-compose.yml, workflows |
+| Gatilho | PR para `dev`, push para `dev` (paths: Dockerfiles e *.yml/*.yaml) |
+| Jobs | `hadolint` + `yamllint` (ubuntu-latest) |
+| Ferramentas | Hadolint (backend/Dockerfile, frontend/Dockerfile), YAMLlint |
+| Abrange | Dockerfiles, docker-compose.yml, workflows |
 
 ## Workflows de Deploy
 
@@ -99,19 +99,19 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | Push para `dev` (após PR merge) |
-| Jobs | `deploy` |
-| Destino | Render (<https://energiai-api.onrender.com>) |
-| Passos | Checkout → Build Maven → Deploy para Render via webhook |
+| Gatilho | Push para `dev` (paths: backend/**) |
+| Jobs | `build-and-push` |
+| Destino | Docker Hub (imagem `energiai-backend:dev`) + deploy hook do Render (homologação) |
+| Passos | Checkout → Login Docker Hub → Build/Push da imagem Docker → disparo do Deploy Hook no Render |
 
 ### `deploy-ml-dev.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | Push para `dev` (após PR merge) |
-| Jobs | `deploy` |
-| Destino | Render (<https://energiai-ml.onrender.com>) |
-| Passos | Checkout → Build Docker → Deploy para Render via webhook |
+| Gatilho | Push para `dev` (paths: ml-service/**) |
+| Jobs | `build-and-push` |
+| Destino | Docker Hub (imagem `energiai-ml-service:dev`) + deploy hook do Render (homologação) |
+| Passos | Checkout → Login Docker Hub → Build/Push da imagem Docker → disparo do Deploy Hook no Render |
 
 ## Workflows de Validação
 
@@ -119,16 +119,16 @@ O projeto possui 14 workflows de CI/CD no diretório `.github/workflows/`. Todos
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | PR aberto/sincronizado para `dev` |
-| Função | Valida se a branch de origem tem um nome válido |
-| Regras | `feature/*`, `bugfix/*`, `hotfix/*`, `docs/*`, `refactor/*` |
+| Gatilho | PR aberto/sincronizado para `homolog` e `main` |
+| Função | Garante o fluxo de promoção dev → homolog → main |
+| Regras | PR para `homolog` deve vir apenas de `dev`; PR para `main` deve vir apenas de `homolog` |
 
 ### `revert-direct-push.yml`
 
 | Configuração | Valor |
 |---|---|
-| Gatilho | Push direto para `main` |
-| Função | Proteção contra pushes diretos para `main` |
+| Gatilho | Push direto para `main` e `homolog` |
+| Função | Proteção contra pushes diretos nas branches protegidas |
 | Ação | Reverte automaticamente o commit |
 
 ---

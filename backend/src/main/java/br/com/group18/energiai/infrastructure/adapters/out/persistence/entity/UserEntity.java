@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "tb_user")
@@ -26,6 +27,18 @@ public class UserEntity {
 
     @Column(name = "password_reset_required", nullable = false)
     private Integer passwordResetRequired = 0;
+
+    @Column(name = "consumption_goal", precision = 10, scale = 2)
+    private BigDecimal consumptionGoal;
+
+    @Column(name = "regularity", length = 20)
+    private String regularity;
+
+    @Column(name = "peak_hour_usage")
+    private Integer peakHourUsage;
+
+    @Column(name = "high_consumption_hours", precision = 10, scale = 2)
+    private BigDecimal highConsumptionHours;
 
     public Long getId() {
         return id;
@@ -65,5 +78,37 @@ public class UserEntity {
 
     public void setPasswordResetRequired(Integer passwordResetRequired) {
         this.passwordResetRequired = passwordResetRequired;
+    }
+
+    public BigDecimal getConsumptionGoal() {
+        return consumptionGoal;
+    }
+
+    public void setConsumptionGoal(BigDecimal consumptionGoal) {
+        this.consumptionGoal = consumptionGoal;
+    }
+
+    public String getRegularity() {
+        return regularity;
+    }
+
+    public void setRegularity(String regularity) {
+        this.regularity = regularity;
+    }
+
+    public Integer getPeakHourUsage() {
+        return peakHourUsage;
+    }
+
+    public void setPeakHourUsage(Integer peakHourUsage) {
+        this.peakHourUsage = peakHourUsage;
+    }
+
+    public BigDecimal getHighConsumptionHours() {
+        return highConsumptionHours;
+    }
+
+    public void setHighConsumptionHours(BigDecimal highConsumptionHours) {
+        this.highConsumptionHours = highConsumptionHours;
     }
 }

@@ -1,138 +1,58 @@
 import type { ApplianceType } from "../types";
+import { resolveApplianceIcon } from "./appliance-icons";
 
-export const APPLIANCE_FALLBACK: ApplianceType[] = [
-  {
-    id: "REFRIGERATOR",
-    name: "Geladeira",
-    mlCategory: "Refrigeracao",
-    distributionField: "REFRIGERATION_WATTS",
-    powerWatts: 150,
-    dailyUsageHours: 24,
-    icon: "Snowflake",
-  },
+/**
+ * Item do catálogo exposto pelo backend em GET /appliances (B050 / ADR-0027,
+ * com id físico do banco desde a B052 / ADR-0048).
+ *
+ * Contrato atual (serialização SNAKE_CASE):
+ *   { id, name, ml_category, watts, hours }
+ *
+ * Campos do contrato antigo (appliance_category, average_power_watts,
+ * average_daily_use_hours) são aceitos como fallback defensivo para
+ * compatibilidade durante a transição.
+ */
+export interface ApplianceCatalogItem {
+  id?: number | string;
+  name: string;
+  ml_category?: string;
+  appliance_category?: string;
+  watts?: number;
+  average_power_watts?: number;
+  hours?: number;
+  average_daily_use_hours?: number;
+}
 
-  {
-    id: "AIR_CONDITIONER",
-    name: "Ar-condicionado",
-    mlCategory: "Climatizacao",
-    distributionField: "AIR_CONDITIONING_WATTS",
-    powerWatts: 1500,
-    dailyUsageHours: 8,
-    icon: "Wind",
-  },
-  {
-    id: "FAN",
-    name: "Ventilador",
-    mlCategory: "Climatizacao",
-    distributionField: "AIR_CONDITIONING_WATTS",
-    powerWatts: 100,
-    dailyUsageHours: 8,
-    icon: "Wind",
-  },
+/**
+ * Gera um id estável a partir do nome quando o contrato não expõe id.
+ * Ex: "Televisão OLED" → "televisao-oled"
+ */
+function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
-  {
-    id: "ELECTRIC_SHOWER",
-    name: "Chuveiro elétrico",
-    mlCategory: "Eletrodomesticos",
-    distributionField: "HEATING_WATTS",
-    powerWatts: 5500,
-    dailyUsageHours: 0.5,
-    icon: "Home",
-  },
-
-  {
-    id: "LAMP",
-    name: "Lâmpada",
-    mlCategory: "Iluminacao",
-    distributionField: "LIGHTING_WATTS",
-    powerWatts: 12,
-    dailyUsageHours: 6,
-    icon: "Lightbulb",
-  },
-
-  {
-    id: "TV",
-    name: "Televisão",
-    mlCategory: "Tecnologia",
-    distributionField: "NONE",
-    powerWatts: 150,
-    dailyUsageHours: 6,
-    icon: "Monitor",
-  },
-  {
-    id: "COMPUTER",
-    name: "Computador",
-    mlCategory: "Tecnologia",
-    distributionField: "NONE",
-    powerWatts: 150,
-    dailyUsageHours: 8,
-    icon: "Monitor",
-  },
-  {
-    id: "VIDEO_GAME",
-    name: "Videogame",
-    mlCategory: "Tecnologia",
-    distributionField: "NONE",
-    powerWatts: 200,
-    dailyUsageHours: 4,
-    icon: "Monitor",
-  },
-
-  {
-    id: "WASHING_MACHINE",
-    name: "Máquina de lavar",
-    mlCategory: "Eletrodomesticos",
-    distributionField: "NONE",
-    powerWatts: 500,
-    dailyUsageHours: 1.5,
-    icon: "Home",
-  },
-  {
-    id: "MICROWAVE",
-    name: "Micro-ondas",
-    mlCategory: "Eletrodomesticos",
-    distributionField: "NONE",
-    powerWatts: 1200,
-    dailyUsageHours: 0.5,
-    icon: "Home",
-  },
-  {
-    id: "AIR_FRYER",
-    name: "Air fryer",
-    mlCategory: "Eletrodomesticos",
-    distributionField: "NONE",
-    powerWatts: 1500,
-    dailyUsageHours: 0.75,
-    icon: "Home",
-  },
-];
-
-export function mergeAppliancesWithBackend(
-  fallback: ApplianceType[],
-  backendData: Array<{
-    id: number;
-    name: string;
-    appliance_category: string;
-    average_power_watts: number;
-    average_daily_use_hours: number;
-  }>,
-): ApplianceType[] {
-  const backendByName = new Map<string, number>();
-  for (const b of backendData) {
-    backendByName.set(
-      b.name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, ""),
-      b.id,
-    );
-  }
-  return fallback.map((a) => {
-    const key = a.name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-    const bid = backendByName.get(key);
-    return bid ? { ...a, backendId: bid } : a;
-  });
+/**
+ * Enriquece os dados crus do backend com o ícone Lucide apropriado.
+ *
+ * Usa resolveApplianceIcon() que busca por palavra-chave no nome
+ * do aparelho (ex: "Geladeira Frost Free" → "Refrigerator").
+ * Se não encontrar, usa fallback por mlCategory.
+ */
+export function enrichAppliance(raw: ApplianceCatalogItem): ApplianceType {
+  const name = raw.name ?? "Aparelho";
+  const mlCategory = raw.ml_category ?? raw.appliance_category ?? "OTHERS";
+  const id = raw.id != null ? String(raw.id) : slugify(name);
+  return {
+    id,
+    name,
+    mlCategory,
+    powerWatts: Number(raw.watts ?? raw.average_power_watts ?? 0),
+    dailyUsageHours: Number(raw.hours ?? raw.average_daily_use_hours ?? 0),
+    icon: resolveApplianceIcon(name, mlCategory),
+  };
 }

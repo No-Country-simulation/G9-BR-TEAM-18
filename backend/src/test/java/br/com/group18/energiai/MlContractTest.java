@@ -4,22 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import br.com.group18.energiai.infrastructure.client.AnalysisMapper;
 import br.com.group18.energiai.infrastructure.client.MlEnvelope;
-import br.com.group18.energiai.infrastructure.client.MlServiceUnavailableException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/**
- * Contract tests that validate compatibility between the ML Service response
- * format and the backend's domain objects (ADR-0023).
- *
- * These tests verify that the fields and categories expected by the backend
- * are compatible with what the ML Service returns, without requiring the
- * ML Service to be running (they test the mapper and value objects directly).
- */
 class MlContractTest {
 
     private final AnalysisMapper mapper = new AnalysisMapper("category", "probability", "recommendations", "source");

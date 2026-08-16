@@ -30,4 +30,9 @@ public class ApplianceRepositoryAdapter implements ApplianceRepositoryPort {
     public Optional<Appliance> findById(Long id) {
         return repository.findById(id).map(mapper::toDomain);
     }
+
+    @Override
+    public Appliance save(Appliance appliance) {
+        return mapper.toDomain(repository.save(mapper.toEntity(appliance)));
+    }
 }

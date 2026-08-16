@@ -1,26 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "../context/AuthContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Register from "../pages/Register";
 
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual("react-router");
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 function renderPage() {
   return render(
-    <BrowserRouter>
+    <GoogleOAuthProvider clientId="test-client-id">
       <AuthProvider>
-        <Register />
+        <BrowserRouter>
+          <Register />
+        </BrowserRouter>
       </AuthProvider>
-    </BrowserRouter>,
+    </GoogleOAuthProvider>,
   );
 }
 
@@ -62,10 +70,11 @@ describe("Register", () => {
   });
 
   it("shows error message on failed registration", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Email já existe" }),
-    });
+    } as unknown as Response);
 
     renderPage();
 
@@ -79,11 +88,15 @@ describe("Register", () => {
   });
 
   it("navigates to home on successful registration", async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({}),
+    } as unknown as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ id: "1", name: "Test", email: "test@test.com" }),
-    });
+    } as unknown as Response);
 
     renderPage();
 
@@ -99,6 +112,7 @@ describe("Register", () => {
   });
 
   it("disables submit button while loading", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockImplementationOnce(() => new Promise(() => {}));
 
     renderPage();
@@ -113,10 +127,11 @@ describe("Register", () => {
   });
 
   it("shows generic error message on failed registration", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK);
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Erro de validação" }),
-    });
+    } as unknown as Response);
 
     renderPage();
 

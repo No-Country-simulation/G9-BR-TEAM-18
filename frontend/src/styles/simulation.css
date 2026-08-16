@@ -1,0 +1,127 @@
+/* --- Simulacao interativa com IA (Dashboard) --- */
+.dash-sim-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  box-shadow: var(--shadow-hard-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dash-sim-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dash-sim-current,
+.dash-sim-target {
+  text-align: center;
+  min-width: 100px;
+}
+
+.dash-sim-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.dash-sim-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dash-sim-arrow {
+  color: var(--accent-mustard);
+  flex-shrink: 0;
+}
+
+.dash-sim-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.dash-sim-input {
+  width: 90px;
+  padding: 0.35rem 0.45rem;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-xs);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.dash-sim-unit {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.dash-sim-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--state-error);
+  background: var(--state-error-bg);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-xs);
+}
+
+.dash-sim-result {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem;
+}
+
+.dash-sim-result-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash-sim-stat {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dash-sim-products {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.dash-sim-products-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .dash-sim-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dash-sim-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}

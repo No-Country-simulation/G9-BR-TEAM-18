@@ -76,29 +76,40 @@ Gerenciado pelo npm (`frontend/package.json`).
 |---|---|---|
 | `react` | ^19 | Biblioteca de UI |
 | `react-dom` | ^19 | Renderização DOM |
-| `react-router-dom` | ^7 | Roteamento SPA |
-| `recharts` | ^2 | Gráficos (Dashboard) |
-| `lucide-react` | ^0.47 | Ícones |
-| `typescript` | ^5.7 | Tipagem estática |
-| `vite` | ^6 | Bundler e dev server |
-| `@vitejs/plugin-react` | ^4 | Integração React com Vite |
-| `eslint` | ^9 | Linter |
+| `react-is` | ^19 | Identificação de tipos de elementos React |
+| `react-router` | ^8 | Roteamento SPA (v8 consolidou o antigo `react-router-dom`) |
+| `recharts` | ^3 | Gráficos (Dashboard) |
+| `lucide-react` | ^1.29 | Ícones |
+| `typescript` | ~6.0.3 | Tipagem estática (pinado com `~` em `6.0.x` para impedir que um futuro `6.1.x` seja instalado automaticamente: o `typescript-eslint@8.66.0` (03/08/2026), a versão mais recente do toolchain de lint, exige `typescript >=4.8.4 <6.1.0`; o TypeScript 7.0.2 não é suportado. Subir para 7.x apenas quando o typescript-eslint ampliar o peer range) |
+| `@types/react` | ^19 | Tipos do React |
+| `@types/react-dom` | ^19 | Tipos do React DOM |
+| `vite` | ^8.2 | Bundler e dev server |
+| `@vitejs/plugin-react` | ^6 | Integração React com Vite |
+| `eslint` | ^10 | Linter |
+| `@eslint/js` | ^10 | Regras core do ESLint (flat config) |
 | `typescript-eslint` | ^8 | Regras ESLint para TypeScript |
-| `eslint-plugin-react-hooks` | ^5 | Regras para React Hooks |
-| `eslint-plugin-react-refresh` | ^0.4 | Regras para HMR |
+| `eslint-plugin-react-hooks` | ^7 | Regras para React Hooks |
+| `eslint-plugin-react-refresh` | ^0.5 | Regras para HMR |
 | `eslint-config-prettier` | ^10 | Integração ESLint + Prettier |
 | `prettier` | ^3 | Formatador |
-| `vitest` | ^3 | Test runner |
+| `vitest` | ^4 | Test runner |
+| `@playwright/test` | ^1.62 | Testes E2E (Playwright) |
 | `@testing-library/react` | ^16 | Testes de componentes |
-| `@testing-library/jest-dom` | ^6 | Matchers DOM para testes |
-| `@testing-library/user-event` | ^14 | Simulação de eventos de usuário |
-| `jsdom` | ^26 | Ambiente DOM para testes |
+| `@testing-library/dom` | ^10 | Utilitários DOM para testes |
+| `@testing-library/jest-dom` | ^7 | Matchers DOM para testes |
+| `@testing-library/user-event` | ^14.6 | Simulação de eventos de usuário |
+| `jsdom` | ^30 | Ambiente DOM para testes |
 
 ## ML Service (Python / FastAPI)
 
 Gerenciado pelo pip (`ml-service/requirements.txt`).
 
-| Biblioteca | Versão | Propósito |
+> **Nota:** o `requirements.txt` **não pinna versões** (apenas `groq>=1.5.0` e
+> `python-dotenv>=1.1.0`). A tabela abaixo lista versões de referência
+> (validadas em 03/08/2026), não um lock de versões: a instalação real depende
+> do resolvido pelo pip no momento do build.
+
+| Biblioteca | Versão de referência | Propósito |
 |---|---|---|
 | `fastapi` | 0.139.0 | Framework web |
 | `uvicorn` | 0.51.0 | Servidor ASGI |

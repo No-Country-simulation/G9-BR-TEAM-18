@@ -1,6 +1,7 @@
 package br.com.group18.energiai.infrastructure.config;
 
 import br.com.group18.energiai.core.ports.out.TokenBlacklistRepositoryPort;
+import br.com.group18.energiai.infrastructure.adapters.in.web.security.SessionUserResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -16,8 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
-
-    static final String USER_ID_ATTR = "auth.userId";
 
     private final JwtService jwtService;
     private final TokenBlacklistRepositoryPort blacklistRepository;
@@ -37,7 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (!blacklistRepository.existsByTokenHash(tokenHash)) {
                 userId = jwtService.validateAndGetUserId(token);
                 if (userId != null) {
-                    request.setAttribute(USER_ID_ATTR, userId);
+                    request.setAttribute(SessionUserResolver.USER_ID_ATTRIBUTE, userId);
                 }
             }
         }

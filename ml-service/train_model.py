@@ -29,7 +29,13 @@ from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 
-from features import HIGHEST_CONSUMPTION_CATEGORIES, feature_engineering, normalize_category
+from features import (
+    APPLIANCE_COLUMNS,
+    HIGHEST_CONSUMPTION_CATEGORIES,
+    REDUNDANT_APPLIANCE_COLUMNS,
+    feature_engineering,
+    normalize_category,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -61,8 +67,7 @@ model_filename = os.getenv("MODEL_PATH", "categorization-model.joblib")
 MODEL_PATH = os.path.join(BASE_DIR, model_filename)
 
 LABELED_CSV = os.path.join(DATA_DIR, "labeled-energy-base.csv")
-PPH_CSV = os.path.join(DATA_DIR, "pph-data-complete.csv")
-ROTULED_CSV = os.path.join(DATA_DIR, "rotuled-ml-processed.csv")
+PPH_CSV = os.path.join(DATA_DIR, "main-dataset.csv")
 
 CATEGORIES = ["Excelente", "Bom", "Mediano", "Ruim", "Critico"]
 MAP_CATEGORY_UPPER = {c.upper(): c for c in CATEGORIES}
@@ -104,28 +109,7 @@ TOTAL_NUMERIC_COLUMNS = BASE_NUMERIC_COLUMNS + BOOLEAN_COLUMNS + ENGINEERED_COLU
 
 FEATURE_COLUMNS = BASE_NUMERIC_COLUMNS + CATEGORICAL_COLUMNS + BOOLEAN_COLUMNS
 
-# Columns in PPH CSV used for feature extraction
-PPH_APPLIANCE_QTY_COLUMNS = [
-    "qtd_geladeira",
-    "qtd_ar_condicionado",
-    "qtd_ventilador",
-    "qtd_lampadas",
-    "qtd_microondas",
-    "qtd_air_fryer",
-    "qtd_lavar_secar",
-    "qtd_computadores",
-    "qtd_videogame",
-    "qtd_tv",
-    "qtd_chuveiro_eletrico",
-]
-
-PPH_CATEGORY_KWH_COLUMNS = {
-    "kwh_categoria_iluminacao": "Iluminacao",
-    "kwh_categoria_refrigeracao": "Refrigeracao",
-    "kwh_categoria_climatizacao": "Climatizacao",
-    "kwh_categoria_eletrodomesticos": "Eletrodomesticos",
-    "kwh_categoria_tecnologia": "Tecnologia",
-}
+PPH_APPLIANCE_QTY_COLUMNS = list(APPLIANCE_COLUMNS.keys())
 
 
 def _assign_region_property(region: str, counter: int) -> str:
@@ -242,30 +226,32 @@ def load_labeled_csv(path: str) -> pd.DataFrame:
     return df[FEATURE_COLUMNS + ["category"]]
 
 
-def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
-    """Load PPH 2019 survey data and convert to training format.
+def load_pph_data(path: str) -> pd.DataFrame:
+    """Load the merged PPH 2019 + notebook-enriched dataset for training.
 
-    The PPH dataset contains real Brazilian household energy consumption
-    data with appliance-level detail. Since it has no efficiency label,
-    we compute the inefficiency index to create labeled categories.
+    main-dataset.csv already contains categoria_maior_consumo and
+    produtos_maior_consumo, merged and validated (row alignment by
+    ENTREVISTA + REGIAO + UF + MUNICIPIO) in M003_merge_datasets.ipynb,
+    and appliance columns from consumo-energetico-completo.csv, merged
+    and validated the same way in M004_merge_appliance_data.ipynb.
 
     Features derived from PPH columns:
       - consumption_kwh: consumo_real_medio_kwh_mes
-      - equipment_quantity: sum of qtd_* appliance columns
+      - equipment_quantity: sum of qtd_* appliance columns (APPLIANCE_COLUMNS,
+        shared with appliance_catalog() in main.py). Columns listed in
+        REDUNDANT_APPLIANCE_COLUMNS (same appliance extracted by two
+        different surveys, e.g. qtd_computador_desktop vs qtd_computadores)
+        are merged into their canonical column via max() before summing,
+        so the same physical appliance isn't counted twice.
       - property_type: inferred from REGIAO with proportional distribution
       - high_consumption_hours: estimated from consumption per equipment
       - peak_hour_usage: inferred from multiple habit columns
-      - consumption distribution: from kwh_categoria_* columns
+      - consumption distribution: from kwh_categoria_* columns (unrelated
+        to individual appliance columns above -- legacy 5-category split,
+        see ADR-0025 on daily_consumption_distribution)
 
-    highest_consumption_category is preferably taken from the notebook's
-    output (rotuled_path), computed from the full 37-appliance extraction
-    and including the "Servicos" category, which is not derivable from
-    this file's reduced 11-appliance set. The join with rotuled_path is
-    positional (not by ENTREVISTA, which repeats across re-interviews of
-    the same household) -- both files share the same raw extraction order.
-    If rotuled_path is missing or its row count doesn't match, this falls
-    back silently to the original 5-category calculation from this file's
-    own kwh_categoria_* columns.
+    Rows without a categoria_maior_consumo value (missing/non-string)
+    fall back to "Outros" via normalize_category().
     """
     if not os.path.exists(path):
         print("  File not found.")
@@ -273,23 +259,7 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
 
     df = pd.read_csv(path, encoding="utf-8-sig").reset_index(drop=True)
 
-    enriched = False
-    if os.path.exists(rotuled_path):
-        df_rotuled = pd.read_csv(rotuled_path).reset_index(drop=True)
-        if len(df_rotuled) == len(df):
-            df["produtos_maior_consumo"] = df_rotuled["produtos_maior_consumo"]
-            df["highest_consumption_category"] = df_rotuled["categoria_maior_consumo"].apply(
-                normalize_category
-            )
-            enriched = True
-        else:
-            print(
-                f"  Warning: row count mismatch between {os.path.basename(path)} "
-                f"({len(df)}) and {os.path.basename(rotuled_path)} ({len(df_rotuled)}) "
-                "-- falling back to 5-category calculation."
-            )
-    else:
-        print(f"  Warning: {rotuled_path} not found -- falling back to 5-category calculation.")
+    df["highest_consumption_category"] = df["categoria_maior_consumo"].apply(normalize_category)
 
     # Assign property type with regional proportional distribution
     df["property_type"] = df.reset_index(drop=True).apply(
@@ -299,6 +269,12 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
         ),
         axis=1,
     )
+
+    # Merge redundant appliance columns (same appliance, two survey sources)
+    # into their canonical column via max(), before computing equipment_quantity.
+    for redundant_col, canonical_col in REDUNDANT_APPLIANCE_COLUMNS.items():
+        if redundant_col in df.columns and canonical_col in df.columns:
+            df[canonical_col] = df[[canonical_col, redundant_col]].fillna(0).max(axis=1)
 
     # Calculate total equipment quantity from all appliance columns
     qty_cols = [c for c in PPH_APPLIANCE_QTY_COLUMNS if c in df.columns]
@@ -326,23 +302,10 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
     df["peak_hour_usage"] = df.apply(_infer_peak_usage, axis=1)
 
     # Map category kWh to consumption distribution (monthly kWh -> avg watts)
-    # -- always computed, regardless of enrichment, since features.py uses these
-    # for pct_refrigeration/pct_heating/etc.
     df["refrigeration_watts"] = df.get("kwh_categoria_refrigeracao", 0).fillna(0) * 1000 / 730
     df["air_conditioning_watts"] = df.get("kwh_categoria_climatizacao", 0).fillna(0) * 1000 / 730
     df["heating_watts"] = df.get("kwh_categoria_eletrodomesticos", 0).fillna(0) * 1000 / 730
     df["lighting_watts"] = df.get("kwh_categoria_iluminacao", 0).fillna(0) * 1000 / 730
-
-    # Fallback: determine highest consumption category from kWh distribution
-    # only if the notebook's enrichment above did not succeed.
-    if not enriched:
-        cat_cols = [c for c in PPH_CATEGORY_KWH_COLUMNS if c in df.columns]
-        if cat_cols:
-            cat_values = df[cat_cols].fillna(0)
-            max_cat_idx = cat_values.idxmax(axis=1)
-            df["highest_consumption_category"] = max_cat_idx.map(PPH_CATEGORY_KWH_COLUMNS)
-        else:
-            df["highest_consumption_category"] = "Outros"
 
     # Handle missing values
     df["consumption_kwh"] = (
@@ -356,9 +319,7 @@ def load_pph_data(path: str, rotuled_path: str = ROTULED_CSV) -> pd.DataFrame:
     index = calculate_inefficiency_index(pph_subset)
     df["category"] = pd.qcut(index, q=5, labels=CATEGORIES)
 
-    result_columns = FEATURE_COLUMNS + ["category"]
-    if "produtos_maior_consumo" in df.columns:
-        result_columns.append("produtos_maior_consumo")
+    result_columns = FEATURE_COLUMNS + ["category", "produtos_maior_consumo"]
     result = df[result_columns].copy()
     result["peak_hour_usage"] = result["peak_hour_usage"].astype(int)
     return result
@@ -510,10 +471,10 @@ pipeline_tune = Pipeline(
 
 param_dist = {
     "model__n_estimators": [200, 300, 400],
-    "model__max_depth": [None, 30],
+    "model__max_depth": [10, 20, 30],
     "model__min_samples_split": [2, 5],
     "model__min_samples_leaf": [1, 2],
-    "model__max_features": ["sqrt", None],
+    "model__max_features": ["sqrt", "log2"],
     "model__class_weight": [None, "balanced"],
 }
 
@@ -595,20 +556,98 @@ joblib.dump(calibrated_pipeline, MODEL_PATH, compress=3)
 print(f"\nModel saved to '{MODEL_PATH}'")
 print(f"Size: {os.path.getsize(MODEL_PATH) / 1024 / 1024:.1f} MB")
 
+# =========================================================================
+# FEATURE IMPORTANCE
+# =========================================================================
+
 print()
 print("=" * 60)
-print("TEST WITH ALL PROPERTY TYPES AND CATEGORIES")
+print("FEATURE IMPORTANCE")
 print("=" * 60)
-for tipo in PROPERTY_TYPES:
+
+feature_names = preprocessor.get_feature_names_out()
+importances = np.mean(
+    [
+        clf.estimator.feature_importances_
+        for clf in calibrated_pipeline.named_steps["model"].calibrated_classifiers_
+    ],
+    axis=0,
+)
+
+importance_pairs = sorted(
+    zip(feature_names, importances, strict=False),
+    key=lambda x: x[1],
+    reverse=True,
+)
+for name, importance in importance_pairs:
+    print(f"  {name:40s} {importance:.4f}")
+
+# =========================================================================
+# SANITY CHECK: VARIED CONSUMPTION SCENARIOS
+# =========================================================================
+
+print()
+print("=" * 60)
+print("SANITY CHECK: VARIED CONSUMPTION SCENARIOS")
+print("=" * 60)
+print(
+    "Previously this block used a single fixed scenario (consumption_kwh=400,\n"
+    "equipment_quantity=10), which always predicted 'Critico' regardless of\n"
+    "property_type/category and masked real changes in the model's decision\n"
+    "boundary (see ADR-0049). Now testing low/medium/high consumption levels."
+)
+print()
+
+TEST_SCENARIOS = {
+    "low": {
+        "consumption_kwh": 120.0,
+        "equipment_quantity": 4,
+        "high_consumption_hours": 1.5,
+        "peak_hour_usage": False,
+    },
+    "medium": {
+        "consumption_kwh": 400.0,
+        "equipment_quantity": 10,
+        "high_consumption_hours": 5.0,
+        "peak_hour_usage": False,
+    },
+    "high": {
+        "consumption_kwh": 900.0,
+        "equipment_quantity": 20,
+        "high_consumption_hours": 10.0,
+        "peak_hour_usage": True,
+    },
+}
+
+print("-- Varying property_type (category fixed as 'Refrigeracao') --")
+for scenario_name, scenario in TEST_SCENARIOS.items():
+    for tipo in PROPERTY_TYPES:
+        teste = pd.DataFrame(
+            [
+                {
+                    **scenario,
+                    "property_type": tipo,
+                    "highest_consumption_category": "Refrigeracao",
+                    "refrigeration_watts": 1500.0,
+                    "heating_watts": 0.0,
+                    "air_conditioning_watts": 0.0,
+                    "lighting_watts": 0.0,
+                }
+            ]
+        )
+        pred = calibrated_pipeline.predict(teste)[0]
+        proba = calibrated_pipeline.predict_proba(teste).max()
+        print(f"  [{scenario_name:6s}] {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
+print()
+
+print("-- Varying highest_consumption_category (property_type fixed as 'Casa') --")
+for scenario_name, scenario in TEST_SCENARIOS.items():
     for categoria_consumo in HIGHEST_CONSUMPTION_CATEGORIES:
         teste = pd.DataFrame(
             [
                 {
-                    "consumption_kwh": 400.0,
-                    "peak_hour_usage": False,
-                    "equipment_quantity": 10,
-                    "property_type": tipo,
-                    "high_consumption_hours": 5.0,
+                    **scenario,
+                    "property_type": "Casa",
                     "highest_consumption_category": categoria_consumo,
                     "refrigeration_watts": 1500.0,
                     "heating_watts": 0.0,
@@ -619,8 +658,7 @@ for tipo in PROPERTY_TYPES:
         )
         pred = calibrated_pipeline.predict(teste)[0]
         proba = calibrated_pipeline.predict_proba(teste).max()
-        print(f"  {tipo:14s} -> {pred:10s} (confidence: {proba:.1%})")
-
-print()
-print("Tip: for the next cycle, run this script again —")
-print("the data in 'data/' and 'treino_feedback.jsonl' will be incorporated automatically.")
+        print(
+            f"  [{scenario_name:6s}] {categoria_consumo:18s} -> {pred:10s} "
+            f"(confidence: {proba:.1%})"
+        )

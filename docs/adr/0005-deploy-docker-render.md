@@ -38,7 +38,7 @@ A equipe decidiu usar **Docker Compose para desenvolvimento local** e **Render p
 | Serviço | Dockerfile | Base | Porta |
 |---|---|---|---|
 | Backend | `backend/Dockerfile` | `eclipse-temurin:21-jdk` | 8080 |
-| Frontend | `frontend/Dockerfile` | `node:20-alpine` (multi-stage) | 5173 |
+| Frontend | `frontend/Dockerfile` | `node:24-alpine` (multi-stage) | 5173 |
 | ML Service | `ml-service/Dockerfile` | `python:3.12-slim` | 8000 |
 
 **Variáveis de ambiente:**

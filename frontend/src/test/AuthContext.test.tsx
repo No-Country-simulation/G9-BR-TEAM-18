@@ -6,7 +6,33 @@ import { AuthProvider } from "../context/AuthContext";
 import { useAuth } from "../context/useAuth";
 import type { ReactNode } from "react";
 
-const mockFetch = vi.fn();
+const MOCK_NOT_OK = {
+  ok: false,
+  json: () => Promise.resolve({}),
+} as unknown as Response;
+
+const MOCK_OK_USER = {
+  ok: true,
+  json: () =>
+    Promise.resolve({
+      id: "1",
+      name: "Alice",
+      email: "a@a.com",
+    }),
+} as unknown as Response;
+
+const MOCK_OK_USER_RESET_NEEDED = {
+  ok: true,
+  json: () =>
+    Promise.resolve({
+      id: "1",
+      name: "Alice",
+      email: "a@a.com",
+      password_reset_required: true,
+    }),
+} as unknown as Response;
+
+const mockFetch = vi.fn(() => Promise.resolve(MOCK_NOT_OK));
 globalThis.fetch = mockFetch;
 
 function TestConsumer() {
@@ -43,7 +69,6 @@ function renderWithAuth(node: ReactNode) {
 describe("AuthContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
     document.cookie = "SESSION_TOKEN=; Path=/; Max-Age=0";
   });
 
@@ -54,34 +79,36 @@ describe("AuthContext", () => {
   });
 
   it("successful login updates state", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
-    });
-
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK); // /auth/me returns 401
     renderWithAuth(<TestConsumer />);
     await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER); // /auth/login returns user
 
     await userEvent.click(screen.getByText("login"));
 
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
-    expect(localStorage.getItem("energiai_user")).toContain("Alice");
   });
 
   it("login error does not change state", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK); // /auth/me returns 401
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Credenciais inválidas" }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("login"));
     await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
   });
 
   it("login with passwordResetRequired flag stores it in user state", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK); // /auth/me returns 401
+    renderWithAuth(<TestConsumer />);
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -91,10 +118,7 @@ describe("AuthContext", () => {
           email: "a@a.com",
           password_reset_required: true,
         }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("login"));
 
@@ -104,48 +128,46 @@ describe("AuthContext", () => {
     });
   });
 
-  it("logout clears state and localStorage", async () => {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com" }),
-    );
-    document.cookie = "SESSION_TOKEN=abc; Path=/";
-    mockFetch.mockResolvedValueOnce({ ok: true } as Response);
-
+  it("logout clears state", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER); // /auth/me returns Alice
     renderWithAuth(<TestConsumer />);
 
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
 
-    await userEvent.click(screen.getByText("logout"));
-
-    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
-    expect(localStorage.getItem("energiai_user")).toBeNull();
-  });
-
-  it("successful register auto-logs in", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({}),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ id: "2", name: "Bob", email: "b@b.com" }),
-    });
+    } as unknown as Response); // /auth/logout
 
+    await userEvent.click(screen.getByText("logout"));
+
+    await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
+  });
+
+  it("successful register auto-logs in", async () => {
+    mockFetch.mockResolvedValueOnce(MOCK_NOT_OK); // /auth/me returns 401
     renderWithAuth(<TestConsumer />);
     await waitFor(() => expect(screen.getByText("logged out")).toBeInTheDocument());
 
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({}),
+    } as unknown as Response); // /auth/register
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER); // /auth/login returns user
+
     await userEvent.click(screen.getByText("register"));
 
-    await waitFor(() => expect(screen.getByText("logged in as Bob")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
   });
 
   it("resetPassword sends request and updates user state on success", async () => {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: true }),
-    );
-    document.cookie = "SESSION_TOKEN=abc; Path=/";
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER_RESET_NEEDED); // /auth/me with reset needed
+    renderWithAuth(<TestConsumer />);
+
+    await waitFor(() => {
+      expect(screen.getByText("logged in as Alice")).toBeInTheDocument();
+      expect(screen.getByText("needs reset")).toBeInTheDocument();
+    });
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -156,11 +178,7 @@ describe("AuthContext", () => {
           email: "a@a.com",
           password_reset_required: false,
         }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-
-    await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("reset password"));
 
@@ -170,20 +188,18 @@ describe("AuthContext", () => {
   });
 
   it("resetPassword propagates error on failure", async () => {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com", passwordResetRequired: true }),
-    );
-    document.cookie = "SESSION_TOKEN=abc; Path=/";
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER_RESET_NEEDED); // /auth/me with reset needed
+    renderWithAuth(<TestConsumer />);
+
+    await waitFor(() => {
+      expect(screen.getByText("logged in as Alice")).toBeInTheDocument();
+      expect(screen.getByText("needs reset")).toBeInTheDocument();
+    });
 
     mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Senha atual inválida" }),
-    });
-
-    renderWithAuth(<TestConsumer />);
-
-    await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+    } as unknown as Response);
 
     await userEvent.click(screen.getByText("reset password"));
 
@@ -193,19 +209,11 @@ describe("AuthContext", () => {
   });
 
   it("resetPassword sends POST to /auth/reset-password with snake_case fields", async () => {
-    localStorage.setItem(
-      "energiai_user",
-      JSON.stringify({ id: "1", name: "Alice", email: "a@a.com" }),
-    );
-    document.cookie = "SESSION_TOKEN=abc; Path=/";
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ id: "1", name: "Alice", email: "a@a.com" }),
-    });
-
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER); // /auth/me returns Alice
     renderWithAuth(<TestConsumer />);
     await waitFor(() => expect(screen.getByText("logged in as Alice")).toBeInTheDocument());
+
+    mockFetch.mockResolvedValueOnce(MOCK_OK_USER);
 
     await userEvent.click(screen.getByText("reset password"));
 

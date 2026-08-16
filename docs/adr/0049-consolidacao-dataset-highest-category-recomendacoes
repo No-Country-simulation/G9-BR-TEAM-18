@@ -1,0 +1,67 @@
+# ADR-0049: Consolidação do Dataset de Treino e Uso de highest_consumption_category/products nas Recomendações
+
+## Status
+Aceito
+
+## Contexto
+
+Três frentes de trabalho relacionadas foram concluídas no `ml-service` nesta etapa: a consolidação do dataset de treino num arquivo único, e o aproveitamento de `highest_consumption_category`/`highest_consumption_products` — campos já presentes no contrato do `/predict` (ver ADR-0025) — tanto nas recomendações rule-based quanto nas geradas via Groq. Este ADR documenta as três, já que compartilham a mesma motivação de fundo: reduzir dado obsoleto/duplicado no `ml-service` e usar melhor o dado que a API já recebe, mas nunca era efetivamente consumido.
+
+### 1. Merge dos datasets (M005)
+
+`load_pph_data()`, em `train_model.py`, fazia um join posicional entre `pph-data-complete.csv` e `rotuled-ml-processed.csv` (assumindo que a linha N de um correspondia à linha N do outro), validando apenas `len(df_rotuled) == len(df)` antes de confiar no alinhamento. Isso funcionava, mas era frágil: uma reordenação futura de qualquer um dos dois arquivos poderia embaralhar silenciosamente `categoria_maior_consumo` e `produtos_maior_consumo` entre domicílios, sem gerar nenhum erro.
+
+O notebook `M005_merge_datasets.ipynb`, produzido pela equipe de dados, consolidou os dois arquivos num único `main-dataset.csv`, validando o alinhamento posicional de forma bem mais rigorosa: comparando a sequência completa de `ENTREVISTA`, `REGIAO`, `UF` e `MUNICIPIO` entre os dois arquivos originais (não só a contagem de linhas), e interrompendo a execução com erro caso qualquer uma delas divirja.
+
+### 2. `highest_consumption_category` nas recomendações rule-based
+
+`_generate_recommendations()`, em `main.py`, nunca usava `highest_consumption_category` nem `highest_consumption_products`, mesmo esses campos já chegando na requisição desde a ADR-0025. Como a esmagadora maioria das predições (~96%, conforme o log do treino mais recente) cai no caminho de confiança ≥80% — que usa exatamente essa função, sem acionar o Groq — a maior parte dos usuários vinha recebendo recomendações genéricas mesmo quando a API tinha dado específico disponível.
+
+### 3. `highest_consumption_category`/`products` no prompt do Groq (B041)
+
+Pelo mesmo motivo, `_generate_recommendations_groq()` também não usava esses dois campos no prompt, gerando recomendações sem referência a categoria ou equipamento específico do imóvel.
+
+## Decisão
+
+### 1. `train_model.py` passa a consumir `main-dataset.csv` diretamente
+
+`load_pph_data()` não faz mais join nem mantém lógica de fallback. `PPH_CSV` aponta para `main-dataset.csv`; `ROTULED_CSV` e `PPH_CATEGORY_KWH_COLUMNS` foram removidos. `highest_consumption_category` é lido diretamente da coluna `categoria_maior_consumo` do arquivo consolidado, passando por `normalize_category()`; linhas sem valor (`NaN`/não-string) caem em `"Outros"` através do próprio comportamento padrão de `normalize_category()`, sem necessidade de um cálculo de fallback separado.
+
+Os arquivos `pph-data-complete.csv` e `rotuled-ml-processed.csv` foram removidos do repositório, por ficarem sem nenhuma referência no código após essa mudança.
+
+### 2. Rule-based: dicionário `CATEGORY_RECOMMENDATIONS`
+
+Adicionado um dicionário fixo em `main.py`, mapeando cada uma das 6 categorias de consumo (exceto `"Outros"`) a um texto de recomendação específico. `_generate_recommendations()` traduz `highest_consumption_category` para português via `translate_category()` e adiciona a recomendação correspondente, incondicionalmente, antes das demais regras existentes (pico, quantidade de equipamentos, horas de alto consumo).
+
+`highest_consumption_products` foi deliberadamente **não** incorporado nesse texto: o frontend já exibe os equipamentos de maior consumo em outro ponto da interface, e repeti-los na recomendação seria redundante. `"Outros"` também não tem entrada no dicionário, por não ser uma categoria específica o suficiente para gerar uma dica direcionada.
+
+### 3. Groq: regra condicional de categoria no prompt
+
+`_generate_recommendations_groq()` monta uma regra adicional (`category_rule`) exigindo que pelo menos uma das 3 recomendações aborde a categoria de maior consumo, citando um equipamento de `highest_consumption_products` quando a lista estiver disponível. A regra fica vazia (sem efeito no prompt) quando a categoria é `"Outros"` ou a lista de produtos não foi informada, preservando o comportamento anterior nesses casos.
+
+Diferente da decisão do item 2, aqui `highest_consumption_products` **é** usado: o Groq gera texto novo e acionável referenciando o equipamento (ex: "sua geladeira consome muito — evite deixá-la perto do fogão"), não uma repetição do que já aparece na tela, então citar o produto agrega informação em vez de duplicá-la.
+
+## Alternativas consideradas
+
+| Alternativa | Prós | Contras |
+|---|---|---|
+| Merge via notebook validado (escolhida) | Elimina o risco de desalinhamento silencioso; validação por 4 colunas, não só contagem | Requer manter o notebook atualizado se as fontes originais mudarem |
+| Manter join posicional em `train_model.py` | Nenhuma mudança necessária | Risco de desalinhamento silencioso permanece |
+| Rule-based citar produtos como o Groq (rejeitada) | Consistência entre os dois caminhos de recomendação | Redundante com o que o frontend já exibe; rule-based é texto fixo, não consegue compor a frase de forma natural como o LLM |
+| Groq não usar produtos (mesma decisão do rule-based) | Consistência | Desperdiça a capacidade do LLM de gerar texto específico e acionável, que é justamente sua vantagem sobre o rule-based |
+
+## Consequências
+
+Positivo: o dataset de treino deixa de depender de um join posicional frágil, com validação forte feita antes do dado chegar em `train_model.py`.
+
+Positivo: a maioria das predições (caminho rule-based, ≥80% de confiança) passa a citar a categoria de maior consumo do imóvel, em vez de recomendação genérica.
+
+Positivo: o caminho Groq passa a gerar recomendações mais específicas, citando equipamentos reais do usuário quando disponíveis.
+
+Positivo: nenhuma duplicação de informação entre o texto das recomendações e o que o frontend já exibe sobre os equipamentos de maior consumo.
+
+Negativo: `train_model.py` ainda não foi executado com o dataset novo — o retreino do modelo (`categorization-model.joblib`) fica pendente até que todas as alterações planejadas nesta rodada estejam concluídas (ver M003), incluindo a decisão sobre a Q007 (independência de `peak_hour_usage` no treino).
+
+Negativo: `CATEGORY_RECOMMENDATIONS` é um texto fixo por categoria; se o catálogo de categorias mudar no futuro (novo tipo de consumo, por exemplo), esse dicionário precisa de atualização manual, diferente do Groq, que se adapta ao texto livre do prompt sem exigir uma entrada nova por categoria.
+
+Nota: consulte a ADR-0025 para a definição original de `highest_consumption_category`/`products` no contrato, a ADR-0045 para a implementação do contrato em inglês, e a ADR-0046 para a investigação relacionada de `peak_hour_usage` (Q007), ainda pendente.

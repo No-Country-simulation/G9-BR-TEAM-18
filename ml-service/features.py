@@ -12,6 +12,154 @@ HIGHEST_CONSUMPTION_CATEGORIES = [
     "Outros",
 ]
 
+APPLIANCE_COLUMNS = {
+    "qtd_geladeira": {
+        "name": "Geladeira",
+        "ml_category": "REFRIGERATION",
+        "watts": 150,
+        "hours": 24,
+    },
+    "qtd_freezer": {"name": "Freezer", "ml_category": "REFRIGERATION", "watts": 200, "hours": 24},
+    "qtd_frigobar": {"name": "Frigobar", "ml_category": "REFRIGERATION", "watts": 100, "hours": 24},
+    "qtd_bebedouro": {
+        "name": "Bebedouro",
+        "ml_category": "REFRIGERATION",
+        "watts": 90,
+        "hours": 24,
+    },
+    "qtd_ar_condicionado": {
+        "name": "Ar-condicionado",
+        "ml_category": "CLIMATE_CONTROL",
+        "watts": 1500,
+        "hours": 8,
+    },
+    "qtd_ar_condicionado_split": {
+        "name": "Split",
+        "ml_category": "CLIMATE_CONTROL",
+        "watts": 1200,
+        "hours": 8,
+    },
+    "qtd_ventilador": {
+        "name": "Ventilador",
+        "ml_category": "CLIMATE_CONTROL",
+        "watts": 100,
+        "hours": 8,
+    },
+    "qtd_aquecedor_eletrico": {
+        "name": "Aquecedor",
+        "ml_category": "CLIMATE_CONTROL",
+        "watts": 1500,
+        "hours": 3,
+    },
+    "qtd_lampadas": {"name": "Lampada", "ml_category": "LIGHTING", "watts": 12, "hours": 6},
+    "qtd_microondas": {
+        "name": "Micro-ondas",
+        "ml_category": "APPLIANCES",
+        "watts": 1200,
+        "hours": 0.5,
+    },
+    "qtd_air_fryer": {
+        "name": "Air fryer",
+        "ml_category": "APPLIANCES",
+        "watts": 1500,
+        "hours": 0.75,
+    },
+    "qtd_lavar_secar": {
+        "name": "Maquina de lavar",
+        "ml_category": "APPLIANCES",
+        "watts": 500,
+        "hours": 1.5,
+    },
+    "qtd_secadora_roupas": {
+        "name": "Secadora",
+        "ml_category": "APPLIANCES",
+        "watts": 2500,
+        "hours": 1,
+    },
+    "qtd_chuveiro_eletrico": {
+        "name": "Chuveiro eletrico",
+        "ml_category": "APPLIANCES",
+        "watts": 5500,
+        "hours": 0.5,
+    },
+    "qtd_cafeteira_eletrica": {
+        "name": "Cafeteira",
+        "ml_category": "APPLIANCES",
+        "watts": 800,
+        "hours": 0.25,
+    },
+    "qtd_ferro_passar": {
+        "name": "Ferro de passar",
+        "ml_category": "APPLIANCES",
+        "watts": 1200,
+        "hours": 0.5,
+    },
+    "qtd_aspirador_po": {
+        "name": "Aspirador",
+        "ml_category": "APPLIANCES",
+        "watts": 1400,
+        "hours": 0.5,
+    },
+    "qtd_liquidificador": {
+        "name": "Liquidificador",
+        "ml_category": "APPLIANCES",
+        "watts": 500,
+        "hours": 0.25,
+    },
+    "qtd_batedeira": {
+        "name": "Batedeira",
+        "ml_category": "APPLIANCES",
+        "watts": 300,
+        "hours": 0.25,
+    },
+    "qtd_forno_eletrico": {
+        "name": "Forno",
+        "ml_category": "APPLIANCES",
+        "watts": 1500,
+        "hours": 0.75,
+    },
+    "qtd_fogao_eletrico": {"name": "Fogao", "ml_category": "APPLIANCES", "watts": 1500, "hours": 1},
+    "qtd_tv": {"name": "Televisao", "ml_category": "TECHNOLOGY", "watts": 150, "hours": 6},
+    "qtd_computadores": {
+        "name": "Computador",
+        "ml_category": "TECHNOLOGY",
+        "watts": 150,
+        "hours": 8,
+    },
+    "qtd_notebook": {"name": "Notebook", "ml_category": "TECHNOLOGY", "watts": 65, "hours": 6},
+    "qtd_roteador_wifi": {
+        "name": "Roteador",
+        "ml_category": "TECHNOLOGY",
+        "watts": 10,
+        "hours": 24,
+    },
+    "qtd_videogame": {"name": "Videogame", "ml_category": "TECHNOLOGY", "watts": 200, "hours": 4},
+    "qtd_bomba_dagua": {
+        "name": "Bomba d'agua",
+        "ml_category": "SERVICES",
+        "watts": 750,
+        "hours": 1,
+    },
+    "qtd_portao_eletrico": {
+        "name": "Portao eletrico",
+        "ml_category": "SERVICES",
+        "watts": 250,
+        "hours": 0.25,
+    },
+    "qtd_motor_piscina": {
+        "name": "Motor de piscina",
+        "ml_category": "SERVICES",
+        "watts": 750,
+        "hours": 4,
+    },
+}
+
+# Colunas que existem no dataset mas são redundantes com uma coluna já listada
+REDUNDANT_APPLIANCE_COLUMNS = {
+    "qtd_computador_desktop": "qtd_computadores",
+    "qtd_maquina_lavar": "qtd_lavar_secar",
+}
+
 
 def _fill_distribution(df: pd.DataFrame) -> pd.DataFrame:
     for col in ["refrigeration_watts", "heating_watts", "air_conditioning_watts", "lighting_watts"]:
@@ -39,6 +187,38 @@ def normalize_category(cat: object) -> str:
         "outros": "Outros",
     }
     return mapping.get(cat_lower, "Outros")
+
+
+def normalize_property_type(ptype: object) -> str:
+    """Normaliza property_type de ingles para portugues (formato do modelo)."""
+    if not isinstance(ptype, str):
+        return "Casa"
+    mapping = {
+        "residencial": "Casa",
+        "apartamento": "Apartamento",
+        "comercial": "Comercial",
+    }
+    return mapping.get(ptype.strip().lower(), "Casa")
+
+
+def translate_category(cat: object) -> str:
+    """Traduz highest_consumption_category de ingles para portugues.
+    Funcao separada da normalize_category() porque esta e usada no pipeline
+    sklearn (treino + inferência) e não deve ser alterada.
+    """
+    if not isinstance(cat, str):
+        return "Outros"
+    mapping = {
+        "refrigeration": "Refrigeracao",
+        "climate_control": "Climatizacao",
+        "climatization": "Climatizacao",
+        "technology": "Tecnologia",
+        "lighting": "Iluminacao",
+        "appliances": "Eletrodomesticos",
+        "services": "Servicos",
+        "others": "Outros",
+    }
+    return mapping.get(cat.strip().lower(), "Outros")
 
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:

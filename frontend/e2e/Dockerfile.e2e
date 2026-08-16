@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/playwright:v1.50.0-noble
+
+WORKDIR /app
+
+# Copy frontend source to /app/ (so cwd:".." from e2e/ resolves to /app/)
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
+
+# Install Chromium browser for the installed Playwright version (v1.62.0)
+RUN npx playwright install chromium
+
+# Copy the full frontend source (excluding node_modules via .dockerignore)
+COPY frontend/ .
+
+# Copy e2e test files into /app/e2e/
+COPY frontend/e2e/ ./e2e/
+
+# Run the tests (webServer starts frontend dev server inside the container)
+CMD ["npx", "playwright", "test", "--config=e2e/playwright.config.ts"]

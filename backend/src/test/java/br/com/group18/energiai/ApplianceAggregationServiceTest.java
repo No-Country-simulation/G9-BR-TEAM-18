@@ -1,6 +1,7 @@
 package br.com.group18.energiai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import br.com.group18.energiai.application.services.ApplianceAggregationService;
 import br.com.group18.energiai.core.domain.model.Appliance;
@@ -42,5 +43,54 @@ class ApplianceAggregationServiceTest {
         assertEquals(3000.0, result.airConditioningWatts());
         assertEquals(5500.0, result.heatingWatts());
         assertEquals(60.0, result.lightingWatts());
+    }
+
+    @Test
+    void shouldMapAppliancesCategoryToHeatingBucket() {
+        Appliance chuveiro = new Appliance(
+                1L, "Chuveiro Eletrico", "Eletrodomésticos", new BigDecimal("5500.0"), new BigDecimal("0.5"));
+        Appliance microondas =
+                new Appliance(2L, "Micro-ondas", "Eletrodomésticos", new BigDecimal("1200.0"), new BigDecimal("0.5"));
+
+        PropertyAppliance pa1 = new PropertyAppliance(1L, chuveiro, 1);
+        PropertyAppliance pa2 = new PropertyAppliance(1L, microondas, 1);
+
+        ApplianceAggregationService.AggregationResult result = service.aggregate(List.of(pa1, pa2));
+
+        assertEquals(2, result.totalEquipment());
+        assertEquals(6700.0, result.heatingWatts());
+        assertEquals(0.0, result.refrigerationWatts());
+        assertEquals(0.0, result.airConditioningWatts());
+        assertEquals(0.0, result.lightingWatts());
+    }
+
+    @Test
+    void shouldMapTechnologyToOtherBucket() {
+        Appliance tv = new Appliance(1L, "Televisao", "Tecnologia", new BigDecimal("150.0"), new BigDecimal("6.0"));
+        Appliance computador =
+                new Appliance(2L, "Computador", "Tecnologia", new BigDecimal("300.0"), new BigDecimal("8.0"));
+
+        PropertyAppliance pa1 = new PropertyAppliance(1L, tv, 1);
+        PropertyAppliance pa2 = new PropertyAppliance(1L, computador, 1);
+
+        ApplianceAggregationService.AggregationResult result = service.aggregate(List.of(pa1, pa2));
+
+        assertEquals(2, result.totalEquipment());
+        assertEquals(0.0, result.refrigerationWatts());
+        assertEquals(0.0, result.heatingWatts());
+        assertEquals(0.0, result.airConditioningWatts());
+        assertEquals(0.0, result.lightingWatts());
+    }
+
+    @Test
+    void shouldHandleNullAppliancesList() {
+        ApplianceAggregationService.AggregationResult result = service.aggregate(null);
+
+        assertEquals(0, result.totalEquipment());
+        assertEquals(0.0, result.refrigerationWatts());
+        assertEquals(0.0, result.heatingWatts());
+        assertEquals(0.0, result.airConditioningWatts());
+        assertEquals(0.0, result.lightingWatts());
+        assertTrue(result.highestConsumptionProducts().isEmpty());
     }
 }

@@ -6,6 +6,13 @@ on:
       - "**/Dockerfile*"
       - "**/*.yml"
       - "**/*.yaml"
+  push:
+    branches:
+      - dev
+    paths:
+      - "**/Dockerfile*"
+      - "**/*.yml"
+      - "**/*.yaml"
 
 jobs:
   hadolint:

@@ -1,8 +1,8 @@
 package br.com.group18.energiai.infrastructure.client;
 
+import br.com.group18.energiai.infrastructure.client.dto.MlApplianceCatalogResponse;
+import br.com.group18.energiai.infrastructure.client.dto.MlContractResponse;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Component
 public class MlServiceClient {
@@ -70,41 +71,21 @@ public class MlServiceClient {
         }
     }
 
-    public Map<String, Object> fetchSchema() {
-        try {
-            Map<String, Object> schema = webClient
-                    .get()
-                    .uri("/predict-schema")
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block(Duration.ofSeconds(10));
-
-            return schema != null ? schema : Map.of();
-        } catch (Exception e) {
-            log.warn("Failed to fetch schema from ML Service: {}", e.getMessage());
-            return Map.of();
-        }
+    public Mono<MlContractResponse> fetchContract() {
+        return this.webClient
+                .get()
+                .uri("/contract")
+                .retrieve()
+                .bodyToMono(MlContractResponse.class)
+                .doOnError(e -> log.warn("Failed to fetch contract from ML Service: {}", e.getMessage()));
     }
 
-    public List<String> fetchCategories() {
-        try {
-            Map<String, Object> response = webClient
-                    .get()
-                    .uri("/categories")
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block(Duration.ofSeconds(10));
-
-            if (response != null && response.containsKey("categories")) {
-                Object raw = response.get("categories");
-                if (raw instanceof List<?> list) {
-                    return list.stream().map(Object::toString).toList();
-                }
-            }
-            return Collections.emptyList();
-        } catch (Exception e) {
-            log.warn("Failed to fetch categories from ML Service: {}", e.getMessage());
-            return Collections.emptyList();
-        }
+    public Mono<MlApplianceCatalogResponse> fetchApplianceCatalog() {
+        return this.webClient
+                .get()
+                .uri("/appliance-catalog")
+                .retrieve()
+                .bodyToMono(MlApplianceCatalogResponse.class)
+                .doOnError(e -> log.warn("Failed to fetch appliance catalog from ML Service: {}", e.getMessage()));
     }
 }

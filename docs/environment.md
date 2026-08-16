@@ -30,6 +30,7 @@ Referência completa de todas as variáveis de ambiente utilizadas pelos três s
 | Variável | Padrão | Serviço | Descrição |
 |---|---|---|---|
 | `VITE_API_URL` | `http://localhost:8080` | Frontend | URL base do backend para requisições AJAX |
+| `OPENAPI_SERVER_URL` | - (obrigatória) | Backend | URL base dos servidores expostos no OpenAPI/Swagger. **Sem valor definido o backend não inicia (fail-fast)**. No Render, defina como a URL do deploy (ex: `https://meu-backend.onrender.com`) para que o Swagger UI e os testes contra o contrato usem o host correto |
 | `ML_SERVICE_URL` | `http://ml-service:8000` | Backend | URL base do ML Service para predição |
 | `SERVER_PORT` | `8080` | Backend | Porta interna do servidor Spring Boot |
 | `ML_SERVICE_PORT` | `8000` | ML Service | Porta interna do servidor FastAPI |
@@ -49,7 +50,7 @@ Referência completa de todas as variáveis de ambiente utilizadas pelos três s
 | `SPRING_FLYWAY_ENABLED` | `true` | Habilita Flyway migrations |
 | `SPRING_FLYWAY_LOCATIONS` | `classpath:db/migration/oracle` | Diretório dos scripts SQL de migração |
 | `SPRING_FLYWAY_DEFAULT_SCHEMA` | `ADMIN` | Schema Oracle alvo |
-| `SPRING_FLYWAY_BASELINE_ON_MIGRATE` | `true` | Baseline automático em banco existente |
+| `SPRING_FLYWAY_BASELINE_ON_MIGRATE` | `false` | Baseline automático em banco existente (o `.env.example` sugere `true` para o primeiro deploy) |
 | `SPRING_FLYWAY_BASELINE_VERSION` | `0` | Versão de baseline |
 | `SPRING_FLYWAY_URL` | `${SPRING_DATASOURCE_URL}` | URL específica para Flyway |
 | `SPRING_FLYWAY_USER` | `${SPRING_DATASOURCE_USERNAME}` | Usuário Flyway |
@@ -64,6 +65,12 @@ Referência completa de todas as variáveis de ambiente utilizadas pelos três s
 | `JWT_EXPIRATION_MS` | `604800000` (7 dias) | Tempo de expiração do token em milissegundos |
 | `SESSION_MAX_AGE_SECONDS` | `604800` (7 dias) | Max-Age do cookie de sessão |
 | `SESSION_SECURE` | `false` | Cookie Secure flag (true em produção com HTTPS) |
+
+## Backend - Google SSO (OAuth)
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` | - | Client ID OAuth2 usado para validar o ID Token do login com Google (ADR-0052). Deve ser o mesmo valor do `VITE_GOOGLE_CLIENT_ID` do frontend |
 
 ## Backend - ML Service Integration (ACL)
 
@@ -109,7 +116,7 @@ Anti-Corruption Layer: mapeamento dos campos do envelope genérico do ML Service
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `RANDOM_SEED` | `42` | Seed para reprodutibilidade |
-| `N_SYNTHETIC` | `4000` | Número de amostras sintéticas geradas |
+| `N_SYNTHETIC` | `2000` | Número de amostras sintéticas geradas (padrão do código; o `.env.example` sugere `4000`) |
 | `FEEDBACK_WEIGHT` | `5` | Peso dos dados de feedback no retreinamento |
 
 ## Frontend - Vite
@@ -117,6 +124,7 @@ Anti-Corruption Layer: mapeamento dos campos do envelope genérico do ML Service
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `VITE_API_URL` | `http://localhost:8080` | URL base da API backend |
+| `VITE_GOOGLE_CLIENT_ID` | - | Client ID OAuth2 do Google Identity Services (botão "Entrar com Google"). Mesmo valor do `GOOGLE_CLIENT_ID` do backend |
 
 ## Configurações de Negócio
 

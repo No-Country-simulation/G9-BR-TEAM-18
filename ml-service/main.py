@@ -3,6 +3,7 @@ import os
 import re
 import time
 import traceback
+import unicodedata
 from datetime import UTC, date, datetime
 
 import joblib
@@ -11,6 +12,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from groq import Groq
 from pydantic import BaseModel
+
+from features import APPLIANCE_COLUMNS, normalize_property_type, translate_category
 
 load_dotenv()
 
@@ -107,9 +110,9 @@ def _groq_register_call() -> None:
 # -------------------------------------------------------------
 
 BASE_CONSUMPTION_BY_TYPE = {
-    "Casa": 250.0,
-    "Apartamento": 150.0,
-    "Comercial": 500.0,
+    "RESIDENCIAL": 250.0,
+    "APARTAMENTO": 150.0,
+    "COMERCIAL": 500.0,
 }
 
 
@@ -173,23 +176,217 @@ def _classify_rule_based(data: PredictRequest) -> tuple[str, float]:
     return "CRITICO", 0.90
 
 
+CATEGORY_RECOMMENDATIONS = {
+    "Refrigeracao": (
+        "Verifique a vedação dos equipamentos de refrigeração e evite deixá-los "
+        "encostados em paredes ou perto de fontes de calor, isso força o motor a "
+        "trabalhar mais."
+    ),
+    "Climatizacao": (
+        "Ajuste os equipamentos de climatização para uma temperatura moderada e "
+        "evite deixar portas ou janelas abertas enquanto estiverem ligados."
+    ),
+    "Tecnologia": (
+        "Desligue equipamentos eletrônicos da tomada quando ficarem muito tempo "
+        "sem uso, o consumo em espera soma ao longo do mês."
+    ),
+    "Iluminacao": (
+        "Troque lâmpadas antigas por modelos LED, que entregam a mesma "
+        "iluminação consumindo bem menos energia."
+    ),
+    "Eletrodomesticos": (
+        "Priorize o uso consciente dos eletrodomésticos de maior consumo, "
+        "evitando deixá-los ligados além do necessário."
+    ),
+    "Servicos": (
+        "Revise os equipamentos de serviços do imóvel e verifique se algum "
+        "fica ligado sem necessidade quando não está em uso."
+    ),
+}
+
+APPLIANCE_RECOMMENDATIONS = {
+    "Geladeira": (
+        "Verifique a vedação da geladeira e evite deixá-la encostada em paredes "
+        "ou perto de fontes de calor, isso força o motor a trabalhar mais."
+    ),
+    "Freezer": (
+        "Não deixe o freezer com a porta mal fechada e evite abri-lo com "
+        "frequência, cada abertura obriga o motor a resfriar de novo."
+    ),
+    "Frigobar": (
+        "Evite manter o frigobar muito cheio ou muito vazio, os dois extremos "
+        "fazem o motor trabalhar mais para manter a temperatura."
+    ),
+    "Bebedouro": (
+        "Desligue o bebedouro em períodos longos sem uso, ele mantém a água "
+        "refrigerada o tempo todo mesmo sem ninguém consumindo."
+    ),
+    "Ar-condicionado": (
+        "Ajuste o ar-condicionado para 23°C e evite deixar portas ou janelas "
+        "abertas enquanto ele estiver ligado."
+    ),
+    "Split": (
+        "Limpe os filtros do ar-condicionado split regularmente, filtro sujo "
+        "faz o aparelho consumir bem mais para resfriar o ambiente."
+    ),
+    "Ventilador": (
+        "Prefira o ventilador ao ar-condicionado sempre que a temperatura "
+        "permitir, o consumo é uma fração do de um aparelho de climatização."
+    ),
+    "Aquecedor": (
+        "Use o aquecedor elétrico só no cômodo ocupado e desligue assim que "
+        "sair, ele tem um dos maiores consumos entre os eletrodomésticos."
+    ),
+    "Lampada": (
+        "Troque lâmpadas antigas por modelos LED, que entregam a mesma "
+        "iluminação consumindo bem menos energia."
+    ),
+    "Micro-ondas": (
+        "Prefira o micro-ondas ao forno tradicional para esquentar porções "
+        "pequenas, o tempo de uso é bem menor."
+    ),
+    "Air fryer": (
+        "Use a air fryer para porções que caibam bem no cesto, ciclos "
+        "incompletos gastam energia sem necessidade."
+    ),
+    "Maquina de lavar": (
+        "Espere acumular uma carga cheia antes de usar a máquina de lavar, "
+        "lavar pouca roupa por vez desperdiça água e energia."
+    ),
+    "Secadora": (
+        "Prefira secar roupas no varal sempre que possível, a secadora está "
+        "entre os equipamentos domésticos de maior consumo."
+    ),
+    "Chuveiro eletrico": (
+        "Prefira banhos mais curtos no chuveiro elétrico, ele é um dos maiores "
+        "consumidores de energia da casa."
+    ),
+    "Cafeteira": (
+        "Desligue a cafeteira elétrica da tomada após o uso, muitos modelos "
+        "continuam consumindo em espera."
+    ),
+    "Ferro de passar": (
+        "Junte as roupas para passar de uma vez, ligar e desligar o ferro "
+        "repetidas vezes gasta mais energia do que um uso contínuo."
+    ),
+    "Aspirador": (
+        "Esvazie o compartimento de pó do aspirador regularmente, ele perde "
+        "eficiência e consome mais com o filtro sujo."
+    ),
+    "Liquidificador": (
+        "Use o liquidificador só pelo tempo necessário, ciclos curtos e "
+        "frequentes consomem menos que deixá-lo ligado à toa."
+    ),
+    "Batedeira": (
+        "Desligue a batedeira da tomada quando não estiver em uso, mesmo "
+        "parada ela pode consumir em modo de espera."
+    ),
+    "Forno": (
+        "Aproveite o calor residual do forno elétrico desligando alguns "
+        "minutos antes de terminar o preparo."
+    ),
+    "Fogao": (
+        "Prefira panelas do tamanho certo para cada boca do fogão elétrico, "
+        "panela pequena numa boca grande desperdiça energia."
+    ),
+    "Televisao": (
+        "Desligue a televisão da tomada quando ficar muito tempo sem uso, o "
+        "consumo em espera soma ao longo do mês."
+    ),
+    "Computador": (
+        "Configure o computador para entrar em modo de economia de energia "
+        "após alguns minutos de inatividade."
+    ),
+    "Notebook": (
+        "Desligue o notebook da tomada quando a bateria estiver completa, "
+        "mantê-lo carregando o tempo todo desgasta a bateria e consome "
+        "energia à toa."
+    ),
+    "Roteador": (
+        "O roteador tem consumo baixo, mas vale desligá-lo em viagens longas "
+        "para eliminar até esse gasto residual."
+    ),
+    "Videogame": (
+        "Desligue o videogame da tomada quando não estiver jogando, o modo "
+        "de espera de consoles consome mais do que parece."
+    ),
+    "Bomba d'agua": (
+        "Programe horários fixos para a bomba d'água funcionar, em vez de "
+        "deixá-la ligada continuamente."
+    ),
+    "Portao eletrico": (
+        "Verifique se o motor do portão elétrico desliga sozinho após o "
+        "movimento, motores travados continuam consumindo energia."
+    ),
+    "Motor de piscina": (
+        "Ajuste o timer do motor da piscina para rodar só o tempo necessário "
+        "de filtragem diária, é um dos equipamentos de serviço que mais "
+        "consome."
+    ),
+}
+
+
+def _normalize_appliance_name(name: str) -> str:
+    stripped = "".join(
+        c for c in unicodedata.normalize("NFD", name) if unicodedata.category(c) != "Mn"
+    )
+    return stripped.strip().lower()
+
+
+APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME = {
+    _normalize_appliance_name(name): text for name, text in APPLIANCE_RECOMMENDATIONS.items()
+}
+
+
+def _select_appliance_recommendations(products: list[str] | None) -> list[str]:
+    """Retorna a dica de cada aparelho de highest_consumption_products que bater
+    com o catálogo reconhecido, até 3 (um por produto, na mesma ordem recebida).
+    Lista vazia se nenhum bater -- nesse caso o chamador cai no fallback
+    genérico por categoria."""
+    if not products:
+        return []
+    recs = []
+    for product in products[:3]:
+        key = _normalize_appliance_name(product)
+        if key in APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME:
+            recs.append(APPLIANCE_RECOMMENDATIONS_BY_NORMALIZED_NAME[key])
+    return recs
+
+
 def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
     recs = []
+
     if data.peak_hour_usage:
         recs.append(
-            "Reduzir o uso de equipamentos potentes durante os horários de pico (18h às 21h)."
+            "Evite usar equipamentos de maior potência entre 18h e 21h, "
+            "esse é o horário de pico e costuma pesar mais na conta."
         )
 
+    appliance_recs = _select_appliance_recommendations(data.highest_consumption_products)
+    if appliance_recs:
+        recs.extend(appliance_recs)
+    else:
+        highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
+        category_rec = CATEGORY_RECOMMENDATIONS.get(highest_category_pt)
+        if category_rec:
+            recs.append(category_rec)
+
     if category in ("RUIM", "CRITICO"):
-        recs.append("Considere substituir equipamentos antigos por modelos mais eficientes.")
+        recs.append(
+            "Considere substituir os equipamentos mais antigos por modelos "
+            "com melhor selo de eficiência energética."
+        )
 
     if data.equipment_quantity > 10:
-        recs.append("Avalie a real necessidade de todos os equipamentos ligados simultaneamente.")
+        recs.append(
+            "Com tantos equipamentos no imóvel, vale revisar quais realmente "
+            "precisam ficar ligados ao mesmo tempo."
+        )
 
     if data.high_consumption_hours > 5:
         recs.append(
-            "Distribua o uso de equipamentos ao longo do dia "
-            "para reduzir o horário de alto consumo."
+            "Tente distribuir o uso dos equipamentos ao longo do dia, em vez "
+            "de concentrar tudo num único período de alto consumo."
         )
 
     if data.daily_consumption_distribution:
@@ -202,9 +399,9 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
             recs.append("Substituir lâmpadas antigas por tecnologia LED de baixo consumo.")
 
     if category == "EXCELENTE":
-        recs.append("Continue mantendo as boas práticas de eficiência energética!")
+        recs.append("Continue mantendo essas boas práticas, seu consumo está bem equilibrado!")
     elif not recs:
-        recs.append("Mantenha o bom acompanhamento dos seus hábitos de consumo!")
+        recs.append("Continue acompanhando seus hábitos de consumo de perto.")
 
     return recs
 
@@ -215,6 +412,24 @@ def _generate_recommendations(data: PredictRequest, category: str) -> list[str]:
 
 
 def _generate_recommendations_groq(data: PredictRequest, category: str) -> list[str]:
+    property_type_pt = normalize_property_type(data.property_type)
+    highest_category_pt = translate_category(data.highest_consumption_category or "Outros")
+    produtos_texto = (
+        ", ".join(data.highest_consumption_products[:3])
+        if data.highest_consumption_products
+        else None
+    )
+
+    category_rule = ""
+    if highest_category_pt != "Outros":
+        category_rule = (
+            f"- Pelo menos uma recomendação deve abordar especificamente a categoria de maior "
+            f"consumo do imóvel ({highest_category_pt})"
+        )
+        if produtos_texto:
+            category_rule += f", citando ao menos um destes equipamentos: {produtos_texto}"
+        category_rule += ".\n"
+
     prompt = f"""Com base nos dados abaixo, gere exatamente 3 recomendações curtas, práticas\
  e realmente úteis para melhorar a eficiência energética do imóvel.
 
@@ -224,7 +439,7 @@ REGRAS OBRIGATÓRIAS:
 - Baseie-se APENAS nos dados fornecidos. Não invente equipamentos ou hábitos não informados.
 - Se o tipo de imóvel for "Apartamento", não sugira painéis solares ou soluções que dependam
   de telhado/espaço externo próprio.
-- Cada recomendação deve abordar um aspecto diferente, sem repetir o mesmo tipo de dica.
+{category_rule}- Cada recomendação deve abordar um aspecto diferente, sem repetir o tipo de dica.
 - Não cite marcas, modelos ou preços. Não use termos técnicos sem explicação simples.
 - Máximo 20 palavras por recomendação. Sem emojis, markdown ou numeração.
 - Tom: {category} — se for Ruim ou Crítico, seja direto sobre a necessidade de mudança.
@@ -234,8 +449,10 @@ Dados do imóvel:
 - Consumo mensal: {data.consumption_kwh} kWh
 - Uso em horário de pico: {"Sim" if data.peak_hour_usage else "Não"}
 - Quantidade de equipamentos: {data.equipment_quantity}
-- Tipo de imóvel: {data.property_type}
+- Tipo de imóvel: {property_type_pt}
 - Horas de alto consumo por dia: {data.high_consumption_hours}
+- Categoria de maior consumo: {highest_category_pt}
+- Equipamentos de maior consumo: {produtos_texto or "não informado"}
 - Categoria de eficiência: {category}
 
 Responda APENAS com as 3 recomendações, uma por linha, sem numeração,
@@ -256,7 +473,7 @@ sem introdução e sem comentários adicionais."""
             {"role": "user", "content": prompt},
         ],
         max_tokens=150,
-        temperature=0,
+        temperature=0.3,
     )
 
     text = (response.choices[0].message.content or "").strip()
@@ -267,8 +484,10 @@ sem introdução e sem comentários adicionais."""
     ]
     return [r for r in recommendations[:3] if r]
 
+
 def _run_prediction(data: "PredictRequest") -> dict:
-    """Executa a lógica de predição e retorna um dicionário com category, probability, recommendations, source."""
+    """Executa a lógica de predição e retorna um dicionário com category,
+    probability, recommendations, source."""
     category = ""
     probability = 0.0
     source = ""
@@ -283,10 +502,11 @@ def _run_prediction(data: "PredictRequest") -> dict:
                         "consumption_kwh": data.consumption_kwh,
                         "peak_hour_usage": int(data.peak_hour_usage),
                         "equipment_quantity": data.equipment_quantity,
-                        "property_type": data.property_type,
+                        "property_type": normalize_property_type(data.property_type),
                         "high_consumption_hours": data.high_consumption_hours,
-                        "highest_consumption_category": data.highest_consumption_category
-                        or "Outros",
+                        "highest_consumption_category": translate_category(
+                            data.highest_consumption_category or "Outros"
+                        ),
                         "refrigeration_watts": dc.REFRIGERATION_WATTS,
                         "heating_watts": dc.HEATING_WATTS,
                         "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
@@ -327,7 +547,12 @@ def _run_prediction(data: "PredictRequest") -> dict:
     else:
         recommendations = _generate_recommendations(data, category)
 
-    return {"category": category, "probability": probability, "recommendations": recommendations, "source": source}
+    return {
+        "category": category,
+        "probability": probability,
+        "recommendations": recommendations,
+        "source": source,
+    }
 
 
 # -------------------------------------------------------------
@@ -349,9 +574,11 @@ def _store_for_training(
             "consumption_kwh": data.consumption_kwh,
             "peak_hour_usage": data.peak_hour_usage,
             "equipment_quantity": data.equipment_quantity,
-            "property_type": data.property_type,
+            "property_type": normalize_property_type(data.property_type),
             "high_consumption_hours": data.high_consumption_hours,
-            "highest_consumption_category": data.highest_consumption_category or "Outros",
+            "highest_consumption_category": translate_category(
+                data.highest_consumption_category or "Outros"
+            ),
             "refrigeration_watts": dc.REFRIGERATION_WATTS,
             "heating_watts": dc.HEATING_WATTS,
             "air_conditioning_watts": dc.AIR_CONDITIONING_WATTS,
@@ -379,7 +606,9 @@ def _store_for_training(
 @app.post("/predict", response_model=PredictResponse)
 def predict_consumption(data: PredictRequest) -> PredictResponse:
     result = _run_prediction(data)
-    _store_for_training(data, result["category"], result["probability"], result["recommendations"], result["source"])
+    _store_for_training(
+        data, result["category"], result["probability"], result["recommendations"], result["source"]
+    )
     return PredictResponse(
         category=result["category"],
         probability=result["probability"],
@@ -404,6 +633,38 @@ def predict_simulate(data: PredictRequest) -> PredictResponse:
 def predict_schema() -> dict:
     """Retorna o schema JSON do PredictRequest para descoberta dinâmica pelo backend."""
     return PredictRequest.model_json_schema()
+
+
+@app.get("/contract")
+def contract() -> dict:
+    """Retorna o contrato completo do ML Service para descoberta dinâmica."""
+    return {
+        "version": "3.0.0",
+        "property_types": ["RESIDENCIAL", "APARTAMENTO", "COMERCIAL"],
+        "efficiency_categories": VALID_CATEGORIES,
+        "consumption_categories": [
+            "REFRIGERATION",
+            "CLIMATE_CONTROL",
+            "TECHNOLOGY",
+            "LIGHTING",
+            "APPLIANCES",
+            "SERVICES",
+            "OTHERS",
+        ],
+        "request_schema": PredictRequest.model_json_schema(),
+        "response_schema": PredictResponse.model_json_schema(),
+    }
+
+
+@app.get("/appliance-catalog")
+def appliance_catalog() -> dict:
+    """Retorna o catálogo de aparelhos que o modelo reconhece."""
+    df = pd.read_csv(os.path.join(BASE_DIR, "data", "main-dataset.csv"))
+    catalog = []
+    for col, info in APPLIANCE_COLUMNS.items():
+        if col in df.columns:
+            catalog.append(info)
+    return {"appliances": catalog}
 
 
 @app.get("/categories")

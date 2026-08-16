@@ -1,5 +1,6 @@
 package br.com.group18.energiai.infrastructure.client;
 
+import br.com.group18.energiai.application.exception.MlServiceUnavailableException;
 import br.com.group18.energiai.core.domain.model.MlResult;
 import br.com.group18.energiai.core.domain.valueobject.EfficiencyCategory;
 import java.util.List;

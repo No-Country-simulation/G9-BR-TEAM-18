@@ -1,12 +1,17 @@
 package br.com.group18.energiai.infrastructure.client;
 
-import java.util.List;
-import java.util.Map;
+import br.com.group18.energiai.application.services.ApplianceCatalogSyncService;
+import br.com.group18.energiai.infrastructure.client.dto.MlApplianceCatalogResponse;
+import br.com.group18.energiai.infrastructure.client.dto.MlContractResponse;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.retry.Retry;
 
 @Component
 public class MlSchemaDiscovery implements ApplicationRunner {
@@ -15,29 +20,54 @@ public class MlSchemaDiscovery implements ApplicationRunner {
 
     private final MlServiceClient mlServiceClient;
     private final MlSchemaRegistry registry;
+    private final ApplianceCatalogSyncService catalogSyncService;
 
-    public MlSchemaDiscovery(MlServiceClient mlServiceClient, MlSchemaRegistry registry) {
+    public MlSchemaDiscovery(
+            MlServiceClient mlServiceClient,
+            MlSchemaRegistry registry,
+            ApplianceCatalogSyncService catalogSyncService) {
         this.mlServiceClient = mlServiceClient;
         this.registry = registry;
+        this.catalogSyncService = catalogSyncService;
     }
 
     @Override
     public void run(ApplicationArguments args) {
+        log.info("Schema Discovery: Buscando contrato e catálogo no ML Service...");
+
         try {
-            log.info("Schema Discovery: fetching schema and categories from ML Service...");
+            Tuple2<MlContractResponse, MlApplianceCatalogResponse> response = Mono.zip(
+                            mlServiceClient.fetchContract(), mlServiceClient.fetchApplianceCatalog())
+                    .block(Duration.ofSeconds(10));
 
-            Map<String, Object> schema = mlServiceClient.fetchSchema();
-            List<String> categories = mlServiceClient.fetchCategories();
+            if (response != null) {
+                registry.register(response.getT1(), response.getT2());
+                log.info("Schema Discovery: Concluído com sucesso no startup.");
+            }
+        } catch (Exception exception) {
+            log.warn(
+                    "Schema Discovery: ML Service indisponível no startup ({}). Carregando fallback...",
+                    exception.getMessage());
+            registry.loadDefaultValues();
 
-            registry.register(schema, categories);
-
-            log.info(
-                    "Schema Discovery: completed successfully. {} categories discovered: {}",
-                    categories.size(),
-                    categories);
-        } catch (Exception e) {
-            log.warn("Schema Discovery: ML Service unavailable during startup ({}). Using defaults.", e.getMessage());
-            registry.register(null, null);
+            log.info("Iniciando rotina de retentativa em background para o ML Service...");
+            startBackgroundRetry();
         }
+    }
+
+    private void startBackgroundRetry() {
+        Mono.zip(mlServiceClient.fetchContract(), mlServiceClient.fetchApplianceCatalog())
+                .retryWhen(Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(30))
+                        .doBeforeRetry(retrySignal ->
+                                log.debug("Retentativa em background: tentando conectar ao ML Service...")))
+                .subscribe(
+                        response -> {
+                            log.info(
+                                    "Schema Discovery: Reconexão bem-sucedida em background! Atualizando o Registry em memória"
+                                            + " e re-sincronizando o catálogo no banco.");
+                            registry.register(response.getT1(), response.getT2());
+                            catalogSyncService.syncCatalog();
+                        },
+                        error -> log.error("Schema Discovery: Erro fatal no retry assíncrono.", error));
     }
 }

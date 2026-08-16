@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { Menu, Sun, Moon, LogOut } from "lucide-react";
 import { useTheme } from "../context/useTheme";
 import { useAuth } from "../context/useAuth";
@@ -28,7 +28,6 @@ export default function Navbar() {
     ? [
         { to: "/dashboard", label: "Dashboard" },
         { to: "/profile", label: "Perfil" },
-        { to: "/analysis", label: "Analisar" },
         { to: "/history", label: "Histórico" },
       ]
     : [

@@ -1,0 +1,1 @@
+ALTER TABLE tb_user ADD auth_provider VARCHAR2(50) DEFAULT 'LOCAL' NOT NULL;
